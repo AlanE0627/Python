@@ -224,6 +224,9 @@ namespace ms {
             }
         } else {
             Keyboard::Mapping mapping = keyboard_.get_mapping(keycode);
+#ifdef MS_DESKTOP_DEBUG
+            if (pressed) std::fprintf(stderr, "[dbg] key %d -> type %d action %d\n", keycode, (int) mapping.type, mapping.action);
+#endif
 
             bool sent = false;
             std::list<UIElement::Type> types;

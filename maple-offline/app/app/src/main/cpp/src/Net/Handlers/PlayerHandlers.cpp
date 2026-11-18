@@ -320,6 +320,13 @@ void KeymapHandler::handle(InPacket &recv) const {
         uint8_t type = recv.read_ubyte();
         int32_t action = recv.read_int();
 
+        // maple-offline: v83 numbers menu (type 4) and basic (type 5) actions
+        // from 0 (EQUIPS 0 ... PICKUP 50, ATTACK 52, JUMP 53); this client's
+        // KeyAction ids are one higher (EQUIPMENT 1 ... ATTACK 53, JUMP 54).
+        if ((type == 4 || type == 5) && action < 100) {
+            action += 1;
+        }
+
         UI::get().add_keymapping(i, type, action);
     }
 }

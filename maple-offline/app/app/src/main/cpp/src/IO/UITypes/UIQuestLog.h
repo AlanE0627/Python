@@ -42,23 +42,22 @@ protected:
 
 private:
     void change_tab(uint16_t tabid);
+    void load_list();
 
-    enum Buttons : uint16_t {
-        TAB0,
-        TAB1,
-        TAB2,
-        CLOSE,
-        SEARCH,
-        ALL_LEVEL,
-        MY_LOCATION
-    };
+    // maple-offline: v83 UIWindow.img/Quest (245x396) — three tabs and a
+    // scrolling list of quest names.
+    static constexpr int16_t ROWS_ = 17;
+    static constexpr int16_t ROW_HEIGHT_ = 18;
+    static constexpr int16_t LIST_Y_ = 52;
+
+    enum Buttons : uint16_t { TAB0, TAB1, TAB2, CLOSE };
 
     const QuestLog &questlog_;
     uint16_t tab_;
-    std::vector<Sprite> notice_sprites_;
-    Textfield search_;
-    Text placeholder_;
     Slider slider_;
-    Texture search_area_;
+    int16_t offset_;
+    std::vector<Text> rows_;
+    Text empty_;
+    Texture icon_;
 };
 }  // namespace ms

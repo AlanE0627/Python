@@ -54,9 +54,17 @@ public:
         for (size_t i = 0; i < updated_actions.size(); i++) {
             auto keymap = updated_actions[i];
 
-            write_int(std::get<0>(keymap));   // key
-            write_byte(std::get<1>(keymap));  // type
-            write_int(std::get<2>(keymap));   // action
+            int32_t type = std::get<1>(keymap);
+            int32_t action = std::get<2>(keymap);
+
+            // maple-offline: back to v83 action numbering (see KeymapHandler).
+            if ((type == 4 || type == 5) && action > 0 && action < 101) {
+                action -= 1;
+            }
+
+            write_int(std::get<0>(keymap));  // key
+            write_byte(type);                // type
+            write_int(action);               // action
         }
     }
 };
