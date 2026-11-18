@@ -103,6 +103,12 @@ EquipData::EquipData(int32_t id) : item_data_(ItemData::get(id)) {
         size_t weaponindex = index - WEAPON_OFFSET;
         type_ = types[weaponindex];
         eq_slot_ = EquipSlot::Id::WEAPON;
+    } else if (id / 10000 == 190) {
+        type_ = "탈것";
+        eq_slot_ = EquipSlot::Id::TAMEDMOB;
+    } else if (id / 10000 == 191) {
+        type_ = "안장";
+        eq_slot_ = EquipSlot::Id::SADDLE;
     } else {
         type_ = "캐시";
         eq_slot_ = EquipSlot::Id::NONE;

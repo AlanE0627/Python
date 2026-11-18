@@ -273,6 +273,7 @@ public:
 
         /// Skill
         USE_SKILL = 91,
+        CANCEL_BUFF = 92,
 
         /// Gameplay 2
         PLAYER_INTERACTION = 123,

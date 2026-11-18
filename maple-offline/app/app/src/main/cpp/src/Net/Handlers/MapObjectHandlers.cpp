@@ -292,6 +292,18 @@ void GiveForeignBuffHandler::handle_buff(InPacket &recv,
          }*/
 
         Stage::get().get_combat().give_foreign_buff(cid, skill_id, skill_level);
+    } else if (stat == Buffstat::MONSTER_RIDING) {
+        recv.read_short();
+        int32_t mount_id = recv.read_int();
+        recv.read_int();  // riding skill
+
+        if (auto chr = Stage::get().get_character(cid)) {
+            CharLook &look = chr->get().get_look();
+            look.set_mount(mount_id,
+                           look.get_equips().get_equip(EquipSlot::Id::SADDLE));
+        }
+
+        return;
     } else {
         int16_t value = recv.read_short();  // TODO
     }
@@ -306,6 +318,11 @@ void CancelForeignBuffHandler::handle_buff(InPacket &recv,
                                            Buffstat::Id stat) const {
     if (auto chr = Stage::get().get_character(cid)) {
         chr->get().remove_recurring_effect();
+
+        if (stat == Buffstat::MONSTER_RIDING) {
+            chr->get().get_look().clear_mount();
+            return;
+        }
     }
 
     std::cerr << std::endl

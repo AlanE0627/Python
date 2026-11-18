@@ -222,6 +222,25 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
         int32_t skillid = recv.read_int();
         int32_t duration = recv.read_int();
 
+        // Monster Riding: the server sends the mount item id where the skill
+        // id normally is and the riding skill id where the duration is
+        if (bs == Buffstat::Id::MONSTER_RIDING) {
+            Player &player = Stage::get().get_player();
+            int32_t mount_id = skillid;
+            int32_t riding_skill = duration;
+            int32_t saddle =
+                player.get_look().get_equips().get_equip(EquipSlot::Id::SADDLE);
+
+            player.get_look().set_mount(mount_id, saddle);
+            player.give_buff({ bs, 1, riding_skill, 0 });
+
+            if (auto bufflist = UI::get().get_element<UIBuffList>()) {
+                bufflist->get().add_buff(riding_skill, 2000000000);
+            }
+
+            return;
+        }
+
         // shared COMBO/SUMMON bit: only Combo Attack skills are combos
         if (bs == Buffstat::Id::COMBO && skillid != 1111002 && skillid != 11111001) {
             bs = Buffstat::Id::SUMMON;
@@ -236,6 +255,17 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
 }
 
 void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
+    if (bs == Buffstat::Id::MONSTER_RIDING) {
+        Player &player = Stage::get().get_player();
+        int32_t riding_skill = player.get_buff(bs).skillid;
+
+        player.get_look().clear_mount();
+
+        if (auto bufflist = UI::get().get_element<UIBuffList>()) {
+            bufflist->get().remove_buff(riding_skill);
+        }
+    }
+
     Stage::get().get_player().cancel_buff(bs);
 
     // shared COMBO/SUMMON bit: clear both

@@ -95,6 +95,8 @@ public:
     // Return whether the buff is active.
     bool has_buff(Buffstat::Id stat) const;
 
+    const Buff &get_buff(Buffstat::Id stat) const { return buffs_[stat]; }
+
     // Change a skill
     void change_skill(int32_t skill_id,
                       int32_t level,

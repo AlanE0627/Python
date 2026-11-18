@@ -396,6 +396,9 @@ bool Player::is_invincible() const {
 
 MobAttackResult Player::damage(const MobAttack &attack) {
     int32_t damage = stats_.calculate_damage(attack.watk);
+#ifdef MS_DESKTOP_DEBUG
+    fprintf(stderr, "[dbg] mob touch watk %d -> damage %d\n", attack.watk, damage);
+#endif
     show_damage(damage);
 
     bool fromleft = attack.origin.x() > phobj_.get_x();
@@ -517,16 +520,57 @@ void Player::set_ladder(
     }
 }
 
+// Riding: TamingMob.nx/<tamingMob>.img/info speed/jump replace the
+// character's speed and jump (looked up once per mount)
+static std::pair<int16_t, int16_t> mount_speed_jump(int32_t mount_id) {
+    static std::unordered_map<int32_t, std::pair<int16_t, int16_t>> cache;
+    auto iter = cache.find(mount_id);
+
+    if (iter != cache.end()) {
+        return iter->second;
+    }
+
+    std::string sid = std::to_string(mount_id);
+    sid = std::string(8 - std::min<size_t>(8, sid.size()), '0') + sid + ".img";
+    int32_t tm = nl::nx::character["TamingMob"][sid]["info"]["tamingMob"]
+                     .get_integer(0);
+    std::pair<int16_t, int16_t> result = { 0, 0 };
+
+    if (tm > 0) {
+        std::string tid = std::to_string(tm);
+        tid = std::string(4 - std::min<size_t>(4, tid.size()), '0') + tid
+              + ".img";
+        nl::node info = nl::nx::tamingmob[tid]["info"];
+        result = { static_cast<int16_t>(info["speed"].get_integer(0)),
+                   static_cast<int16_t>(info["jump"].get_integer(0)) };
+    }
+
+    cache[mount_id] = result;
+    return result;
+}
+
 float Player::get_walkforce() const {
-    return 0.05f
-           + 0.11f * static_cast<float>(stats_.get_total(EquipStat::Id::SPEED))
-                 / 100;
+    float speed = static_cast<float>(stats_.get_total(EquipStat::Id::SPEED));
+
+    if (int32_t mount = look_.get_mount()) {
+        if (int16_t ms = mount_speed_jump(mount).first) {
+            speed = ms;
+        }
+    }
+
+    return 0.05f + 0.11f * speed / 100;
 }
 
 float Player::get_jumpforce() const {
-    return 1.0f
-           + 3.5f * static_cast<float>(stats_.get_total(EquipStat::Id::JUMP))
-                 / 100;
+    float jump = static_cast<float>(stats_.get_total(EquipStat::Id::JUMP));
+
+    if (int32_t mount = look_.get_mount()) {
+        if (int16_t mj = mount_speed_jump(mount).second) {
+            jump = mj;
+        }
+    }
+
+    return 1.0f + 3.5f * jump / 100;
 }
 
 float Player::get_climbforce() const {

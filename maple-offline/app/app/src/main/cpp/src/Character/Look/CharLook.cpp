@@ -15,6 +15,10 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "CharLook.h"
 
+#include <algorithm>
+#include <nlnx/nx.hpp>
+#include <nlnx/node.hpp>
+
 #include "../../Data/WeaponData.h"
 
 namespace ms {
@@ -473,11 +477,173 @@ namespace ms {
                 break;
         }
 
+        if (mount_id_ != 0) {
+            const std::vector<MountFrame> *frames = mount_frames(interstance);
+
+            if (frames && !frames->empty()) {
+                const MountFrame &mf =
+                    (*frames)[mount_frame_ % frames->size()];
+
+                // Climbing keeps its own pose; everything else sits
+                Stance::Id riderstance = Stance::is_climbing(interstance)
+                                             ? interstance
+                                             : Stance::Id::SIT;
+                uint8_t riderframe =
+                    riderstance == interstance ? interframe : 0;
+
+                Point<int16_t> offset =
+                    mf.navel
+                    - draw_info_.get_body_position(riderstance, riderframe);
+
+                if (flip_) {
+                    offset = Point<int16_t>(-offset.x(), offset.y());
+                }
+
+                DrawArgument base = relargs + args;
+
+                draw_mount(base, interstance, false);
+                draw(base + DrawArgument(offset),
+                     riderstance,
+                     interexpression,
+                     riderframe,
+                     interexpframe);
+                draw_mount(base, interstance, true);
+                return;
+            }
+        }
+
         draw(relargs + args,
              interstance,
              interexpression,
              interframe,
              interexpframe);
+    }
+
+    namespace {
+    std::string mount_stance_name(Stance::Id stance) {
+        switch (stance) {
+            case Stance::Id::WALK1:
+            case Stance::Id::WALK2: return "walk1";
+            case Stance::Id::JUMP: return "jump";
+            case Stance::Id::PRONE:
+            case Stance::Id::PRONESTAB: return "prone";
+            case Stance::Id::LADDER: return "ladder";
+            case Stance::Id::ROPE: return "rope";
+            case Stance::Id::FLY: return "fly";
+            default: return "stand1";
+        }
+    }
+    }  // namespace
+
+    void CharLook::set_mount(int32_t mount_id, int32_t saddle_id) {
+        if (mount_id == mount_id_) {
+            return;
+        }
+
+        mount_anims_.clear();
+        mount_id_ = mount_id;
+        mount_frame_ = 0;
+        mount_elapsed_ = 0;
+        mount_stance_.clear();
+
+        auto pad = [](int32_t id) {
+            std::string s = std::to_string(id);
+            return std::string(8 - std::min<size_t>(8, s.size()), '0') + s
+                   + ".img";
+        };
+
+        nl::node src = nl::nx::character["TamingMob"][pad(mount_id)];
+        nl::node saddle;
+
+        if (saddle_id > 0) {
+            saddle = nl::nx::character["TamingMob"][pad(saddle_id)]
+                                      [std::to_string(mount_id)];
+        }
+
+        for (const auto &stnode : src) {
+            std::string stname = stnode.name();
+
+            if (stname == "info") {
+                continue;
+            }
+
+            std::vector<MountFrame> &frames = mount_anims_[stname];
+
+            for (uint8_t f = 0; stnode[std::to_string(f)]; f++) {
+                nl::node fr = stnode[std::to_string(f)];
+                MountFrame mf;
+                mf.delay = fr["delay"].get_integer(120);
+                mf.navel = Point<int16_t>(-1, -51);
+
+                auto add_parts = [&mf](nl::node frame, bool take_navel) {
+                    for (const auto &part : frame) {
+                        if (part.data_type() != nl::node::type::bitmap) {
+                            continue;
+                        }
+
+                        std::string z = part["z"];
+                        bool front = z.find("Front") != std::string::npos;
+                        mf.parts.push_back({ Texture(part), front });
+
+                        nl::node navel = part["map"]["navel"];
+
+                        if (take_navel && navel) {
+                            mf.navel = navel;
+                        }
+                    }
+                };
+
+                add_parts(fr, true);
+
+                if (saddle) {
+                    add_parts(saddle[stname][std::to_string(f)], false);
+                }
+
+                // Rear (non-front) parts first, in their own order
+                std::stable_sort(mf.parts.begin(),
+                                 mf.parts.end(),
+                                 [](const MountPart &a, const MountPart &b) {
+                                     return !a.front && b.front;
+                                 });
+
+                frames.push_back(std::move(mf));
+            }
+        }
+    }
+
+    void CharLook::clear_mount() {
+        mount_id_ = 0;
+        mount_anims_.clear();
+        mount_stance_.clear();
+    }
+
+    const std::vector<CharLook::MountFrame> *CharLook::mount_frames(
+        Stance::Id stance) const {
+        auto iter = mount_anims_.find(mount_stance_name(stance));
+
+        if (iter == mount_anims_.end() || iter->second.empty()) {
+            iter = mount_anims_.find("stand1");
+        }
+
+        return iter == mount_anims_.end() ? nullptr : &iter->second;
+    }
+
+    void CharLook::draw_mount(const DrawArgument &args,
+                              Stance::Id stance,
+                              bool front) const {
+        const std::vector<MountFrame> *frames = mount_frames(stance);
+
+        if (!frames || frames->empty()) {
+            return;
+        }
+
+        const MountFrame &mf = (*frames)[mount_frame_ % frames->size()];
+
+        for (const auto &part : mf.parts) {
+            if (part.front == front) {
+                part.texture.draw(args);
+            }
+        }
     }
 
     void CharLook::draw(Point<int16_t> position,
@@ -498,6 +664,31 @@ namespace ms {
         }
 
         alerted_.update();
+
+        if (mount_id_ != 0) {
+            std::string name = mount_stance_name(stance_.get());
+
+            if (name != mount_stance_) {
+                mount_stance_ = name;
+                mount_frame_ = 0;
+                mount_elapsed_ = 0;
+            }
+
+            if (const std::vector<MountFrame> *frames =
+                    mount_frames(stance_.get())) {
+                if (!frames->empty()) {
+                    mount_elapsed_ += timestep;
+                    uint16_t delay =
+                        (*frames)[mount_frame_ % frames->size()].delay;
+
+                    if (delay > 0 && mount_elapsed_ >= delay) {
+                        mount_elapsed_ -= delay;
+                        mount_frame_ = static_cast<uint8_t>(
+                            (mount_frame_ + 1) % frames->size());
+                    }
+                }
+            }
+        }
 
         bool aniend = false;
 

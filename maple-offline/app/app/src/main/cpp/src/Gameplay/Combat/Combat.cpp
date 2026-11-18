@@ -88,6 +88,13 @@ void Combat::update() {
 }
 
 void Combat::use_move(int32_t move_id) {
+    // Using the riding skill again while mounted gets off the mount
+    if (player_.get_look().get_mount() != 0
+        && player_.get_buff(Buffstat::Id::MONSTER_RIDING).skillid == move_id) {
+        CancelBuffPacket(move_id).dispatch();
+        return;
+    }
+
     if (!player_.can_attack()) {
 #ifdef MS_DESKTOP_DEBUG
         fprintf(stderr, "[dbg] use_move %d: cannot attack now (attacking %d climb %d sit %d weapon %d)\n", move_id,

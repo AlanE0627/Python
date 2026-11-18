@@ -20,6 +20,10 @@
 #include "../../Util/Randomizer.h"
 #include "../../Util/TimedBool.h"
 #include "Body.h"
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include "../../Graphics/Texture.h"
 #include "CharEquips.h"
 #include "Face.h"
 #include "Hair.h"
@@ -86,6 +90,14 @@ public:
 
     const CharEquips &get_equips() const;
 
+    // Monster Riding: draw TamingMob/0<mount>.img (+ saddle) under the
+    // character, who sits on the mount's navel point
+    void set_mount(int32_t mount_id, int32_t saddle_id);
+
+    void clear_mount();
+
+    int32_t get_mount() const { return mount_id_; }
+
     // Initialize drawinfo
     static void init();
 
@@ -122,6 +134,29 @@ private:
     const Hair *hair_;
     const Face *face_;
     CharEquips equips_;
+
+    struct MountPart {
+        Texture texture;
+        bool front;
+    };
+
+    struct MountFrame {
+        std::vector<MountPart> parts;
+        Point<int16_t> navel;
+        uint16_t delay;
+    };
+
+    const std::vector<MountFrame> *mount_frames(Stance::Id stance) const;
+
+    void draw_mount(const DrawArgument &args,
+                    Stance::Id stance,
+                    bool front) const;
+
+    int32_t mount_id_ = 0;
+    std::unordered_map<std::string, std::vector<MountFrame>> mount_anims_;
+    std::string mount_stance_;
+    uint8_t mount_frame_ = 0;
+    uint16_t mount_elapsed_ = 0;
 
     Randomizer randomizer_;
     TimedBool alerted_;

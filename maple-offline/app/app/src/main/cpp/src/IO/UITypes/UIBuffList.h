@@ -62,6 +62,8 @@ public:
 
     void add_buff(int32_t buffid, int32_t duration);
 
+    void remove_buff(int32_t buffid) { icons_.erase(buffid); }
+
 private:
     std::unordered_map<int32_t, BuffIcon> icons_;
 };

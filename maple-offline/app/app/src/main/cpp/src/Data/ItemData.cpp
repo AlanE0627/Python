@@ -38,7 +38,9 @@ ItemData::ItemData(int32_t id) : item_id_(id) {
         case 1:
             category_ = get_eqcategory(item_id_);
             src = nl::nx::character[category_][strid + ".img"]["info"];
-            strsrc = nl::nx::string["Eqp.img"]["Eqp"][category_]
+            strsrc = nl::nx::string["Eqp.img"]["Eqp"]
+                                   [category_ == "TamingMob" ? "Taming"
+                                                              : category_]
                                    [std::to_string(item_id_)];
             break;
         case 2:
@@ -97,6 +99,11 @@ std::string ItemData::get_eqcategory(int32_t id) const {
 
     if (index >= 30 && index <= 70) {
         return "Weapon";
+    }
+
+    // 190 mount, 191 saddle, 193 skill mounts
+    if (index >= 90 && index <= 93) {
+        return "TamingMob";
     }
 
     return "";

@@ -428,6 +428,7 @@ enum Opcode : uint16_t {
     SPAWN_PORTAL = 67,
     STORAGE = 309,
     CLOCK = 147,
+    FIELD_OBSTACLE_ONOFF_LIST = 140,
     CONTI_MOVE = 148,
     CONTI_STATE = 149,
     STOP_CLOCK = 154,
@@ -564,6 +565,8 @@ PacketSwitch::PacketSwitch() {
     // ship arrival/departure: the ship itself is part of the map objects
     emplace<CONTI_MOVE, IgnoreHandler>();
     emplace<CONTI_STATE, IgnoreHandler>();
+    // Named map-object states (train/genie doors); travel works without it
+    emplace<FIELD_OBSTACLE_ONOFF_LIST, IgnoreHandler>();
 
     // Player Interaction
     emplace<CHAR_INFO, CharInfoHandler>();

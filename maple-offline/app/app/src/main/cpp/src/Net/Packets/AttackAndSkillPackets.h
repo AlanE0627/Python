@@ -112,6 +112,16 @@ public:
                          result.direction) {}
 };
 
+// Ends a buff early (Monster Riding toggle, right-click on a buff icon).
+// Opcode: CANCEL_BUFF(92)
+class CancelBuffPacket : public OutPacket {
+public:
+    CancelBuffPacket(int32_t skillid) :
+        OutPacket(OutPacket::Opcode::CANCEL_BUFF) {
+        write_int(skillid);
+    }
+};
+
 // Packet which notifies the server of a skill usage.
 // Opcode: USE_SKILL(91)
 class UseSkillPacket : public OutPacket {
