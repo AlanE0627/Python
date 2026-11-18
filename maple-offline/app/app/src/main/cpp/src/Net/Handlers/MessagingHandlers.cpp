@@ -15,6 +15,10 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MessagingHandlers.h"
 
+#include <nlnx/nx.hpp>
+
+#include "../../IO/UITypes/UIQuestLog.h"
+
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
@@ -95,6 +99,52 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
             show_status(Color::Name::RED,
                         "Mode: 0, Mode 2: " + std::to_string(mode2)
                             + " is not handled.");
+        }
+    } else if (mode == 1) {
+        // maple-offline: quest record update (status 0 none, 1 started,
+        // 2 completed). Keeps the quest log current and tells the player.
+        int16_t qid = recv.read_short();
+        int8_t status = recv.read_byte();
+        // started/none carry the progress string; complete carries a
+        // filetime; forfeit carries nothing.
+        std::string data;
+
+        if (status == 2) {
+            if (recv.length() >= 8) {
+                recv.read_long();
+            }
+        } else if (recv.length() >= 2) {
+            data = recv.read_string();
+        }
+
+        QuestLog &quests = Stage::get().get_player().get_quests();
+        std::string name = nl::nx::quest["QuestInfo.img"][std::to_string(qid)]["name"];
+        bool was_started = quests.is_started(qid);
+        bool was_completed = quests.is_completed(qid);
+
+        if (status == 0) {
+            quests.remove(qid);
+
+            if (was_started && !name.empty()) {
+                show_status(Color::Name::WHITE, "[Quest] " + name + " was forfeited.");
+            }
+        } else if (status == 1) {
+            quests.add_started(qid, data);
+
+            if (!was_started && !name.empty()) {
+                show_status(Color::Name::YELLOW, "[Quest] " + name + " has started.");
+            }
+        } else if (status == 2) {
+            quests.remove(qid);
+            quests.add_completed(qid, 0);
+
+            if (!was_completed && !name.empty()) {
+                show_status(Color::Name::YELLOW, "[Quest] " + name + " is complete.");
+            }
+        }
+
+        if (auto questlog = UI::get().get_element<UIQuestLog>()) {
+            questlog->get().refresh();
         }
     } else if (mode == 3) {
         bool white = recv.read_bool();

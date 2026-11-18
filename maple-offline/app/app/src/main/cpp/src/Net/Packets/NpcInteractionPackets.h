@@ -46,6 +46,16 @@ public:
     }
 };
 
+// maple-offline: gives up a quest that is in progress
+// Opcode: QUEST_ACTION(107), action 3 = forfeit
+class ForfeitQuestPacket : public OutPacket {
+public:
+    ForfeitQuestPacket(int16_t qid) : OutPacket(OutPacket::Opcode::QUEST_ACTION) {
+        write_byte(3);
+        write_short(qid);
+    }
+};
+
 // Packet which tells the server of an interaction with an NPC shop
 // Opcode: NPC_SHOP_ACTION(61)
 class NpcShopActionPacket : public OutPacket {

@@ -214,6 +214,7 @@ add_executable(ms_desktop
         ${C}/src/Util/GameInfo.cpp
         ${C}/src/Util/NxFiles.cpp
         ${C}/src/Util/StringHandling.cpp
+        ${C}/src/Util/MapleText.cpp
         ${C}/thirdparty/stb/deprecated/stb_image.c
         ${CMAKE_CURRENT_SOURCE_DIR}/glfm_desktop.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/bass_stub.cpp)

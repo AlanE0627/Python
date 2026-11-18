@@ -30,6 +30,13 @@ public:
 
     void add_completed(int16_t qid, int64_t time);
 
+    // maple-offline: quest forfeited / reset to "not started".
+    void remove(int16_t qid) {
+        started_.erase(qid);
+        in_progress_.erase(qid);
+        completed_.erase(qid);
+    }
+
     bool is_started(int16_t qid) const;
 
     bool is_completed(int16_t qid) const;

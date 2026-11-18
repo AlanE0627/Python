@@ -211,6 +211,7 @@ add_library(OpenMapleClient SHARED
         src/Util/GameInfo.cpp
         src/Util/NxFiles.cpp
         src/Util/StringHandling.cpp
+        src/Util/MapleText.cpp
         ${CMAKE_SOURCE_DIR}/thirdparty/stb/deprecated/stb_image.c
         )
 

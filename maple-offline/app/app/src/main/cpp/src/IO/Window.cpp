@@ -161,6 +161,14 @@ namespace ms {
         UI::get().send_scroll(yoffset);
     }
 
+    bool wheel_callback(GLFMDisplay *display, double x, double y,
+                        GLFMMouseWheelDeltaType type,
+                        double dx, double dy, double dz) {
+        UI::get().send_scroll(dy);
+
+        return true;
+    }
+
     void close_callback(GLFMDisplay *display) {
         UI::get().send_close();
     }
@@ -251,7 +259,7 @@ namespace ms {
         glfmSetCharFunc(display, char_callback);
         glfmSetRenderFunc(display, onDraw);
         glfmSetTouchFunc(display, mousekey_callback);
-//        glfmSetMouseWheelFunc(display, cursor_callback);
+        glfmSetMouseWheelFunc(display, wheel_callback);
         glfmSetAppFocusFunc(display, focus_callback);
 //        glfwSetScrollCallback(pApp, scroll_callback);
         glfmSetSurfaceDestroyedFunc(display, close_callback);

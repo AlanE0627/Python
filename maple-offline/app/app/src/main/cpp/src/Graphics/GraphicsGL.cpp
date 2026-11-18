@@ -736,7 +736,7 @@ namespace ms {
                     continue;
                 }
 
-                wordwidth += font_.chars[c].ax;
+                wordwidth += font_.chars[c < 256 ? c : '?'].ax;
 
                 if (wordwidth > max_width_) {
                     if (last - first == 1) {
@@ -770,7 +770,7 @@ namespace ms {
 
         for (size_t pos = first; pos < last; pos++) {
             auto c = text[pos];
-            const Font::Char &ch = font_.chars[c];
+            const Font::Char &ch = font_.chars[c < 256 ? c : '?'];
 
             advances_.push_back(ax_);
 
@@ -1171,7 +1171,7 @@ namespace ms {
 
                 for (size_t pos = word.first; pos < word.last; ++pos) {
                     auto c = text[pos];
-                    const Font::Char &ch = font.chars[c];
+                    const Font::Char &ch = font.chars[c < 256 ? c : '?'];
 
                     GLshort char_x = x + ax + ch.bl;
                     GLshort char_y = y + ay - ch.bt;
