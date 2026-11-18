@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -238,6 +239,9 @@ bool UIStatusBar::is_menu_active() {
 }
 
 Button::State UIStatusBar::button_pressed(uint16_t id) {
+#ifdef MS_DESKTOP_DEBUG
+    std::fprintf(stderr, "[dbg] statusbar button %d\n", id);
+#endif
     Player &player = Stage::get().get_player();
 
     switch (id) {

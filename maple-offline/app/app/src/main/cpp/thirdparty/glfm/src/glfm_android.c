@@ -1380,6 +1380,9 @@ static void glfm__padSend(GLFMDisplay *d, GLFMKeyCode k, bool down) {
     }
 }
 
+// maple-offline: 1 while a controller is in use, 0 after a screen touch.
+int maple_gamepad_active = 0;
+
 static bool glfm__onGamepadEvent(GLFMPlatformData *platformData, AInputEvent *event) {
     if (!platformData || !platformData->display) {
         return false;
@@ -1390,6 +1393,7 @@ static bool glfm__onGamepadEvent(GLFMPlatformData *platformData, AInputEvent *ev
     if (!isPad) {
         return false;
     }
+    maple_gamepad_active = 1;
     GLFMDisplay *d = platformData->display;
     const int32_t type = AInputEvent_getType(event);
     if (type == AINPUT_EVENT_TYPE_KEY) {
@@ -1455,6 +1459,9 @@ static void glfm__onInputEvent(GLFMPlatformData *platformData) {
         } else if (eventType == AINPUT_EVENT_TYPE_KEY) {
             handled = glfm__onKeyEvent(platformData, event);
         } else if (eventType == AINPUT_EVENT_TYPE_MOTION) {
+            if ((AInputEvent_getSource(event) & AINPUT_SOURCE_TOUCHSCREEN) == AINPUT_SOURCE_TOUCHSCREEN) {
+                maple_gamepad_active = 0;
+            }
             handled = glfm__onTouchEvent(platformData, event);
         }
         AInputQueue_finishEvent(platformData->inputQueue, event, (int)handled);

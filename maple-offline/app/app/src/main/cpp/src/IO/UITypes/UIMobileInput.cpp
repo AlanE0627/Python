@@ -23,6 +23,8 @@
 #include "TouchButton.h"
 #include "UIStateGame.h"
 
+extern "C" int maple_gamepad_active;
+
 namespace ms {
     UIMobileInput::UIMobileInput() :
     joystick_(Point<int16_t>(250, 550), 130) {
@@ -45,6 +47,8 @@ namespace ms {
     }
 
     void UIMobileInput::draw() const {
+        // maple-offline: hide the touch overlay while a controller is in use.
+        if (maple_gamepad_active) return;
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             joystick_.draw();
             for (const auto &iter: touch_buttons_) {

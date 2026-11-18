@@ -2,6 +2,7 @@
 // Purpose: run the Android client code unchanged on a desktop for automated testing
 // (Xvfb + Mesa llvmpipe, OpenGL ES 3.2 through EGL).
 #define GLFW_INCLUDE_NONE
+extern "C" { int maple_gamepad_active = 0; }
 #include <GLFW/glfw3.h>
 #include <GLES3/gl32.h>
 #include "glfm.h"
@@ -161,6 +162,7 @@ extern void glfmMain(GLFMDisplay *display);
 int main() {
     const char *data = std::getenv("MS_DATA_DIR");
     const char *assets = std::getenv("MS_ASSET_DIR");
+    if (std::getenv("MS_HIDE_TOUCH")) maple_gamepad_active = 1;
     const char *ws = std::getenv("MS_WIDTH");
     const char *hs = std::getenv("MS_HEIGHT");
     int width = ws ? std::atoi(ws) : 1280, height = hs ? std::atoi(hs) : 720;
