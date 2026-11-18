@@ -38,7 +38,8 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
     UIDragElement<PosSHOP>(),
     charlook_(in_charlook),
     inventory_(in_inventory) {
-    nl::node src = nl::nx::ui["UIWindow2.img"]["Shop2"];
+    // maple-offline: v83 UIWindow.img/Shop (463x339, 5 rows per side).
+    nl::node src = nl::nx::ui["UIWindow.img"]["Shop"];
 
     nl::node background = src["backgrnd"];
     Texture bg = background;
@@ -46,13 +47,10 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
     auto bg_dimensions = bg.get_dimensions();
 
     sprites_.emplace_back(background);
-    sprites_.emplace_back(src["backgrnd2"]);
-    sprites_.emplace_back(src["backgrnd3"]);
-    sprites_.emplace_back(src["backgrnd4"]);
 
-    buttons_[Buttons::BUY_ITEM] = std::make_unique<MapleButton>(src["BtBuy"]);
-    buttons_[Buttons::SELL_ITEM] = std::make_unique<MapleButton>(src["BtSell"]);
-    buttons_[Buttons::EXIT] = std::make_unique<MapleButton>(src["BtExit"]);
+    buttons_[Buttons::BUY_ITEM] = std::make_unique<MapleButton>(src["BtBuy"], Point<int16_t>(126, 58));
+    buttons_[Buttons::SELL_ITEM] = std::make_unique<MapleButton>(src["BtSell"], Point<int16_t>(356, 40));
+    buttons_[Buttons::EXIT] = std::make_unique<MapleButton>(src["BtExit"], Point<int16_t>(126, 14));
 
     Texture cben = src["checkBox"][0];
     Texture cbdis = src["checkBox"][1];
@@ -64,56 +62,64 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
     checkbox_[0] = cbdis;
     checkbox_[1] = cben;
 
-    buttons_[Buttons::CHECKBOX] = std::make_unique<AreaButton>(
-        Point<int16_t>(std::abs(cb_x), std::abs(cb_y)),
-        cben.get_dimensions());
+    buttons_[Buttons::CHECKBOX] = std::make_unique<AreaButton>(Point<int16_t>(0, 0), Point<int16_t>(0, 0));
+    buttons_[Buttons::CHECKBOX]->set_active(false);  // v83 has no right-click-sell box
+    (void) cb_x;
+    (void) cb_y;
 
     nl::node buyen = src["TabBuy"]["enabled"];
     nl::node buydis = src["TabBuy"]["disabled"];
 
     buttons_[Buttons::OVERALL] =
-        std::make_unique<TwoSpriteButton>(buydis[0], buyen[0]);
+        std::make_unique<TwoSpriteButton>(buydis[0], buyen[0], Point<int16_t>(14, 98));
 
     nl::node sellen = src["TabSell"]["enabled"];
     nl::node selldis = src["TabSell"]["disabled"];
 
     for (int i = Buttons::EQUIP; i <= Buttons::CASH; i++) {
         std::string tabnum = std::to_string(i - Buttons::EQUIP);
-        buttons_[i] =
-            std::make_unique<TwoSpriteButton>(selldis[tabnum], sellen[tabnum]);
+        int16_t center = 258 + (i - Buttons::EQUIP) * 44;
+        Texture dis = selldis[tabnum];
+        Texture en = sellen[tabnum];
+        buttons_[i] = std::make_unique<TwoSpriteButton>(
+            selldis[tabnum], sellen[tabnum],
+            Point<int16_t>(center - dis.width() / 2, 98),
+            Point<int16_t>(center - en.width() / 2, 98));
     }
 
-    int16_t item_y = 124;
-    int16_t item_height = 36;
+    int16_t item_y = 127;
+    int16_t item_height = 35;
 
-    buy_x_ = 8;
-    buy_width_ = 257;
+    buy_x_ = 6;
+    buy_width_ = 200;
 
     for (int i = Buttons::BUY0; i <= Buttons::BUY8; i++) {
-        Point<int16_t> pos(buy_x_, item_y + 42 * (i - Buttons::BUY0));
+        Point<int16_t> pos(buy_x_, item_y + 40 * (i - Buttons::BUY0));
         Point<int16_t> dim(buy_width_, item_height);
         buttons_[i] = std::make_unique<AreaButton>(pos, dim);
+        buttons_[i]->set_active(i - Buttons::BUY0 < 5);
     }
 
-    sell_x_ = 284;
+    sell_x_ = 236;
     sell_width_ = 200;
 
     for (int i = Buttons::SELL0; i <= Buttons::SELL8; i++) {
-        Point<int16_t> pos(sell_x_, item_y + 42 * (i - Buttons::SELL0));
+        Point<int16_t> pos(sell_x_, item_y + 40 * (i - Buttons::SELL0));
         Point<int16_t> dim(sell_width_, item_height);
         buttons_[i] = std::make_unique<AreaButton>(pos, dim);
+        buttons_[i]->set_active(i - Buttons::SELL0 < 5);
     }
 
     buy_selection_ = src["select"];
-    sell_selection_ = src["select2"];
+    sell_selection_ = src["select"];
     meso_ = src["meso"];
 
     meso_label_ =
         Text(Text::Font::A11M, Text::Alignment::RIGHT, Color::Name::MINESHAFT);
 
-    buy_slider_ = Slider(Slider::Type::DEFAULT_SILVER,
-                         Range<int16_t>(123, 484),
-                         257,
+    buy_slider_ = Slider(Slider::Type::LINE_CYAN,
+                         Range<int16_t>(125, 323),
+                         208,
                          5,
                          1,
                          [&](bool upwards) {
@@ -127,9 +133,9 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
                              }
                          });
 
-    sell_slider_ = Slider(Slider::Type::DEFAULT_SILVER,
-                          Range<int16_t>(123, 484),
-                          488,
+    sell_slider_ = Slider(Slider::Type::LINE_CYAN,
+                          Range<int16_t>(125, 323),
+                          438,
                           5,
                           1,
                           [&](bool upwards) {
@@ -151,13 +157,13 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
 void UIShop::draw(float alpha) const {
     UIElement::draw(alpha);
 
-    npc_.draw(DrawArgument(position_ + Point<int16_t>(58, 85), true));
-    charlook_.draw(position_ + Point<int16_t>(338, 85),
+    npc_.draw(DrawArgument(position_ + Point<int16_t>(56, 76), true));
+    charlook_.draw(position_ + Point<int16_t>(286, 76),
                    false,
                    Stance::Id::STAND1,
                    Expression::Id::DEFAULT);
 
-    meso_label_.draw(position_ + Point<int16_t>(493, 51));
+    meso_label_.draw(position_ + Point<int16_t>(447, 64));
 
     buy_state_.draw(position_, buy_selection_);
     sell_state_.draw(position_, sell_selection_);
@@ -165,7 +171,6 @@ void UIShop::draw(float alpha) const {
     buy_slider_.draw(position_);
     sell_slider_.draw(position_);
 
-    checkbox_[right_click_sell_].draw(position_);
 }
 
 void UIShop::update() {
@@ -413,7 +418,7 @@ void UIShop::changeselltab(InventoryType::Id type) {
 
     sell_slider_.setrows(5, sell_state_.last_slot);
 
-    for (size_t i = Buttons::SELL0; i < Buttons::SELL8; i++) {
+    for (size_t i = Buttons::SELL0; i < Buttons::SELL0 + 5; i++) {
         if (i - Buttons::SELL0 < sell_state_.last_slot) {
             buttons_[i]->set_state(Button::State::NORMAL);
         } else {
@@ -551,10 +556,10 @@ UIShop::BuyItem::BuyItem(Texture cur,
 }
 
 void UIShop::BuyItem::draw(Point<int16_t> pos) const {
-    icon_.draw(pos + Point<int16_t>(0, 42));
-    name_label_.draw(pos + Point<int16_t>(40, 6));
-    currency_.draw(pos + Point<int16_t>(38, 29));
-    price_label_.draw(pos + Point<int16_t>(55, 24));
+    icon_.draw(pos + Point<int16_t>(2, 34));
+    name_label_.draw(pos + Point<int16_t>(46, 2));
+    currency_.draw(pos + Point<int16_t>(44, 21));
+    price_label_.draw(pos + Point<int16_t>(60, 17));
 }
 
 int32_t UIShop::BuyItem::get_id() const {
@@ -598,17 +603,17 @@ UIShop::SellItem::SellItem(int32_t item_id,
 }
 
 void UIShop::SellItem::draw(Point<int16_t> pos) const {
-    icon_.draw(pos + Point<int16_t>(43, 42));
+    icon_.draw(pos + Point<int16_t>(2, 34));
 
     if (show_count_) {
         static const Charset countset =
             Charset(nl::nx::ui["Basic.img"]["ItemNo"],
                     Charset::Alignment::LEFT);
-        countset.draw(std::to_string(sellable_), pos + Point<int16_t>(41, 28));
+        countset.draw(std::to_string(sellable_), pos + Point<int16_t>(1, 22));
     }
 
-    name_label_.draw(pos + Point<int16_t>(84, 6));
-    price_label_.draw(pos + Point<int16_t>(84, 24));
+    name_label_.draw(pos + Point<int16_t>(46, 2));
+    price_label_.draw(pos + Point<int16_t>(46, 17));
 }
 
 int32_t UIShop::SellItem::get_id() const {
@@ -633,17 +638,17 @@ void UIShop::BuyState::reset() {
 
 void UIShop::BuyState::draw(Point<int16_t> parentpos,
                             const Texture &selected) const {
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 5; i++) {
         auto slot = i + offset;
 
         if (slot >= last_slot) {
             break;
         }
 
-        auto itempos = Point<int16_t>(12, 116 + 42 * i);
+        auto itempos = Point<int16_t>(6, 127 + 40 * i);
 
         if (slot == selection) {
-            selected.draw(parentpos + itempos + Point<int16_t>(35, 8));
+            selected.draw(parentpos + itempos + Point<int16_t>(37, 0));
         }
 
         items[slot].draw(parentpos + itempos);
@@ -746,17 +751,17 @@ void UIShop::SellState::change_tab(const Inventory &inventory,
 
 void UIShop::SellState::draw(Point<int16_t> parentpos,
                              const Texture &selected) const {
-    for (int i = 0; i <= 8; i++) {
+    for (int i = 0; i < 5; i++) {
         auto slot = i + offset;
 
         if (slot >= last_slot) {
             break;
         }
 
-        Point<int16_t> itempos(243, 116 + 42 * i);
+        Point<int16_t> itempos(236, 127 + 40 * i);
 
         if (slot == selection) {
-            selected.draw(parentpos + itempos + Point<int16_t>(78, 8));
+            selected.draw(parentpos + itempos + Point<int16_t>(37, 0));
         }
 
         items[slot].draw(parentpos + itempos);
