@@ -246,5 +246,21 @@ target_include_directories(OpenMapleClient
         ${CMAKE_SOURCE_DIR}/thirdparty/stb
         ${CMAKE_SOURCE_DIR}/thirdparty/glfm/include
         )
+# maple-offline: first-run asset setup (installer extraction + WZ->NX conversion)
+file(GLOB MSETUP_SQUISH ${CMAKE_SOURCE_DIR}/setup/libsquish/*.cpp)
+add_library(msetup STATIC
+        ${CMAKE_SOURCE_DIR}/setup/cabx.cpp
+        ${CMAKE_SOURCE_DIR}/setup/wztonx.cpp
+        ${CMAKE_SOURCE_DIR}/setup/wztonx_keys.cpp
+        ${CMAKE_SOURCE_DIR}/thirdparty/nlnx/lz4/lib/lz4hc.c
+        ${MSETUP_SQUISH})
+target_include_directories(msetup PRIVATE
+        ${CMAKE_SOURCE_DIR}/setup
+        ${CMAKE_SOURCE_DIR}/setup/libsquish
+        ${CMAKE_SOURCE_DIR}/thirdparty/nlnx/lz4/lib)
+target_compile_options(msetup PRIVATE -w -O2)
+target_sources(OpenMapleClient PRIVATE ${CMAKE_SOURCE_DIR}/setup/jni_setup.cpp)
+target_include_directories(OpenMapleClient PRIVATE ${CMAKE_SOURCE_DIR}/setup)
+
 # add lib dependencies
-target_link_libraries(OpenMapleClient glfm android log GLESv3 freetype NoLifeNx ${CMAKE_SOURCE_DIR}/thirdparty/bass/libs/arm64-v8a/libbass.so)
+target_link_libraries(OpenMapleClient msetup z glfm android log GLESv3 freetype NoLifeNx ${CMAKE_SOURCE_DIR}/thirdparty/bass/libs/arm64-v8a/libbass.so)

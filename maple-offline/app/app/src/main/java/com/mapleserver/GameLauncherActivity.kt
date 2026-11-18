@@ -23,12 +23,6 @@ class GameLauncherActivity : Activity() {
     private val main = Handler(Looper.getMainLooper())
     @Volatile private var cancelled = false
 
-    private val requiredNx = listOf(
-        "Base.nx", "Character.nx", "Effect.nx", "Etc.nx", "Item.nx", "Map.nx",
-        "Mob.nx", "Morph.nx", "Npc.nx", "Quest.nx", "Reactor.nx", "Skill.nx",
-        "Sound.nx", "String.nx", "TamingMob.nx", "UI.nx"
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         status = TextView(this).apply {
@@ -39,26 +33,26 @@ class GameLauncherActivity : Activity() {
         }
         setContentView(status)
 
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val dataDir = getExternalFilesDir(null) ?: filesDir
-        val missing = requiredNx.filter { !File(dataDir, it).isFile }
-        if (missing.isNotEmpty()) {
-            status.text = "게임 데이터(NX)가 없습니다.\n\n아래 폴더에 NX 파일을 넣어 주세요:\n${dataDir.absolutePath}\n\n없는 파일: ${missing.joinToString(", ")}"
-            return
+        val setup = AssetSetup(dataDir) { msg -> main.post { status.text = "첫 실행 데이터 준비 중\n\n$msg\n\n(Wi-Fi 연결 권장, 화면을 켜 둔 채로 기다려 주세요)" } }
+        if (setup.isDone()) {
+            launchGame(dataDir)
+        } else {
+            status.text = "첫 실행 데이터 준비를 시작합니다…"
+            Thread {
+                val err = setup.run()
+                main.post {
+                    if (err != null) status.text = err
+                    else launchGame(dataDir)
+                }
+            }.start()
         }
+    }
+
+    private fun launchGame(dataDir: File) {
         // Client reads the server address from hostip.txt; always local.
         File(dataDir, "hostip.txt").writeText("127.0.0.1")
-        // The client resolves Map001/MapLatest/MapPretty; on v83 they are all Map.nx.
-        for (alias in listOf("Map001.nx", "MapLatest.nx", "MapPretty.nx")) {
-            val f = File(dataDir, alias)
-            if (!f.exists()) {
-                try {
-                    java.nio.file.Files.createSymbolicLink(f.toPath(), File(dataDir, "Map.nx").toPath())
-                } catch (e: Exception) {
-                    // Fallback handled in native code (alias -> Map.nx).
-                }
-            }
-        }
-
         status.text = "서버 시작 중…"
         startServer()
         waitForServer()
