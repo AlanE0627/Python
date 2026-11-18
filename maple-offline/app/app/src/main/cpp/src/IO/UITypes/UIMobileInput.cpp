@@ -60,6 +60,7 @@ namespace ms {
     }
 
     void UIMobileInput::update() {
+        if (maple_gamepad_active) return;
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             const std::unordered_map<int16_t, TouchInfo> &touch_phase_map = UI::get().get_touch_phase();
             for (const auto &iter: touch_buttons_) {

@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <nlnx/nx.hpp>
 
+#include "../../Graphics/Geometry.h"
+
 namespace ms {
 MapleFrame::MapleFrame(const nl::node &src) {
     center_ = src["c"];
@@ -47,6 +49,18 @@ void MapleFrame::draw(Point<int16_t> position,
     int16_t top = position.y() - height;
     int16_t right = left + width;
     int16_t bottom = top + height;
+
+    // maple-offline: v83 has no frame images for tooltips (UIToolTip.img is
+    // later); it draws a plain dark translucent box with a light border.
+    if (!center_.is_valid()) {
+        int16_t w = width + xtile_;
+        ColorBox(w, height, Color::Name::BLACK, 0.78f).draw(DrawArgument(left, top));
+        ColorBox(w, 1, Color::Name::WHITE, 0.45f).draw(DrawArgument(left, top));
+        ColorBox(w, 1, Color::Name::WHITE, 0.45f).draw(DrawArgument(left, bottom - 1));
+        ColorBox(1, height, Color::Name::WHITE, 0.45f).draw(DrawArgument(left, top));
+        ColorBox(1, height, Color::Name::WHITE, 0.45f).draw(DrawArgument(left + w - 1, top));
+        return;
+    }
 
     north_west_.draw(DrawArgument(left, top));
     south_west_.draw(DrawArgument(left, bottom));

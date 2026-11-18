@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -37,6 +38,8 @@
 #include "UITypes/UIWorldMap.h"
 #include "UIWorldSelect.h"
 #include "Window.h"
+
+extern "C" int maple_gamepad_active;
 
 namespace ms {
     UI::UI() :
@@ -135,6 +138,9 @@ namespace ms {
         Cursor::State cursorstate =
                 (pressed && enabled_) ? Cursor::State::CLICKING : Cursor::State::IDLE;
         Point<int16_t> cursorpos = cursor_.get_position();
+#ifdef MS_DESKTOP_DEBUG
+        std::fprintf(stderr, "[dbg] ui click pressed %d enabled %d pos %d,%d tf %d\n", pressed, enabled_, cursorpos.x(), cursorpos.y(), (bool) focused_text_field_);
+#endif
         send_cursor(cursorpos, cursorstate);
 
         if (focused_text_field_ && pressed) {
@@ -444,6 +450,11 @@ namespace ms {
     }
 
     bool UI::should_send_cursor() {
+        // maple-offline: hidden touch overlay (controller in use) never eats touches.
+        if (maple_gamepad_active) {
+            return true;
+        }
+
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             VirtualJoyStick joyStick = mobile_input_.getVirtualJoyStick();
             for (const auto &touch_phase: touch_phase_) {
