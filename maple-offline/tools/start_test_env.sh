@@ -1,6 +1,6 @@
 #!/bin/bash
 # Restart the desktop test environment (virtual display, DB, test server).
-pgrep Xvfb >/dev/null || (Xvfb :99 -screen 0 1280x720x24 >/tmp/xvfb.log 2>&1 &)
+pgrep Xvfb >/dev/null || (Xvfb :99 -screen 0 1560x720x24 >/tmp/xvfb.log 2>&1 &)
 mkdir -p /run/mysqld && chown mysql:mysql /run/mysqld 2>/dev/null
 pgrep mariadbd >/dev/null || (mysqld_safe --user=mysql >/tmp/mysql.log 2>&1 &)
 sleep 5

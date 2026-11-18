@@ -664,10 +664,12 @@ public class Client extends ChannelInboundHandlerAdapter {
                     pin = cursor.getString(pinIdx);
                     pic = cursor.getString(picIdx);
                     gender = (byte) cursor.getInt(genderIdx);
+                    if (gender == 10) gender = 0; // maple-offline: no account gender prompt
                     characterSlots = (byte) cursor.getInt(characterslotsIdx);
                     lang = cursor.getInt(languageIdx);
                     passhash = cursor.getString(passwordIdx);
                     tos = (byte) cursor.getInt(tosIdx);
+                    tos = 1; // maple-offline: single-player, terms of service are not shown
                 }
                 if (banned == 1) {
                     return 3;

@@ -34,16 +34,13 @@ Frame::Frame(const nl::node &src) {
     bool hasa0 = src["a0"].data_type() == nl::node::type::integer;
     bool hasa1 = src["a1"].data_type() == nl::node::type::integer;
 
-    if (hasa0 && hasa1) {
-        opacities_ = { src["a0"], src["a1"] };
-    } else if (hasa0) {
-        uint8_t a0 = src["a0"];
-        opacities_ = { a0, 255 - a0 };
-    } else if (hasa1) {
-        uint8_t a1 = src["a1"];
-        opacities_ = { 255 - a1, a1 };
-    } else {
-        opacities_ = { 255, 255 };
+    // maple-offline: WZ semantics — a0 defaults to 255, a1 defaults to a0 (no fade).
+    // The previous rule (missing value = 255 - other) made static frames such as the
+    // v83 title logo fade out right after appearing.
+    {
+        uint8_t a0 = hasa0 ? static_cast<uint8_t>(src["a0"]) : 255;
+        uint8_t a1 = hasa1 ? static_cast<uint8_t>(src["a1"]) : a0;
+        opacities_ = { a0, a1 };
     }
 
     bool hasz0 = src["z0"].data_type() == nl::node::type::integer;
