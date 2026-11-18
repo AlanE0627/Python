@@ -33,7 +33,7 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
                            Color::Name::BLACK,
                            Rectangle<int16_t>(Point<int16_t>(90, 9), Point<int16_t>(556, 27)),
                            0);
-    chatfield_.set_state(Textfield::State::NORMAL);
+    chatfield_.set_state(Textfield::State::DISABLED);
 
     chatfield_.set_enter_callback([&](std::string msg) {
         size_t last = msg.find_last_not_of(' ');
@@ -219,7 +219,9 @@ void UIChatBar::toggle_chatfield(bool chatfield_open) {
     if (is_chatfield_open_) {
         chatfield_.set_state(Textfield::State::FOCUSED);
     } else {
-        chatfield_.set_state(Textfield::State::NORMAL);
+        // DISABLED also releases keyboard focus; NORMAL kept the field
+        // focused in the UI, so Ctrl/Alt never reached the game after a chat.
+        chatfield_.set_state(Textfield::State::DISABLED);
     }
 }
 
