@@ -145,6 +145,9 @@ public:
     // Remove a pet with the specified index and reason.
     void remove_pet(uint8_t index, bool hunger);
 
+    // Pet in the given slot, or nullptr when the slot is empty
+    PetLook *get_pet(uint8_t index);
+
     // Return if the character is facing left
     bool getflip() const;
     // Return the name of this character

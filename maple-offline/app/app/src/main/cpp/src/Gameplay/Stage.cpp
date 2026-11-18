@@ -14,6 +14,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Stage.h"
+#include "AutoPotion.h"
 #include <cstdio>
 
 #include <nlnx/nx.hpp>
@@ -200,6 +201,7 @@ void Stage::update() {
     combat_.update();
     mob_combat_.update();
     summons_.update();
+    AutoPotion::update();
     field_objects_.update();
     backgrounds_.update();
     effect_.update();

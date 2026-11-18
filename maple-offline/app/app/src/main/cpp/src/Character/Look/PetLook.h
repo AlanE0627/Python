@@ -18,6 +18,7 @@
 #include "../../Gameplay/Physics/Physics.h"
 #include "../../Graphics/Animation.h"
 #include "../../Graphics/Text.h"
+#include "../../IO/Components/ChatBalloon.h"
 #include "../../Template/EnumMap.h"
 
 namespace ms {
@@ -62,7 +63,18 @@ public:
 
     int32_t get_itemid() const;
 
+    int32_t get_uniqueid() const { return unique_id_; }
+
     Stance get_stance() const;
+
+    // Speech balloon above the pet (PET_CHAT / PET_COMMAND responses)
+    void speak(const std::string &line);
+
+    // Show a random line from String/PetDialog.img/<id>/<key><n><suffix>
+    void speak_dialog(const std::string &key, const std::string &suffix);
+
+    // Play Effect/PetEff.img/Basic/LevelUp over the pet
+    void show_levelup();
 
 private:
     int32_t item_id_;
@@ -74,5 +86,8 @@ private:
     EnumMap<Stance, Animation> animations_;
     PhysicsObject phobj_;
     Text name_label_;
+    ChatBalloon chat_balloon_;
+    Animation levelup_;
+    bool levelup_active_ = false;
 };
 }  // namespace ms

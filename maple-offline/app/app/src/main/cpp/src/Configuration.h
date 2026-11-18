@@ -319,6 +319,15 @@ struct BGMVolume : public Configuration::ByteEntry {
     BGMVolume() : ByteEntry("BGMVolume", "50") {}
 };
 
+// maple-offline: automatic potions (percent of max; 0 = off)
+struct AutoHpPercent : public Configuration::ByteEntry {
+    AutoHpPercent() : ByteEntry("AutoHpPercent", "40") {}
+};
+
+struct AutoMpPercent : public Configuration::ByteEntry {
+    AutoMpPercent() : ByteEntry("AutoMpPercent", "20") {}
+};
+
 // Sound Volume
 // Number from 0 to 100
 struct SFXVolume : public Configuration::ByteEntry {

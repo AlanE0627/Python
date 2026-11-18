@@ -37,6 +37,18 @@ class SpawnPetHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
 
+// Pet speech balloon
+// Opcode: PET_CHAT(171)
+class PetChatHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+// Pet reaction to food or a command
+// Opcode: PET_COMMAND(174)
+class PetCommandHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
 // Move a character
 // Opcode: CHAR_MOVED(185)
 class CharMovedHandler : public PacketHandler {

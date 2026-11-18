@@ -91,6 +91,16 @@ void Inventory::add_item(InventoryType::Id invtype,
         std::forward_as_tuple(item_id, expire, owner, flags));
 }
 
+uint8_t Inventory::get_pet_level(int32_t item_id) const {
+    for (const auto &entry : pets_) {
+        if (entry.second.get_item_id() == item_id) {
+            return entry.second.get_level();
+        }
+    }
+
+    return 1;
+}
+
 void Inventory::add_pet(InventoryType::Id invtype,
                         int16_t slot,
                         int32_t item_id,

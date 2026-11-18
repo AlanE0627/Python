@@ -28,11 +28,15 @@ public:
         uint16_t closeness,
         uint8_t fullness);
 
+    int32_t get_item_id() const { return item_id_; }
+
+    uint8_t get_level() const { return pet_level_; }
+
 private:
-//    int32_t item_id_;
+    int32_t item_id_;
 //    int64_t expiration_;
     std::string pet_name_;
-//    uint8_t pet_level_;
+    uint8_t pet_level_;
 //    uint16_t closeness_;
 //    uint8_t fullness_;
 };

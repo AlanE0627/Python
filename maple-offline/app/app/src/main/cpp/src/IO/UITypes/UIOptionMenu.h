@@ -51,6 +51,9 @@ private:
     uint8_t bgm_, sfx_, bgm_old_, sfx_old_;
     bool bgm_mute_, sfx_mute_;
     bool dragging_bgm_, dragging_sfx_;
+    // maple-offline: HP / MP ALERT rows drive the built-in auto potion
+    uint8_t hp_alert_ = 0, mp_alert_ = 0, hp_alert_old_ = 0, mp_alert_old_ = 0;
+    bool dragging_hp_ = false, dragging_mp_ = false;
     std::vector<Text> labels_;
 };
 }  // namespace ms

@@ -30,6 +30,9 @@ namespace ms {
 // The player's inventory
 class Inventory {
 public:
+    // Level of the first pet item with this id (1 when none is found)
+    uint8_t get_pet_level(int32_t item_id) const;
+
     enum Movement : int8_t {
         MOVE_NONE = -1,
         MOVE_INTERNAL = 0,

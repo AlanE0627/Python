@@ -217,6 +217,7 @@ add_library(OpenMapleClient SHARED
         src/Gameplay/QuestTalk.cpp
         src/Gameplay/Summons.cpp
         src/Gameplay/FieldObjects.cpp
+        src/Gameplay/AutoPotion.cpp
         ${CMAKE_SOURCE_DIR}/thirdparty/stb/deprecated/stb_image.c
         )
 

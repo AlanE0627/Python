@@ -16,7 +16,9 @@
 #include "PetLook.h"
 
 #include <nlnx/nx.hpp>
+#include <cstdlib>
 #include <utility>
+#include <vector>
 
 namespace ms {
 PetLook::PetLook(int32_t iid,
@@ -66,6 +68,11 @@ void PetLook::draw(double viewx, double viewy, float alpha) const {
 
     animations_[stance_].draw(DrawArgument(absp, flip_), alpha);
     name_label_.draw(absp);
+    chat_balloon_.draw(absp - Point<int16_t>(0, 45));
+
+    if (levelup_active_) {
+        levelup_.draw(DrawArgument(absp), alpha);
+    }
 }
 
 void PetLook::update(const Physics &physics, Point<int16_t> charpos) {
@@ -135,6 +142,11 @@ void PetLook::update(const Physics &physics, Point<int16_t> charpos) {
     physics.move_object(phobj_);
 
     animations_[stance_].update();
+    chat_balloon_.update();
+
+    if (levelup_active_ && levelup_.update()) {
+        levelup_active_ = false;
+    }
 }
 
 void PetLook::set_position(int16_t x, int16_t y) {
@@ -160,5 +172,46 @@ int32_t PetLook::get_itemid() const {
 
 PetLook::Stance PetLook::get_stance() const {
     return stance_;
+}
+}  // namespace ms
+namespace ms {
+void PetLook::show_levelup() {
+    levelup_ = Animation(nl::nx::effect["PetEff.img"]["Basic"]["LevelUp"]);
+    levelup_active_ = true;
+}
+
+void PetLook::speak(const std::string &line) {
+    if (!line.empty()) {
+        chat_balloon_.change_text(line);
+    }
+}
+
+void PetLook::speak_dialog(const std::string &key, const std::string &suffix) {
+    nl::node src = nl::nx::string["PetDialog.img"][std::to_string(item_id_)];
+    std::vector<std::string> lines;
+
+    for (const auto &n : src) {
+        std::string name = n.name();
+
+        if (name.size() >= key.size() + suffix.size()
+            && name.rfind(key, 0) == 0
+            && name.compare(name.size() - suffix.size(), suffix.size(), suffix) == 0) {
+            std::string rest = name.substr(
+                key.size(), name.size() - key.size() - suffix.size());
+            bool digits = true;
+
+            for (char c : rest) {
+                digits = digits && c >= '0' && c <= '9';
+            }
+
+            if (digits) {
+                lines.push_back(n.get_string());
+            }
+        }
+    }
+
+    if (!lines.empty()) {
+        speak(lines[std::rand() % lines.size()]);
+    }
 }
 }  // namespace ms

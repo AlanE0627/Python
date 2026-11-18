@@ -398,6 +398,14 @@ void ShowItemGainInChatHandler::handle(InPacket &recv) const {
                                              UIChatBar::LineType::BLUE);
             }
         }
+    } else if (mode1 == 4)  // pet level up
+    {
+        recv.read_byte();
+        uint8_t index = recv.read_ubyte();
+
+        if (PetLook *pet = Stage::get().get_player().get_pet(index)) {
+            pet->show_levelup();
+        }
     } else if (mode1 == 13)  // card effect
     {
         Stage::get().get_player().show_effect_id(CharEffect::Id::MONSTER_CARD);

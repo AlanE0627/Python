@@ -9,12 +9,67 @@
 #include "../../Constants.h"
 #include "../../Graphics/Geometry.h"
 #include "../../Net/Packets/MessagingPackets.h"
+#include "../../Net/Packets/InventoryPackets.h"
+#include "../../Gameplay/Stage.h"
+
+#include <algorithm>
+#include <cctype>
+#include <sstream>
 
 namespace ms {
 namespace {
 auto fn_general_chat = []<typename... T>(T && ...args) {
     GeneralChatPacket(std::forward<T>(args)...).dispatch();
 };
+
+// The v83 client turns a chat line that matches one of the pet's command
+// words (String/PetDialog.img/<id>/c<n>, '|' separated) into PET_COMMAND,
+// using the interact entry whose level band l0..l1 covers the pet's level.
+void try_pet_commands(std::string msg) {
+    std::transform(msg.begin(), msg.end(), msg.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+
+    Player &player = Stage::get().get_player();
+
+    for (uint8_t i = 0; i < 3; i++) {
+        PetLook *pet = player.get_pet(i);
+
+        if (!pet) {
+            continue;
+        }
+
+        std::string sid = std::to_string(pet->get_itemid());
+        uint8_t level = player.get_inventory().get_pet_level(pet->get_itemid());
+        nl::node interact = nl::nx::item["Pet"][sid + ".img"]["interact"];
+        nl::node dialog = nl::nx::string["PetDialog.img"][sid];
+
+        for (const auto &entry : interact) {
+            int32_t l0 = entry["l0"].get_integer(1);
+            int32_t l1 = entry["l1"].get_integer(30);
+
+            if (level < l0 || level > l1) {
+                continue;
+            }
+
+            std::string words = dialog[entry["command"].get_string()].get_string();
+            std::stringstream ss(words);
+            std::string word;
+            bool match = false;
+
+            while (std::getline(ss, word, '|')) {
+                match = match || (!word.empty() && word == msg);
+            }
+
+            if (match) {
+                PetCommandPacket(pet->get_uniqueid(),
+                                 static_cast<uint8_t>(std::stoi(entry.name())))
+                    .dispatch();
+                break;
+            }
+        }
+    }
+}
 }  // namespace
 
 UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)) {
@@ -43,6 +98,7 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
         if (last != std::string::npos) {
             msg.erase(last + 1);
             fn_general_chat(msg, true);
+            try_pet_commands(msg);
             last_entered_.push_back(msg);
             last_pos_ = last_entered_.size();
         }

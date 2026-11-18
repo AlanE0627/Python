@@ -28,6 +28,8 @@ namespace {
 // SysOpt rows (backgrnd 299x366): BGM and SOUND value strips.
 constexpr int16_t BGM_Y = 70;
 constexpr int16_t SFX_Y = 100;
+constexpr int16_t HP_Y = 188;
+constexpr int16_t MP_Y = 220;
 constexpr int16_t BAR_X0 = 66;
 constexpr int16_t BAR_X1 = 238;
 constexpr int16_t MUTE_X0 = 244;
@@ -44,6 +46,8 @@ UIOptionMenu::UIOptionMenu(bool game_option) :
 
     bgm_ = bgm_old_ = Setting<BGMVolume>::get().load();
     sfx_ = sfx_old_ = Setting<SFXVolume>::get().load();
+    hp_alert_ = hp_alert_old_ = Setting<AutoHpPercent>::get().load();
+    mp_alert_ = mp_alert_old_ = Setting<AutoMpPercent>::get().load();
     bgm_mute_ = bgm_ == 0;
     sfx_mute_ = sfx_ == 0;
 
@@ -87,6 +91,8 @@ void UIOptionMenu::draw(float inter) const {
     if (!game_option_) {
         draw_bar(BGM_Y, bgm_, bgm_mute_);
         draw_bar(SFX_Y, sfx_, sfx_mute_);
+        draw_bar(HP_Y, hp_alert_, false);
+        draw_bar(MP_Y, mp_alert_, false);
     }
 
     UIElement::draw_buttons(inter);
@@ -102,6 +108,10 @@ void UIOptionMenu::apply(bool save) {
     if (save) {
         Setting<BGMVolume>::get().save(bgm);
         Setting<SFXVolume>::get().save(sfx);
+        Setting<AutoHpPercent>::get().save(hp_alert_);
+        Setting<AutoMpPercent>::get().save(mp_alert_);
+        hp_alert_old_ = hp_alert_;
+        mp_alert_old_ = mp_alert_;
         bgm_old_ = bgm;
         sfx_old_ = sfx;
 
@@ -120,7 +130,7 @@ Cursor::State UIOptionMenu::send_cursor(bool clicked, Point<int16_t> cursorpos) 
         };
 
         if (!clicked) {
-            dragging_bgm_ = dragging_sfx_ = false;
+            dragging_bgm_ = dragging_sfx_ = dragging_hp_ = dragging_mp_ = false;
         }
 
         bool on_bar = local.x() >= BAR_X0 - 4 && local.x() <= BAR_X1 + 4;
@@ -135,6 +145,18 @@ Cursor::State UIOptionMenu::send_cursor(bool clicked, Point<int16_t> cursorpos) 
         if (clicked && in_row(SFX_Y) && on_mute) {
             sfx_mute_ = !sfx_mute_;
             apply(false);
+            return Cursor::State::CLICKING;
+        }
+
+        if ((clicked && in_row(HP_Y) && on_bar) || dragging_hp_) {
+            dragging_hp_ = clicked;
+            hp_alert_ = to_volume(local.x());
+            return Cursor::State::CLICKING;
+        }
+
+        if ((clicked && in_row(MP_Y) && on_bar) || dragging_mp_) {
+            dragging_mp_ = clicked;
+            mp_alert_ = to_volume(local.x());
             return Cursor::State::CLICKING;
         }
 

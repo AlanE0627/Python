@@ -24,10 +24,10 @@ Pet::Pet(int32_t item_id,
          uint8_t level,
          uint16_t closeness,
          uint8_t fullness) :
-//    item_id_(item_id),
+    item_id_(item_id),
 //    expiration_(expiration),
-    pet_name_(std::move(petname))
-//    pet_level_(level),
+    pet_name_(std::move(petname)),
+    pet_level_(level)
 //    closeness_(closeness),
     /*fullness_(fullness)*/ {}
 }  // namespace ms

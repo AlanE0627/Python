@@ -15,6 +15,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MapObjectHandlers.h"
+#include <nlnx/nx.hpp>
+#include <nlnx/node.hpp>
 
 #include <functional>
 #include <optional>
@@ -145,6 +147,57 @@ void SpawnPetHandler::handle(InPacket &recv) const {
     }
 }
 
+void PetChatHandler::handle(InPacket &recv) const {
+    int32_t cid = recv.read_int();
+    uint8_t index = recv.read_ubyte();
+    recv.skip(1);
+    recv.read_byte();  // act
+    std::string text = recv.read_string();
+
+    if (auto character = Stage::get().get_character(cid)) {
+        if (PetLook *pet = character->get().get_pet(index)) {
+            pet->speak(text);
+        }
+    }
+}
+
+void PetCommandHandler::handle(InPacket &recv) const {
+    int32_t cid = recv.read_int();
+    uint8_t index = recv.read_ubyte();
+    int8_t type = recv.read_byte();
+
+    auto character = Stage::get().get_character(cid);
+
+    if (!character) {
+        return;
+    }
+
+    PetLook *pet = character->get().get_pet(index);
+
+    if (!pet) {
+        return;
+    }
+
+    if (type == 1) {
+        // Food: f<n>_s on success, f<n>_f when the pet is already full
+        bool success = recv.read_bool();
+        pet->speak_dialog("f", success ? "_s" : "_f");
+    } else {
+        // Command: interact/<animation>/command names the dialog key
+        uint8_t animation = recv.read_ubyte();
+        bool success = recv.read_bool();
+
+        std::string command =
+            nl::nx::item["Pet"][std::to_string(pet->get_itemid()) + ".img"]
+                        ["interact"][std::to_string(animation)]["command"]
+                            .get_string();
+
+        if (!command.empty()) {
+            pet->speak_dialog(command + (success ? "_s" : "_f"), "");
+        }
+    }
+}
+
 void CharMovedHandler::handle(InPacket &recv) const {
     int32_t cid = recv.read_int();
     recv.skip(4);
@@ -168,6 +221,16 @@ void ShowForeignEffectHandler::handle(InPacket &recv) const {
     if (effect == 10)  // recovery
     {
         recv.read_byte();     // 'amount'
+    } else if (effect == 4)  // pet level up
+    {
+        recv.read_byte();
+        uint8_t index = recv.read_ubyte();
+
+        if (auto character = Stage::get().get_character(cid)) {
+            if (PetLook *pet = character->get().get_pet(index)) {
+                pet->show_levelup();
+            }
+        }
     } else if (effect == 13)  // card effect
     {
         Stage::get().show_character_effect(cid, CharEffect::MONSTER_CARD);

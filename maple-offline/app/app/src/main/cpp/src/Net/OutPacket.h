@@ -252,6 +252,7 @@ public:
         NPC_SHOP_ACTION = 61,
         QUEST_ACTION = 107,
         SUMMON_ATTACK = 176,
+        PET_COMMAND = 169,
 
         /// Player Interaction
         GIVE_FAME = 95,

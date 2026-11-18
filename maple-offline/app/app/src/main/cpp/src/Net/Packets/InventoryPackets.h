@@ -89,6 +89,17 @@ public:
     }
 };
 
+// maple-offline: feed the pet
+// Opcode: PET_FOOD(76): time, slot, item id
+class PetFoodPacket : public OutPacket {
+public:
+    PetFoodPacket(int16_t slot, int32_t itemid) : OutPacket(76) {
+        write_time();
+        write_short(slot);
+        write_int(itemid);
+    }
+};
+
 // maple-offline: sit on a chair item / stand up
 // Opcode: USE_CHAIR(43) item id, CANCEL_CHAIR(42) -1
 class UseChairPacket : public OutPacket {
@@ -139,6 +150,18 @@ public:
         Sound(Sound::Name::DROP).play();
         write_int(0);
         write_int(amount);
+    }
+};
+// Pet command typed in chat (interact index from Item/Pet/<id>.img/interact)
+// Opcode: PET_COMMAND(169)
+class PetCommandPacket : public OutPacket {
+public:
+    PetCommandPacket(int32_t pet_uniqueid, uint8_t command) :
+        OutPacket(OutPacket::Opcode::PET_COMMAND) {
+        write_int(pet_uniqueid);
+        write_int(0);
+        write_byte(0);
+        write_byte(command);
     }
 };
 }  // namespace ms

@@ -387,7 +387,13 @@ void UIItemInventory::doubleclick(Point<int16_t> cursorpos) {
                         fn_equip_item(slot, inventory_.find_equipslot(item_id));
                     }
                     break;
-                case InventoryType::Id::USE: fn_use_item(slot, item_id); break;
+                case InventoryType::Id::USE:
+                    if (item_id / 10000 == 212) {
+                        PetFoodPacket(slot, item_id).dispatch();
+                    } else {
+                        fn_use_item(slot, item_id);
+                    }
+                    break;
                 // maple-offline: chairs and pets
                 case InventoryType::Id::SETUP:
                     if (item_id / 10000 == 301) {

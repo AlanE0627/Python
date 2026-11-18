@@ -397,6 +397,8 @@ enum Opcode : uint16_t {
 
     /// MapObject
     SPAWN_PET = 168,
+    PET_CHAT = 171,
+    PET_COMMAND = 174,
     CHAR_MOVED = 185,
 
     /// Attack
@@ -489,6 +491,8 @@ PacketSwitch::PacketSwitch() {
     emplace<CANCEL_FOREIGN_BUFF, CancelForeignBuffHandler>();
     emplace<REMOVE_CHAR, RemoveCharHandler>();
     emplace<SPAWN_PET, SpawnPetHandler>();
+    emplace<PET_CHAT, PetChatHandler>();
+    emplace<PET_COMMAND, PetCommandHandler>();
     emplace<SPAWN_NPC, SpawnNpcHandler>();
     emplace<SPAWN_SPECIAL_MAPOBJECT, SpawnSummonHandler>();
     emplace<SPAWN_PORTAL, SpawnPortalHandler>();

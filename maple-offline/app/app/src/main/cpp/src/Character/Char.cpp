@@ -316,6 +316,14 @@ void Char::add_pet(uint8_t index,
     pets_[index] = PetLook(iid, name, uniqueid, pos, stance, fhid);
 }
 
+PetLook *Char::get_pet(uint8_t index) {
+    if (index >= pets_.size() || !pets_[index].get_itemid()) {
+        return nullptr;
+    }
+
+    return &pets_[index];
+}
+
 void Char::remove_pet(uint8_t index, bool hunger) {
     if (index >= pets_.size()) {
         return;
