@@ -130,5 +130,14 @@ public:
 
         // TODO: A point (4 bytes) could be added at the end
     }
+
+    // maple-offline: summons and Mystic Door are placed where the player
+    // stands; the server only spawns them when a position is sent
+    UseSkillPacket(int32_t skillid, int32_t level, Point<int16_t> pos, bool left) :
+        UseSkillPacket(skillid, level) {
+        write_short(pos.x());
+        write_short(pos.y());
+        write_byte(left ? 1 : 0);
+    }
 };
 }  // namespace ms

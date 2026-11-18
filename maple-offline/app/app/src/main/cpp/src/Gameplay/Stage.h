@@ -20,6 +20,7 @@
 #include "../Character/Player.h"
 #include "../IO/KeyType.h"
 #include "Combat/Combat.h"
+#include "Summons.h"
 #include "Combat/MobCombat.h"
 #include "MapleMap/MapBackgrounds.h"
 #include "MapleMap/MapChars.h"
@@ -93,6 +94,9 @@ public:
     // Return a reference to the attack and buff component.
     Combat &get_combat();
 
+    // maple-offline: summons on the map
+    Summons &get_summons();
+
     // Return a reference to the mob attack and buff component.
     MobCombat &get_mob_combat();
 
@@ -152,6 +156,7 @@ private:
     MapEffect effect_;
 
     Combat combat_;
+    Summons summons_;
     MobCombat mob_combat_;
 
     std::chrono::time_point<std::chrono::steady_clock> start_;

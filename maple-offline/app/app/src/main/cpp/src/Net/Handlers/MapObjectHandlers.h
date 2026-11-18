@@ -130,6 +130,23 @@ class ShowMobHpHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
 
+// maple-offline: a summon appears / disappears
+// Opcode: SPAWN_SPECIAL_MAPOBJECT(175), REMOVE_SPECIAL_MAPOBJECT(176)
+class SpawnSummonHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class RemoveSummonHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+// maple-offline: summon packets about other players' summons are read and
+// dropped (single player)
+// Opcode: MOVE_SUMMON(177) .. SUMMON_SKILL(180)
+class IgnoreHandler : public PacketHandler {
+    void handle(InPacket &recv) const override {}
+};
+
 // Spawn an NPC on the current stage
 // Opcode: SPAWN_NPC(257)
 class SpawnNpcHandler : public PacketHandler {

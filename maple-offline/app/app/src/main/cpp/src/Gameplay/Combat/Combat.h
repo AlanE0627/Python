@@ -25,6 +25,10 @@
 namespace ms {
 class Combat {
 public:
+    // maple-offline: damage dealt by the player's summon (number only; the
+    // server applies the damage and sends the mob HP / death)
+    void show_summon_damage(int32_t mob_oid, int32_t damage);
+
     Combat(Player &player,
            MapChars &chars,
            MapMobs &mobs,

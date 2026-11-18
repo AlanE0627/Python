@@ -21,6 +21,8 @@
 #include "../Graphics/GraphicsGL.h"
 #include "../Timer.h"
 #include "UI.h"
+#include "../Gameplay/Stage.h"
+#include <cstdlib>
 #include "stb/stb_image.h"
 #include "GLES3/gl32.h"
 #include "gl.h"
@@ -56,6 +58,15 @@ namespace ms {
     bool key_callback(GLFMDisplay *display, GLFMKeyCode keyCode, GLFMKeyAction action,
                       int modifiers) {
         std::cout << "key_callback" << keyCode << " action " << action << std::endl;
+#ifdef MS_DESKTOP_DEBUG
+        // test hook: F11 casts the skill in MS_DEBUG_SKILL
+        if (keyCode == GLFMKeyCodeF11 && action == GLFMKeyActionPressed) {
+            if (const char *dbg = std::getenv("MS_DEBUG_SKILL")) {
+                Stage::get().get_combat().use_move(std::atoi(dbg));
+                return true;
+            }
+        }
+#endif
         UI::get().send_key(keyCode, action != GLFMKeyActionReleased);
         return true;
     }

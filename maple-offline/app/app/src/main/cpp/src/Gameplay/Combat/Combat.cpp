@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Combat.h"
 
+#include <nlnx/nx.hpp>
+
 #include "../../Data/SkillData.h"
 
 #include <cstdio>
@@ -182,7 +184,22 @@ void Combat::apply_move(const SpecialMove &move) {
 
         int32_t moveid = move.get_id();
         int32_t level = player_.get_skills().get_level(moveid);
-        fn_use_skill(moveid, level);
+
+        // maple-offline: summons and Mystic Door need the cast position
+        std::string sid = std::to_string(moveid);
+
+        if (sid.size() < 7) {
+            sid.insert(0, 7 - sid.size(), '0');
+        }
+
+        nl::node src = nl::nx::skill[sid.substr(0, sid.size() - 4) + ".img"]["skill"][sid];
+        bool placed = src["summon"].size() > 0 || moveid == 2311002;
+
+        if (placed) {
+            fn_use_skill(moveid, level, player_.get_position(), player_.getflip());
+        } else {
+            fn_use_skill(moveid, level);
+        }
     }
 }
 
@@ -280,6 +297,16 @@ void Combat::apply_damage_effect(const DamageEffect &effect) {
                        effect.toleft,
                        effect.user,
                        move);
+}
+
+void Combat::show_summon_damage(int32_t mob_oid, int32_t damage) {
+    if (!mobs_.contains(mob_oid)) {
+        return;
+    }
+
+    Point<int16_t> head = mobs_.get_mob_head_position(mob_oid);
+    damage_numbers_.emplace_back(DamageNumber::Type::NORMAL, damage, head.y());
+    damage_numbers_.back().set_x(head.x());
 }
 
 void Combat::push_attack(const AttackResult &attack) {

@@ -251,6 +251,7 @@ public:
         NPC_TALK_MORE = 60,
         NPC_SHOP_ACTION = 61,
         QUEST_ACTION = 107,
+        SUMMON_ATTACK = 176,
 
         /// Player Interaction
         GIVE_FAME = 95,

@@ -423,6 +423,12 @@ enum Opcode : uint16_t {
     APPLY_MONSTER_STATUS = 242,
     CANCEL_MONSTER_STATUS = 243,
     SHOW_MOB_HP = 250,
+    SPAWN_SPECIAL_MAPOBJECT = 175,
+    REMOVE_SPECIAL_MAPOBJECT = 176,
+    MOVE_SUMMON = 177,
+    SUMMON_ATTACK = 178,
+    DAMAGE_SUMMON = 179,
+    SUMMON_SKILL = 180,
     SPAWN_NPC = 257,
     SPAWN_NPC_C = 259,
     SET_NPC_SCRIPTABLE = 263,
@@ -474,6 +480,12 @@ PacketSwitch::PacketSwitch() {
     emplace<REMOVE_CHAR, RemoveCharHandler>();
     emplace<SPAWN_PET, SpawnPetHandler>();
     emplace<SPAWN_NPC, SpawnNpcHandler>();
+    emplace<SPAWN_SPECIAL_MAPOBJECT, SpawnSummonHandler>();
+    emplace<REMOVE_SPECIAL_MAPOBJECT, RemoveSummonHandler>();
+    emplace<MOVE_SUMMON, IgnoreHandler>();
+    emplace<SUMMON_ATTACK, IgnoreHandler>();
+    emplace<DAMAGE_SUMMON, IgnoreHandler>();
+    emplace<SUMMON_SKILL, IgnoreHandler>();
     emplace<SPAWN_NPC_C, SpawnNpcControllerHandler>();
     emplace<SET_NPC_SCRIPTABLE, SetNpcScriptableHandler>();
     emplace<SPAWN_MOB, SpawnMobHandler>();

@@ -563,4 +563,25 @@ void RemoveReactorHandler::handle(InPacket &recv) const {
 
     Stage::get().get_reactors().remove(oid, state, point);
 }
+void SpawnSummonHandler::handle(InPacket &recv) const {
+    int32_t owner = recv.read_int();
+    int32_t oid = recv.read_int();
+    int32_t skill = recv.read_int();
+    recv.skip_byte();  // 0x0A
+    int8_t level = recv.read_byte();
+    Point<int16_t> pos = recv.read_point();
+    recv.skip_byte();   // stance
+    recv.skip_short();  // foothold
+    int8_t movetype = recv.read_byte();
+    bool can_attack = recv.read_bool();
+
+    Stage::get().get_summons().add(owner, oid, skill, level, pos, movetype, can_attack);
+}
+
+void RemoveSummonHandler::handle(InPacket &recv) const {
+    recv.read_int();  // owner
+    int32_t oid = recv.read_int();
+
+    Stage::get().get_summons().remove(oid);
+}
 }  // namespace ms

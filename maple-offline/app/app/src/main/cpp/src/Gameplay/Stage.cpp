@@ -97,6 +97,7 @@ void Stage::clear() {
     mobs_.clear();
     drops_.clear();
     reactors_.clear();
+    summons_.clear();
 }
 
 void Stage::load_map(int32_t mapid) {
@@ -150,6 +151,7 @@ void Stage::draw(float alpha) const {
         drops_.draw(id, viewx, viewy, alpha);
     }
 
+    summons_.draw(viewx, viewy, alpha);
     combat_.draw(viewx, viewy, alpha);
     mob_combat_.draw(viewx, viewy, alpha);
     portals_.draw(viewpos, alpha);
@@ -164,6 +166,7 @@ void Stage::update() {
 
     combat_.update();
     mob_combat_.update();
+    summons_.update();
     backgrounds_.update();
     effect_.update();
     tiles_objs_.update();
@@ -331,6 +334,10 @@ MapDrops &Stage::get_drops() {
 
 Player &Stage::get_player() {
     return player_;
+}
+
+Summons &Stage::get_summons() {
+    return summons_;
 }
 
 Combat &Stage::get_combat() {

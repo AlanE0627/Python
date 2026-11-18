@@ -214,6 +214,7 @@ add_library(OpenMapleClient SHARED
         src/Util/MapleText.cpp
         src/Util/QuestCheck.cpp
         src/Gameplay/QuestTalk.cpp
+        src/Gameplay/Summons.cpp
         ${CMAKE_SOURCE_DIR}/thirdparty/stb/deprecated/stb_image.c
         )
 
