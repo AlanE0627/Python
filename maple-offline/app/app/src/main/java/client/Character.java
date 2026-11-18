@@ -7287,7 +7287,7 @@ public class Character extends AbstractCharacterObject {
                     int languageIdx = ps.getColumnIndex("language");
                     if (nameIdx != -1 && characterslotsIdx != -1 && languageIdx != -1) {
                         retClient.setAccountName(ps.getString(nameIdx));
-                        retClient.setCharacterSlots((byte) ps.getInt(characterslotsIdx));
+                        retClient.setCharacterSlots((byte) Math.max(ps.getInt(characterslotsIdx), 15));
                         retClient.setLanguage(ps.getInt(languageIdx));
                     }
                 }

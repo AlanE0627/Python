@@ -59,10 +59,10 @@
 4. 퀘스트 시스템
 5. 전 직업 스킬
 6. 편의 기능
-
-### 다음 회차 메모 (③ 캐릭터 생성)
-- v83 노드: Login.img/RaceSelect(normal·knight·aran: BtX, On/OffAnimation, text, BtSelect), NewChar(charSet 225x377, charName, avatarSel 0~5 행, BtLeft/BtRight, dice 4프레임, statTb, BtYes/BtNo, BtCheck, scroll 열림/닫힘), NewCharKnight, NewCharAran(charSet 270x272)
-- 카메라: RaceSelect·NewChar 지점 STOP_Y(-1800/-2400) 실제 배치 확인 필요 (MapLogin obj y값으로 검증)
-- 기존 UIRaceSelect/UIExplorerCreation/UICygnusCreation/UIAranCreation 로직(패킷·이름 확인) 유지, 배치만 v83으로 교체
-- 테스트: tools/to_charselect.sh 후 Create 판자(화면 약 1015,320) 클릭
+- [x] 로그인 맵 카메라 지점 재확인: 맵 전체를 내려가며 캡처 → 종족 선택 -1800(하늘), 시그너스 -2400, 모험가 -3000, 아란 -3600 → 됨
+- [x] 종족 선택 v83 재작성: 모험가/시그너스/아란 그림 3개, 선택 시 컬러 애니메이션, 하단 설명판 + Select 버튼, 좌우 키·Enter 지원 → 됨
+- [x] 캐릭터 생성 v83 재작성(3종족 공용 UINewChar): 종족별 장면·설정판, 9줄(얼굴/헤어/헤어색/피부/상의/하의/신발/무기/성별) 좌우 버튼, 이름판 입력, 금지어·중복 확인 → 생성 → 캐릭터 선택 복귀 → 됨 (모험가·시그너스(1000)·아란(2000) 생성 DB 확인)
+- [x] 이름 입력칸 포커스 버그: 버튼 클릭과 같은 입력에서 포커스가 풀림 → 다음 프레임에 포커스 → 됨
+- [x] 캐릭터 슬롯: 기본 3칸이라 생성 버튼 비활성 → 서버에서 최소 15칸(3명×5페이지) 보장 → 됨
+- [ ] 게임 진입 시 화면 검은색: 캐릭터 선택 → SET_FIELD 수신까지는 정상, 이후 맵 표시 안 됨 → 다음 회차 우선(④)
 - 미처리 패킷: LAST_CONNECTED_WORLD(26) 경고만 발생 → 이후 패킷 점검 때 정리

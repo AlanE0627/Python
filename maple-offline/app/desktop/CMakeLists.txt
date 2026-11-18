@@ -122,10 +122,8 @@ add_executable(ms_desktop
         ${C}/src/IO/UITypes/UITrade.cpp
         ${C}/src/IO/UITypes/UIUserList.cpp
         ${C}/src/IO/UITypes/UIWorldMap.cpp
-        ${C}/src/IO/UITypes/Login/UIAranCreation.cpp
+        ${C}/src/IO/UITypes/Login/UINewChar.cpp
         ${C}/src/IO/UITypes/Login/UICharSelect.cpp
-        ${C}/src/IO/UITypes/Login/UICygnusCreation.cpp
-        ${C}/src/IO/UITypes/Login/UIExplorerCreation.cpp
         ${C}/src/IO/UITypes/Login/UIGender.cpp
         ${C}/src/IO/UITypes/Login/UILogin.cpp
         ${C}/src/IO/UITypes/Login/UILoginNotice.cpp

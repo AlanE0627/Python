@@ -119,10 +119,8 @@ add_library(OpenMapleClient SHARED
         src/IO/UITypes/UITrade.cpp
         src/IO/UITypes/UIUserList.cpp
         src/IO/UITypes/UIWorldMap.cpp
-        src/IO/UITypes/Login/UIAranCreation.cpp
+        src/IO/UITypes/Login/UINewChar.cpp
         src/IO/UITypes/Login/UICharSelect.cpp
-        src/IO/UITypes/Login/UICygnusCreation.cpp
-        src/IO/UITypes/Login/UIExplorerCreation.cpp
         src/IO/UITypes/Login/UIGender.cpp
         src/IO/UITypes/Login/UILogin.cpp
         src/IO/UITypes/Login/UILoginNotice.cpp

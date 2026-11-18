@@ -1,4 +1,6 @@
 #include "LoginScene.h"
+#include <cstdlib>
+#include <cstdio>
 
 #include "../Constants.h"
 
@@ -7,7 +9,9 @@
 namespace ms {
 namespace {
 // Map-space y of each camera stop (centre of the 800x600 view), from MapLogin.img layout.
-constexpr double STOP_Y[] = {0.0, -600.0, -1200.0, -1800.0, -2400.0};
+// Camera stops verified by sweeping the map: race select is the open sky at -1800,
+// Cygnus/Explorer/Aran creation scenes are at -2400/-3000/-3600.
+constexpr double STOP_Y[] = {0.0, -600.0, -1200.0, -1800.0, -2400.0, -3000.0, -3600.0};
 }
 
 void LoginScene::init() {
@@ -23,11 +27,20 @@ void LoginScene::set_step(Step step, bool instant) {
     init();
     active_ = true;
     target_y_ = STOP_Y[step];
+#ifdef MS_DESKTOP_DEBUG
+    if (const char *cy = std::getenv("MS_CAM_Y")) target_y_ = std::atof(cy);
+#endif
     if (instant) cam_y_ = target_y_;
 }
 
 void LoginScene::update() {
     if (!loaded_) return;
+#ifdef MS_DESKTOP_DEBUG
+    if (std::getenv("MS_CAM_SWEEP")) {
+        static int ticks = 0;
+        if (++ticks % 300 == 0) { target_y_ -= 300.0; cam_y_ = target_y_; std::fprintf(stderr, "[cam] %.0f\n", cam_y_); }
+    }
+#endif
     double d = target_y_ - cam_y_;
     if (d > 1.0 || d < -1.0) cam_y_ += d * 0.12;
     else cam_y_ = target_y_;

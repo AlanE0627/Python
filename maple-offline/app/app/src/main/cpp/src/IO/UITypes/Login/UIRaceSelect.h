@@ -15,12 +15,15 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <array>
+
 #include "../Components/Textfield.h"
 #include "../Template/BoolPair.h"
 #include "../UIElement.h"
 
 namespace ms {
-// Race selection screen.
+// maple-offline: v83 race select (Login.img/RaceSelect) — Explorers,
+// Cygnus Knights and Aran, shown over the open sky stop of MapLogin.
 class UIRaceSelect : public UIElement {
 public:
     static constexpr Type TYPE = UIElement::Type::RACE_SELECT;
@@ -47,86 +50,23 @@ protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
 private:
-    void select_class(uint8_t index);
+    void select_race(uint8_t race);
+
+    void start_creation();
 
     void show_charselect();
 
-    Point<int16_t> get_class_pos(size_t index) const;
-
     std::string to_lower(std::string value) const;
 
-    static constexpr uint8_t INDEX_COUNT_ = 5;
-    static constexpr uint8_t CLASS_COUNT_ = 26;
+    // Same order as the v83 buttons, left to right.
+    enum Race : uint8_t { EXPLORER, CYGNUSKNIGHTS, ARAN, NUM_RACES };
 
-    enum Buttons : uint16_t {
-        BACK,
-        MAKE,
-        LEFT,
-        RIGHT,
-        CLASS0,
-        CLASS1,
-        CLASS2,
-        CLASS3,
-        CLASS4
-    };
+    enum Buttons : uint16_t { BACK, SELECT, RACE0, RACE1, RACE2 };
 
-    // TODO: Merge with UILoginNotice.h
-    enum Classes : uint8_t {
-        RESISTANCE,
-        EXPLORER,
-        CYGNUSKNIGHTS,
-        ARAN,
-        EVAN,
-        MERCEDES,
-        DEMON,
-        PHANTOM,
-        DUALBLADE,
-        MIHILE,
-        LUMINOUS,
-        KAISER,
-        ANGELICBUSTER,
-        CANNONEER,
-        XENON,
-        ZERO,
-        SHADE,
-        JETT,
-        HAYATO,
-        KANNA,
-        CHASE,
-        PINKBEAN,
-        KINESIS,
-        CADENA,
-        ILLIUM,
-        ARK,
-    };
-
-    Text version_;
-    Point<int16_t> pos_;
-    Point<int16_t> pos_zero_;
-    nl::node order_;
-    nl::node hotlist_;
-    nl::node newlist_;
-    nl::node bgm_;
-    Sprite hotlabel_;
-    Sprite hotlabel_zero_;
-    Sprite newlabel_;
-    Sprite hotbtn_;
-    Sprite newbtn_;
-    uint8_t class_index_[INDEX_COUNT_];
-    bool mouseover_[INDEX_COUNT_];
-    uint8_t selected_class_;
-    uint8_t index_shift_;
-    uint16_t selected_index_;
-    bool class_isdisabled_[CLASS_COUNT_];
-    BoolPair<Texture> class_disabled_[CLASS_COUNT_];
-    BoolPair<Texture> class_normal_[CLASS_COUNT_];
-    Texture class_background_[CLASS_COUNT_];
-    Texture class_details_[CLASS_COUNT_];
-    Texture class_title_[CLASS_COUNT_];
-    Texture back_;
-    Texture back_zero_;
-    Sprite back_ani_;
-    Texture class_details_background_;
-    Texture class_details_background_zero_;
+    std::array<Animation, NUM_RACES> on_animation_;
+    std::array<Texture, NUM_RACES> description_;
+    std::array<Point<int16_t>, NUM_RACES> race_pos_;
+    Texture title_;
+    uint8_t selected_race_;
 };
 }  // namespace ms

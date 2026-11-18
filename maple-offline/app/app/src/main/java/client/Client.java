@@ -665,7 +665,8 @@ public class Client extends ChannelInboundHandlerAdapter {
                     pic = cursor.getString(picIdx);
                     gender = (byte) cursor.getInt(genderIdx);
                     if (gender == 10) gender = 0; // maple-offline: no account gender prompt
-                    characterSlots = (byte) cursor.getInt(characterslotsIdx);
+                    // maple-offline: single player — at least 15 slots (5 pages of 3).
+                    characterSlots = (byte) Math.max(cursor.getInt(characterslotsIdx), 15);
                     lang = cursor.getInt(languageIdx);
                     passhash = cursor.getString(passwordIdx);
                     tos = (byte) cursor.getInt(tosIdx);

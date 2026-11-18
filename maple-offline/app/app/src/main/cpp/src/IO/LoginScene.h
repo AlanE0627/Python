@@ -10,7 +10,7 @@
 namespace ms {
 class LoginScene : public Singleton<LoginScene> {
 public:
-    enum Step { TITLE = 0, WORLD_SELECT = 1, CHAR_SELECT = 2, NEW_CHAR = 3, RACE_SELECT = 4 };
+    enum Step { TITLE = 0, WORLD_SELECT = 1, CHAR_SELECT = 2, RACE_SELECT = 3, NEW_KNIGHT = 4, NEW_EXPLORER = 5, NEW_ARAN = 6 };
 
     void init();
     void set_step(Step step, bool instant = false);

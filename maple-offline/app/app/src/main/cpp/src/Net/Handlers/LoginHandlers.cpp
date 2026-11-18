@@ -211,6 +211,12 @@ void AddNewCharEntryHandler::handle(InPacket &recv) const {
     // Read the updated character selection
     if (auto charselect = UI::get().get_element<UICharSelect>()) {
         charselect->get().add_character(std::move(character));
+
+        // maple-offline: leave the creation screens and show the new character.
+        UI::get().remove(UIElement::Type::LOGIN_NOTICE);
+        UI::get().remove(UIElement::Type::CLASS_CREATION);
+        UI::get().remove(UIElement::Type::RACE_SELECT);
+        charselect->get().post_add_character();
     }
 }
 
