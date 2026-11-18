@@ -95,7 +95,12 @@ SkillData::SkillData(int32_t id) {
 
     // maple-offline: the table above only lists a few skills; any active
     // skill whose level data deals damage (and is not a summon) attacks
-    if (flags_ == NONE && !passive_ && src["summon"].size() == 0) {
+    // Weapon charges carry damage/matk but are buffs: White Knight 1211003-
+    // 1211008, Paladin 1221003/1221004, Thunder Breaker 15101006, Aran 21111005
+    bool charge = (id >= 1211003 && id <= 1211008) || id == 1221003
+                  || id == 1221004 || id == 15101006 || id == 21111005;
+
+    if (flags_ == NONE && !passive_ && !charge && src["summon"].size() == 0) {
         nl::node lv1 = src["level"]["1"];
 
         if (static_cast<int32_t>(lv1["damage"]) > 0 || static_cast<int32_t>(lv1["mad"]) > 0

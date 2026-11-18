@@ -147,6 +147,16 @@ void SpawnPetHandler::handle(InPacket &recv) const {
     }
 }
 
+void DamageMonsterHandler::handle(InPacket &recv) const {
+    int32_t oid = recv.read_int();
+    recv.read_byte();
+    int32_t damage = recv.read_int();
+
+    if (damage > 0) {
+        Stage::get().get_combat().show_summon_damage(oid, damage);
+    }
+}
+
 void PetChatHandler::handle(InPacket &recv) const {
     int32_t cid = recv.read_int();
     uint8_t index = recv.read_ubyte();
@@ -447,44 +457,30 @@ void MobMoveResponseHandler::handle(InPacket &recv) const {
                                                skillid,
                                                skill_level);
     }
-
-    std::cerr << std::endl
-              << "Opcode [240] Error: Handler exists but is not implemented."
-              << std::endl;
 }
 
 void ApplyMobStatusHandler::handle(InPacket &recv) const {
     int32_t oid = recv.read_int();
 
     recv.read_long();
+    recv.read_int();  // high mask (unused in v83)
+    uint32_t mask = static_cast<uint32_t>(recv.read_int());
 
-    int32_t first_mask = recv.read_int();
-    int32_t second_mask = recv.read_int();
-
-    // and some more ...
-
-    std::cerr << std::endl
-              << "Opcode [242] Error: Handler exists but is not implemented."
-              << std::endl;
+    if (auto mob = Stage::get().get_mobs().get_mobs()->get<Mob>(oid)) {
+        mob->get().set_status(mask, true);
+    }
 }
 
 void CancelMobStatusHandler::handle(InPacket &recv) const {
     int32_t oid = recv.read_int();
 
     recv.read_long();
-
-    int32_t first_mask = recv.read_int();
-    int32_t second_mask = recv.read_int();
-
     recv.read_int();
+    uint32_t mask = static_cast<uint32_t>(recv.read_int());
 
     if (auto mob = Stage::get().get_mobs().get_mobs()->get<Mob>(oid)) {
-        mob->get().cancel_buff(12345);  // TODO
+        mob->get().set_status(mask, false);
     }
-
-    std::cerr << std::endl
-              << "Opcode [243] Error: Handler exists but is not implemented."
-              << std::endl;
 }
 
 void ShowMobHpHandler::handle(InPacket &recv) const {

@@ -28,6 +28,7 @@ const EnumMap<Messages::Type, const char *> Messages::messages = {
     "탄환이 부족합니다.",
     "표창이 부족합니다.",
     "아직 다시 사용할 수 없는 스킬입니다.",
+    "스킬에 필요한 아이템이 부족합니다.",
     "주문서의 신비한 힘이 아이템에 깃들었습니다.",
     "주문서가 빛났지만 아이템에는 아무 변화가 없습니다.",
     "주문서의 강한 힘을 이기지 못하고 아이템이 파괴되었습니다."
@@ -59,6 +60,7 @@ Messages::Type ForbidSkillMessage::message_by_reason(
         case SpecialMove::FBR_HPCOST: return Messages::SKILL_HPCOST;
         case SpecialMove::FBR_MPCOST: return Messages::SKILL_MPCOST;
         case SpecialMove::FBR_COOLDOWN: return Messages::SKILL_COOLDOWN;
+        case SpecialMove::FBR_ITEMCOST: return Messages::SKILL_ITEMCOST;
         case SpecialMove::FBR_BULLETCOST: return message_by_weapon(weapon);
         default: return Messages::NONE;
     }

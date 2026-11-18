@@ -192,6 +192,27 @@ void Combat::apply_move(const SpecialMove &move) {
         int32_t moveid = move.get_id();
         int32_t level = player_.get_skills().get_level(moveid);
 
+        // Monster Magnet pulls the closest mobs in front of the player
+        if (moveid == 1121001 || moveid == 1221001 || moveid == 1321001) {
+            const SkillData::Stats &st = SkillData::get(moveid).get_stats(level);
+            Point<int16_t> origin = player_.get_position();
+            bool left = !player_.getflip();
+            int16_t reach = st.range.empty() ? 350 : st.range.width();
+            Rectangle<int16_t> range =
+                left ? Rectangle<int16_t>(origin.x() - reach, origin.x(),
+                                          origin.y() - 150, origin.y() + 30)
+                     : Rectangle<int16_t>(origin.x(), origin.x() + reach,
+                                          origin.y() - 150, origin.y() + 30);
+            uint8_t count = st.mobcount ? st.mobcount : 5;
+
+            MonsterMagnetPacket(moveid,
+                                level,
+                                find_closest(mobs_.get_mobs(), range, origin, count, true),
+                                left)
+                .dispatch();
+            return;
+        }
+
         // maple-offline: summons and Mystic Door need the cast position
         std::string sid = std::to_string(moveid);
 
@@ -201,6 +222,9 @@ void Combat::apply_move(const SpecialMove &move) {
 
         nl::node src = nl::nx::skill[sid.substr(0, sid.size() - 4) + ".img"]["skill"][sid];
         bool placed = src["summon"].size() > 0 || moveid == 2311002;
+#ifdef MS_DESKTOP_DEBUG
+        fprintf(stderr, "[dbg] skill %d placed %d\n", moveid, (int) placed);
+#endif
 
         if (placed) {
             fn_use_skill(moveid, level, player_.get_position(), player_.getflip());

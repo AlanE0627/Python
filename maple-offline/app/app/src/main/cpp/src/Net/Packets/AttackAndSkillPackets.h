@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <vector>
+
 #include "../Gameplay/Combat/Attack.h"
 #include "../OutPacket.h"
 
@@ -110,6 +112,29 @@ public:
                          result.mobid,
                          result.oid,
                          result.direction) {}
+};
+
+// Monster Magnet (1121001/1221001/1321001): pulled mobs and facing
+// Opcode: USE_SKILL(91)
+class MonsterMagnetPacket : public OutPacket {
+public:
+    MonsterMagnetPacket(int32_t skillid,
+                        int32_t level,
+                        const std::vector<int32_t> &oids,
+                        bool left) :
+        OutPacket(OutPacket::Opcode::USE_SKILL) {
+        write_time();
+        write_int(skillid);
+        write_byte(static_cast<uint8_t>(level));
+        write_int(static_cast<int32_t>(oids.size()));
+
+        for (int32_t oid : oids) {
+            write_int(oid);
+            write_byte(1);
+        }
+
+        write_byte(left ? 1 : 0);
+    }
 };
 
 // Ends a buff early (Monster Riding toggle, right-click on a buff icon).

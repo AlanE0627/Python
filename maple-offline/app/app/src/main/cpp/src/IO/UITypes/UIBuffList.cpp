@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIBuffList.h"
 
+#include "../../Net/Packets/AttackAndSkillPackets.h"
+
 #include <nlnx/node.hpp>
 #include <nlnx/nx.hpp>
 
@@ -99,6 +101,34 @@ void UIBuffList::update_screen(int16_t new_width, int16_t) {
 Cursor::State UIBuffList::send_cursor(bool pressed,
                                       Point<int16_t> cursorposition) {
     return UIElement::send_cursor(pressed, cursorposition);
+}
+
+int32_t UIBuffList::buff_at(Point<int16_t> cursorpos) const {
+    Point<int16_t> icpos = position_;
+
+    for (const auto &icon : icons_) {
+        if (cursorpos.x() >= icpos.x() && cursorpos.x() < icpos.x() + 32
+            && cursorpos.y() >= icpos.y() - 32 && cursorpos.y() <= icpos.y()) {
+            return icon.first;
+        }
+
+        icpos.shift_x(-32);
+    }
+
+    return 0;
+}
+
+bool UIBuffList::is_in_range(Point<int16_t> cursorpos) const {
+    return buff_at(cursorpos) != 0;
+}
+
+void UIBuffList::rightclick(Point<int16_t> cursorpos) {
+    if (int32_t buffid = buff_at(cursorpos)) {
+        // Item buffs (negative source ids) cannot be ended early in v83
+        if (buffid > 0) {
+            CancelBuffPacket(buffid).dispatch();
+        }
+    }
 }
 
 UIElement::Type UIBuffList::get_type() const {

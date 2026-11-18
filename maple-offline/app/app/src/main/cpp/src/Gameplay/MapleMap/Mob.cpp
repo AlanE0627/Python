@@ -218,6 +218,14 @@ int8_t Mob::update(const Physics &physics) {
             }
         }
 
+        bool held = (status_mask_ & (0x80 | 0x100 | 0x20000)) != 0;
+
+        if (held && stance_ == Stance::MOVE) {
+            set_stance(Stance::STAND);
+            phobj_.hforce = 0.0;
+            phobj_.vforce = 0.0;
+        }
+
         switch (stance_) {
             case Stance::MOVE:
                 if (can_fly_) {
@@ -259,7 +267,9 @@ int8_t Mob::update(const Physics &physics) {
                 default: next = aniend && counter_ > 200; break;
             }
 
-            if (next) {
+            if (next && held) {
+                counter_ = 0;
+            } else if (next) {
                 next_move();
                 update_movement();
                 counter_ = 0;
@@ -366,6 +376,14 @@ void Mob::use_some_attack() {
     animations_[Stance::SKILL] =
         attack_stands_.at((std::rand() % attack_stands_.size()) + 1);
     set_stance(Stance::SKILL);
+}
+
+void Mob::set_status(uint32_t mask, bool on) {
+    if (on) {
+        status_mask_ |= mask;
+    } else {
+        status_mask_ &= ~mask;
+    }
 }
 
 void Mob::cancel_buff(int32_t buff) {

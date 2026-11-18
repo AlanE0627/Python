@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -61,8 +62,26 @@ namespace ms {
 #ifdef MS_DESKTOP_DEBUG
         // test hook: F11 casts the skill in MS_DEBUG_SKILL
         if (keyCode == GLFMKeyCodeF11 && action == GLFMKeyActionPressed) {
-            if (const char *dbg = std::getenv("MS_DEBUG_SKILL")) {
-                Stage::get().get_combat().use_move(std::atoi(dbg));
+            // /tmp/ms_skill (if present) overrides the env var so a test
+            // script can switch skills without restarting the client
+            int32_t dbgskill = 0;
+
+            if (FILE *f = std::fopen("/tmp/ms_skill", "r")) {
+                if (std::fscanf(f, "%d", &dbgskill) != 1) {
+                    dbgskill = 0;
+                }
+
+                std::fclose(f);
+            }
+
+            if (!dbgskill) {
+                if (const char *dbg = std::getenv("MS_DEBUG_SKILL")) {
+                    dbgskill = std::atoi(dbg);
+                }
+            }
+
+            if (dbgskill) {
+                Stage::get().get_combat().use_move(dbgskill);
                 return true;
             }
         }
@@ -88,6 +107,12 @@ namespace ms {
     double touch_start_x = 0;
     double touch_start_y = 0;
 
+    // maple-offline: a touch held still for 0.6 s acts as a right-click
+    // (cancel a buff from its icon); the release after it is not a tap
+    bool touch_down = false;
+    bool touch_moved = false;
+    bool long_pressed = false;
+
     bool mousekey_callback(GLFMDisplay *display, int touch, GLFMTouchPhase phase,
                            double x, double y) {
         Point<double_t> relative_pos = Point<double_t>(x / Window::get().get_ratio_x(),
@@ -107,6 +132,9 @@ namespace ms {
                     touch_start_x = x;
                     touch_start_y = y;
                     sent = false;
+                    touch_down = true;
+                    touch_moved = false;
+                    long_pressed = false;
                     UI::get().send_cursor(false);
                     break;
                 }
@@ -114,6 +142,10 @@ namespace ms {
                     auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::steady_clock::now() - click_start_time).count();
                     double dist = std::abs(x - touch_start_x) + std::abs(y - touch_start_y);
+
+                    if (dist > 12.0) {
+                        touch_moved = true;
+                    }
 
                     if (!sent && (dist > 12.0 || diff_ms > 300)) {
                         Window::get().move_cursor(touch_start_x, touch_start_y);
@@ -126,6 +158,15 @@ namespace ms {
                     break;
                 }
                 case GLFMTouchPhaseEnded: {
+                    touch_down = false;
+
+                    if (long_pressed) {
+                        long_pressed = false;
+                        sent = false;
+                        UI::get().send_cursor(false);
+                        break;
+                    }
+
                     if (!sent) {
                         UI::get().send_cursor(true);
                     }
@@ -284,6 +325,18 @@ namespace ms {
 
     void Window::update() {
         update_opc();
+
+        if (touch_down && !touch_moved && !long_pressed) {
+            auto held = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                std::chrono::steady_clock::now() - click_start_time)
+                                .count();
+
+            if (held > 600) {
+                long_pressed = true;
+                move_cursor(touch_start_x, touch_start_y);
+                UI::get().rightclick();
+            }
+        }
     }
 
     void Window::update_opc() {

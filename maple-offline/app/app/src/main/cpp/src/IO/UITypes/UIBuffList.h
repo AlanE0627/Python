@@ -64,7 +64,15 @@ public:
 
     void remove_buff(int32_t buffid) { icons_.erase(buffid); }
 
+    // Icons run right-to-left from position_ (32 px each, origin bottom-left)
+    bool is_in_range(Point<int16_t> cursorpos) const override;
+
+    // Right-click on an icon ends that buff (CANCEL_BUFF)
+    void rightclick(Point<int16_t> cursorpos) override;
+
 private:
+    int32_t buff_at(Point<int16_t> cursorpos) const;
+
     std::unordered_map<int32_t, BuffIcon> icons_;
 };
 }  // namespace ms

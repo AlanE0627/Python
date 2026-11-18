@@ -37,6 +37,12 @@ class SpawnPetHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
 
+// Server-side damage on a mob (Heaven's Hammer, poison, heal when negative)
+// Opcode: DAMAGE_MONSTER(246)
+class DamageMonsterHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
 // Pet speech balloon
 // Opcode: PET_CHAT(171)
 class PetChatHandler : public PacketHandler {

@@ -139,6 +139,10 @@ public:
 
     bool has_buff() const;
 
+    // Server status bits (MonsterStatus low mask): stun 0x80, freeze 0x100,
+    // shadow web 0x20000 stop the mob where it stands
+    void set_status(uint32_t mask, bool on);
+
 private:
     enum FlyDirection { STRAIGHT, UPWARDS, DOWNWARDS, NUM_DIRECTIONS };
 
@@ -213,6 +217,7 @@ private:
     Randomizer randomizer_;
 
     TimedBool show_hp_;
+    uint32_t status_mask_ = 0;
 
     std::vector<Movement> movements_;
     uint16_t counter_;

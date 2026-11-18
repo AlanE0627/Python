@@ -255,14 +255,31 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
 }
 
 void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
+    Player &player = Stage::get().get_player();
+    int32_t source = player.get_buff(bs).skillid;
+
     if (bs == Buffstat::Id::MONSTER_RIDING) {
-        Player &player = Stage::get().get_player();
-        int32_t riding_skill = player.get_buff(bs).skillid;
-
         player.get_look().clear_mount();
+    }
 
-        if (auto bufflist = UI::get().get_element<UIBuffList>()) {
-            bufflist->get().remove_buff(riding_skill);
+    // Drop the icon once no other active stat still comes from that source
+    // (one skill can grant several stats, cancelled in one packet)
+    if (source != 0) {
+        bool still_used = false;
+
+        for (size_t i = 0; i < Buffstat::Id::LENGTH; i++) {
+            auto other = static_cast<Buffstat::Id>(i);
+
+            if (other != bs && player.get_buff(other).skillid == source
+                && player.get_buff(other).value != 0) {
+                still_used = true;
+            }
+        }
+
+        if (!still_used) {
+            if (auto bufflist = UI::get().get_element<UIBuffList>()) {
+                bufflist->get().remove_buff(source);
+            }
         }
     }
 

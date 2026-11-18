@@ -315,7 +315,31 @@ SpecialMove::ForbidReason Player::can_use(const SpecialMove &move) const {
     uint16_t mp = stats_.get_stat(MapleStat::Id::MP);
     uint16_t bullets = inventory_.get_bulletcount();
 
-    return move.can_use(level, weapon, job, hp, mp, bullets);
+    SpecialMove::ForbidReason reason =
+        move.can_use(level, weapon, job, hp, mp, bullets);
+
+    // Skills that consume a reagent (Summon Dragon: Summoning Rock, ...)
+    if (reason == SpecialMove::ForbidReason::FBR_NONE && move.is_skill()
+        && level > 0) {
+        int32_t id = move.get_id();
+        std::string sid = std::to_string(id);
+
+        if (sid.size() < 7) {
+            sid.insert(0, 7 - sid.size(), '0');
+        }
+
+        nl::node lv = nl::nx::skill[sid.substr(0, sid.size() - 4) + ".img"]
+                                   ["skill"][sid]["level"][std::to_string(level)];
+        int32_t itemcon = lv["itemCon"].get_integer(0);
+        int32_t itemconno = lv["itemConNo"].get_integer(0);
+
+        if (itemcon > 0 && itemconno > 0
+            && inventory_.get_total_item_count(itemcon) < itemconno) {
+            return SpecialMove::ForbidReason::FBR_ITEMCOST;
+        }
+    }
+
+    return reason;
 }
 
 Attack Player::prepare_attack(bool skill) const {
