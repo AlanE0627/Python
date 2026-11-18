@@ -129,7 +129,7 @@ private:
     static constexpr uint16_t MAX_SLOTS_ = ROWS_ * COLUMNS_;
     static constexpr uint16_t MAX_FULL_SLOTS_ = COLUMNS_ * MAX_SLOTS_;
     static constexpr uint16_t ICON_WIDTH_ = 36;
-    static constexpr uint16_t ICON_HEIGHT_ = 35;
+    static constexpr uint16_t ICON_HEIGHT_ = 34;
 
     enum Buttons {
         BT_CLOSE,
