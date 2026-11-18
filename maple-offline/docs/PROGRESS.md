@@ -59,3 +59,10 @@
 4. 퀘스트 시스템
 5. 전 직업 스킬
 6. 편의 기능
+
+### 다음 회차 메모 (③ 캐릭터 생성)
+- v83 노드: Login.img/RaceSelect(normal·knight·aran: BtX, On/OffAnimation, text, BtSelect), NewChar(charSet 225x377, charName, avatarSel 0~5 행, BtLeft/BtRight, dice 4프레임, statTb, BtYes/BtNo, BtCheck, scroll 열림/닫힘), NewCharKnight, NewCharAran(charSet 270x272)
+- 카메라: RaceSelect·NewChar 지점 STOP_Y(-1800/-2400) 실제 배치 확인 필요 (MapLogin obj y값으로 검증)
+- 기존 UIRaceSelect/UIExplorerCreation/UICygnusCreation/UIAranCreation 로직(패킷·이름 확인) 유지, 배치만 v83으로 교체
+- 테스트: tools/to_charselect.sh 후 Create 판자(화면 약 1015,320) 클릭
+- 미처리 패킷: LAST_CONNECTED_WORLD(26) 경고만 발생 → 이후 패킷 점검 때 정리
