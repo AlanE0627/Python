@@ -11,3 +11,6 @@ build/
 .cxx/
 *.apk
 local.properties
+*.o
+*.lo
+**/freetype/objs/
