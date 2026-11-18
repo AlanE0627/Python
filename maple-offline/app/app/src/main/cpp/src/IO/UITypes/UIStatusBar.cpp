@@ -30,6 +30,7 @@
 #include "UIKeyConfig.h"
 #include "UIOptionMenu.h"
 #include "UIQuit.h"
+#include "UINotice.h"
 #include "UISkillBook.h"
 #include "UIStatsInfo.h"
 
@@ -247,7 +248,12 @@ void UIStatusBar::send_key(int32_t keycode, bool pressed, bool escape) {
         if (menu_active_) {
             remove_menus();
         } else {
-            UI::get().emplace<UIQuit>(stats_);
+            UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+                                       [](bool yes) {
+                                           if (yes) {
+                                               UIQuit::logout();
+                                           }
+                                       });
         }
     }
 }
@@ -316,7 +322,12 @@ Button::State UIStatusBar::button_pressed(uint16_t id) {
             break;
         case BT_GM_QUIT:
             remove_menus();
-            UI::get().emplace<UIQuit>(stats_);
+            UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+                                       [](bool yes) {
+                                           if (yes) {
+                                               UIQuit::logout();
+                                           }
+                                       });
             break;
         default: break;
     }

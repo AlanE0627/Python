@@ -187,10 +187,18 @@ UIElement::Type UIQuit::get_type() const {
 Button::State UIQuit::button_pressed(uint16_t buttonid) {
     switch (buttonid) {
         case Buttons::NO: deactivate(); break;
-        case Buttons::YES: {
-            Constants::Constants::get().set_viewwidth(800);
-            Constants::Constants::get().set_viewheight(600);
+        case Buttons::YES: logout(); break;
+        default: break;
+    }
 
+    return Button::State::NORMAL;
+}
+
+void UIQuit::logout() {
+    {
+        {
+            // maple-offline: keep the wide logical view (login screens centre
+            // their 800x600 frame); the old code forced 800x600 here.
             float fadestep = 0.025f;
 
             Window::get().fadeout(fadestep, []() {
@@ -208,11 +216,8 @@ Button::State UIQuit::button_pressed(uint16_t buttonid) {
             GraphicsGL::get().lock();
             Stage::get().clear();
             Timer::get().start();
-        } break;
-        default: break;
+        }
     }
-
-    return Button::State::NORMAL;
 }
 
 std::string UIQuit::pad_time(int64_t time) {

@@ -34,6 +34,7 @@
 #include "UITypes/UIMiniMap.h"
 #include "UITypes/UIQuestLog.h"
 #include "UITypes/UIQuit.h"
+#include "UITypes/UINotice.h"
 #include "UITypes/UIShop.h"
 #include "UITypes/UISkillBook.h"
 #include "UITypes/UIStatsInfo.h"
@@ -418,7 +419,12 @@ namespace ms {
     }
 
     void UIStateGame::send_close() {
-        UI::get().emplace<UIQuit>(stats_);
+        UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+                                       [](bool yes) {
+                                           if (yes) {
+                                               UIQuit::logout();
+                                           }
+                                       });
     }
 
     void UIStateGame::drag_icon(Icon *drgic) {

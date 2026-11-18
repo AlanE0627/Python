@@ -40,6 +40,9 @@ public:
 
     UIElement::Type get_type() const override;
 
+    // Return to the login screen (used by the v83 quit confirmation).
+    static void logout();
+
 protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
