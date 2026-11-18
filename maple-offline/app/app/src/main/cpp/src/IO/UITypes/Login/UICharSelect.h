@@ -68,23 +68,17 @@ private:
 
     void select_last_slot();
 
-    std::string get_slot_text();
+    // maple-offline: v83 layout (characters stand on the bridge of MapLogin's
+    // character-select stop; Start/Create/Delete hang on the signboard).
+    Point<int16_t> slot_feet(size_t slot) const;
 
-    std::string pad_number_with_leading_zero(uint8_t value) const;
-
-    Point<int16_t> get_character_slot_pos(size_t index,
-                                          uint16_t x_adj,
-                                          uint16_t y_adj) const;
-
-    Point<int16_t> get_infolabel_pos(size_t index) const;
-
-    std::string get_infolabel(size_t index, StatsEntry character_stats) const;
+    std::string get_infolabel(size_t index, const StatsEntry &stats) const;
 
     void request_pic();
 
     void check_pic(const std::string &entered_pic) const;
 
-    static constexpr uint8_t PAGESIZE_ = 8;
+    static constexpr uint8_t PAGESIZE_ = 3;
 
     enum Buttons : uint16_t {
         CHARACTER_SELECT,
@@ -92,9 +86,6 @@ private:
         CHARACTER_DELETE,
         PAGE_LEFT,
         PAGE_RIGHT,
-        CHANGE_PIC,
-        RESET_PIC,
-        EDIT_CHAR_LIST,
         BACK,
         CHARACTER_SLOT0
     };
@@ -104,45 +95,26 @@ private:
     int32_t slots_;
     int8_t require_pic_;
     Text version_;
-    Point<int16_t> page_pos_;
-    Point<int16_t> world_pos_;
-    Point<int16_t> charinfo_pos_;
     uint8_t selected_character_;
     uint8_t selected_page;
     uint8_t page_count_;
-    Texture tab_;
-    uint8_t tab_index_;
-    bool tab_active_;
-    bool tab_move_;
-    std::array<Point<int16_t>, 3> tab_pos_;
-    int16_t tab_move_pos_;
-    std::map<uint8_t, uint16_t> tab_map_;
-    Point<int16_t> world_dimensions_;
-    Animation burning_notice_;
-    Text burning_count_;
-    std::vector<Sprite> world_sprites_;
+    Texture world_plaque_;
+    Text world_label_;
+    Point<int16_t> scroll_pos_;
+    Animation scroll_open_;
+    Texture scroll_full_;
+    bool scroll_done_;
     Texture charinfo_;
-    Texture charslot_;
-    Texture pagebase_;
-    Charset pagenumber_;
-    nl::node pagenumber_pos_;
-    std::array<Texture, 3> sign_post_;
     nl::node nametag_;
-    Charset level_set_;
-    OutlinedText name_label_;
     std::vector<CharLook> char_looks_;
     std::vector<NameTag> nametags_;
-    Animation empty_slot_effect_;
+    Animation empty_slot_glow_;
     Texture empty_slot_;
-    std::array<Animation, 2> selected_slot_effect_;
-    OutlinedText chat_slot_label_;
-    int16_t timestamp_;
-    uint16_t charslot_y_;
-    bool show_timestamp_;
-    bool burning_character_;
+    Animation selected_effect_;
+    Animation selected_beam_;
 
-    enum InfoLabel : uint8_t { JOB, STR, DEX, INT, LUK, NUM_LABELS };
+    enum InfoLabel : uint8_t { JOB, LEVEL, FAME, STR, INT, DEX, LUK, RANK, NUM_LABELS };
 
-    std::array<OutlinedText, UICharSelect::InfoLabel::NUM_LABELS> info_labels_;
+    std::array<Text, UICharSelect::InfoLabel::NUM_LABELS> info_labels_;
 };
 }  // namespace ms

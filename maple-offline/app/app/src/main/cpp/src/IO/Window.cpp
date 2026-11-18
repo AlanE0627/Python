@@ -166,7 +166,6 @@ namespace ms {
                 std::cerr << "GraphicsGL init failed: " << gerr.get_message() << " / "
                           << gerr.get_details() << std::endl;
             }
-            GraphicsGL::get().reinit();
             // maple-offline: v83 native logical height is 600; width follows the screen aspect.
             {
                 int sw, sh;
@@ -177,6 +176,7 @@ namespace ms {
                 Setting<Width>::get().save(vw);
                 Setting<Height>::get().save(600);
             }
+            GraphicsGL::get().reinit();
             Char::init();
             DamageNumber::init();
             MapPortals::init();
@@ -193,7 +193,16 @@ namespace ms {
             int dw, dh;
             glfmGetDisplaySize(display, &dw, &dh);
             static int last_w = -1, last_h = -1;
-            if (dw != last_w || dh != last_h) {
+            static int16_t last_vw = -1, last_vh = -1;
+            int16_t cvw = Constants::Constants::get().get_viewwidth();
+            int16_t cvh = Constants::Constants::get().get_viewheight();
+            bool view_changed = cvw != last_vw || cvh != last_vh;
+            if (view_changed) {
+                last_vw = cvw;
+                last_vh = cvh;
+                GraphicsGL::get().reinit();
+            }
+            if (view_changed || dw != last_w || dh != last_h) {
                 last_w = dw;
                 last_h = dh;
                 Window::get().set_ratio(dw / (double) Constants::Constants::get().get_viewwidth(),
