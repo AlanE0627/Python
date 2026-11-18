@@ -74,7 +74,6 @@ std::string format(const std::string &text, bool keep_lists) {
             case 'e':
             case 'n':
             case 'E':
-            case 'I':
                 i++;
                 break;
             case 'h':
@@ -138,7 +137,16 @@ std::string format(const std::string &text, bool keep_lists) {
                 break;
             case 'L':
                 if (keep_lists) {
-                    out += c;
+                    // copy the whole "#L<n>#" marker so the text after it
+                    // ("#L3#I'll ...") is not read as another tag
+                    end = text.find('#', i + 2);
+
+                    if (end == std::string::npos) {
+                        out += c;
+                    } else {
+                        out += text.substr(i, end - i + 1);
+                        i = end;
+                    }
                 } else {
                     end = text.find('#', i + 2);
                     i = (end == std::string::npos) ? text.size() : end;

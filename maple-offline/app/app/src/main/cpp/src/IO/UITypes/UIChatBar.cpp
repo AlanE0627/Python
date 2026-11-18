@@ -1,6 +1,8 @@
 // maple-offline: v83 chat bar. See UIChatBar.h.
 #include "UIChatBar.h"
 
+#include <cstdio>
+
 #include <nlnx/nx.hpp>
 
 #include "../../Configuration.h"
