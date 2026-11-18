@@ -162,10 +162,10 @@ private:
         BT_SPUP11
     };
 
-    static constexpr int16_t ROWS_ = 12;
+    static constexpr int16_t ROWS_ = 4;
     static constexpr int16_t ROW_HEIGHT_ = 40;
-    static constexpr int16_t ROW_WIDTH_ = 143;
-    static constexpr Point<int16_t> SKILL_OFFSET_ = Point<int16_t>(11, 93);
+    static constexpr int16_t ROW_WIDTH_ = 141;
+    static constexpr Point<int16_t> SKILL_OFFSET_ = Point<int16_t>(8, 93);
     static constexpr Point<int16_t> SKILL_META_OFFSET_ = Point<int16_t>(2, 2);
     static constexpr Point<int16_t> LINE_OFFSET_ = Point<int16_t>(0, 37);
 

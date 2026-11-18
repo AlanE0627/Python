@@ -113,15 +113,16 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
     grabbing_(false),
     macro_enabled_(false),
     sp_enabled_(false) {
-    nl::node Skill = nl::nx::ui["UIWindow2.img"]["Skill"];
-    nl::node main = Skill["main"];
+    // maple-offline: v83 UIWindow.img/Skill (one column, 4 rows, scroll).
+    nl::node Skill = nl::nx::ui["UIWindow.img"]["Skill"];
+    nl::node main = Skill;
     nl::node ui_backgrnd = main["backgrnd"];
 
     bg_dimensions_ = Texture(ui_backgrnd).get_dimensions();
 
     skilld_ = main["skill0"];
     skille_ = main["skill1"];
-    skillb_ = main["skillBlank"];
+    skillb_ = nl::node();
     line_ = main["line"];
 
     buttons_[Buttons::BT_HYPER] =
@@ -136,7 +137,7 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
     buttons_[Buttons::BT_GUILD_SKILL]->set_state(Button::State::DISABLED);
     buttons_[Buttons::BT_RIDE]->set_state(Button::State::DISABLED);
 
-    nl::node skillPoint = nl::nx::ui["UIWindow4.img"]["Skill"]["skillPoint"];
+    nl::node skillPoint = nl::node();  // later-version SP panel; v83 spends directly
 
     sp_backgrnd_ = skillPoint["backgrnd"];
     sp_backgrnd2_ = skillPoint["backgrnd2"];
@@ -169,11 +170,9 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
     sp_name_ =
         Text(Text::Font::A12B, Text::Alignment::CENTER, Color::Name::WHITE);
 
-    sprites_.emplace_back(ui_backgrnd, Point<int16_t>(1, 0));
-    sprites_.emplace_back(main["backgrnd2"]);
-    sprites_.emplace_back(main["backgrnd3"]);
+    sprites_.emplace_back(ui_backgrnd);
 
-    nl::node macro = Skill["macro"];
+    nl::node macro = nl::node();
 
     macro_backgrnd_ = macro["backgrnd"];
     macro_backgrnd2_ = macro["backgrnd2"];
@@ -185,7 +184,7 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
 
     buttons_[Buttons::BT_MACRO_OK]->set_state(Button::State::DISABLED);
 
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
+    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
 
     buttons_[Buttons::BT_CLOSE] = std::make_unique<MapleButton>(
         close,
@@ -197,8 +196,13 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
 
     for (int i = Buttons::BT_TAB0; i <= Buttons::BT_TAB4; ++i) {
         auto tabid = i - Buttons::BT_TAB0;
-        buttons_[i] =
-            std::make_unique<TwoSpriteButton>(disabled[tabid], enabled[tabid]);
+        Texture dis = disabled[tabid];
+        Texture en = enabled[tabid];
+        int16_t center = 22 + tabid * 28;
+        buttons_[i] = std::make_unique<TwoSpriteButton>(
+            disabled[tabid], enabled[tabid],
+            Point<int16_t>(center - dis.width() / 2, 28),
+            Point<int16_t>(center - en.width() / 2, 28));
     }
 
     uint16_t y_adj = 0;
@@ -212,9 +216,11 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
         }
 
         Point<int16_t> spup_position =
-            SKILL_OFFSET_ + Point<int16_t>(124 + x_adj, 20 + y_adj);
+            SKILL_OFFSET_ + Point<int16_t>(125, 20 + (spupid % ROWS_) * ROW_HEIGHT_);
         buttons_[i] =
             std::make_unique<MapleButton>(main["BtSpUp"], spup_position);
+        buttons_[i]->set_active(false);
+        (void) x_adj;
 
         if (spupid % 2) {
             y_adj += ROW_HEIGHT_;
@@ -225,13 +231,13 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
                       Text::Alignment::CENTER,
                       Color::Name::WHITE,
                       "",
-                      150);
+                      120);
     sp_label_ =
         Text(Text::Font::A12M, Text::Alignment::RIGHT, Color::Name::BLACK);
 
-    slider_ = Slider(Slider::Type::DEFAULT_SILVER,
-                     Range<int16_t>(93, 317),
-                     295,
+    slider_ = Slider(Slider::Type::LINE_CYAN,
+                     Range<int16_t>(91, 255),
+                     152,
                      ROWS_,
                      1,
                      [&](bool upwards) {
@@ -256,42 +262,23 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
 void UISkillBook::draw(float alpha) const {
     UIElement::draw_sprites(alpha);
 
-    book_icon_.draw(position_ + Point<int16_t>(11, 85));
-    book_text_.draw(position_ + Point<int16_t>(173, 59));
-    sp_label_.draw(position_ + Point<int16_t>(304, 23));
-
-    Point<int16_t> skill_position_l =
-        position_ + SKILL_OFFSET_ + Point<int16_t>(-1, 0);
-    Point<int16_t> skill_position_r =
-        position_ + SKILL_OFFSET_ + Point<int16_t>(-1 + ROW_WIDTH_, 0);
+    book_icon_.draw(position_ + Point<int16_t>(9, 86));
+    book_text_.draw(position_ + Point<int16_t>(105, 62));
+    sp_label_.draw(position_ + Point<int16_t>(110, 265));
 
     for (size_t i = 0; i < ROWS_; i++) {
-        Point<int16_t> pos = skill_position_l;
+        Point<int16_t> pos = position_ + SKILL_OFFSET_ + Point<int16_t>(0, i * ROW_HEIGHT_);
+        size_t idx = offset_ + i;
 
-        if (i % 2) {
-            pos = skill_position_r;
-        }
-
-        if (i < skills_.size()) {
-            if (check_required(skills_[i].get_id())) {
+        if (idx < skills_.size()) {
+            if (check_required(skills_[idx].get_id())) {
                 skille_.draw(pos);
             } else {
                 skilld_.draw(pos);
-                skills_[i].get_icon()->set_state(StatefulIcon::State::DISABLED);
+                skills_[idx].get_icon()->set_state(StatefulIcon::State::DISABLED);
             }
 
-            skills_[i].draw(pos + SKILL_META_OFFSET_);
-        } else {
-            skillb_.draw(pos);
-        }
-
-        if (i < ROWS_ - 2) {
-            line_.draw(pos + LINE_OFFSET_);
-        }
-
-        if (i % 2) {
-            skill_position_l.shift_y(ROW_HEIGHT_);
-            skill_position_r.shift_y(ROW_HEIGHT_);
+            skills_[idx].draw(pos + SKILL_META_OFFSET_);
         }
     }
 
@@ -724,45 +711,15 @@ bool UISkillBook::can_raise(int32_t skill_id) const {
 }
 
 void UISkillBook::send_spup(uint16_t row) {
+    // v83: the up arrow spends one SP right away (no confirmation panel).
     if (row >= skills_.size()) {
         return;
     }
 
     int32_t id = skills_[row].get_id();
 
-    if (sp_enabled_ && id == sp_id_) {
-        set_skillpoint(false);
-        return;
-    }
-
-    int32_t level = skills_[row].get_level();
-    int32_t used = 1;
-
-    const SkillData &skillData = SkillData::get(id);
-    std::string name = skillData.get_name();
-    int16_t cur_sp = std::stoi(sp_label_.get_text());
-
-    sp_before_text_ = std::to_string(level);
-    sp_after_text_ = std::to_string(level + used);
-    sp_used_.change_text(std::to_string(used));
-    sp_remaining_.change_text(std::to_string(cur_sp - used));
-    sp_name_.change_text(name);
-    sp_skill_ = skills_[row].get_icon()->get_texture();
-    sp_id_ = id;
-    sp_master_level_ = skillData.get_masterlevel();
-
-    if (sp_master_level_ == 1) {
-        buttons_[Buttons::BT_SPDOWN]->set_state(Button::State::DISABLED);
-        buttons_[Buttons::BT_SPMAX]->set_state(Button::State::DISABLED);
-        buttons_[Buttons::BT_SPUP]->set_state(Button::State::DISABLED);
-    } else {
-        buttons_[Buttons::BT_SPDOWN]->set_state(Button::State::DISABLED);
-        buttons_[Buttons::BT_SPMAX]->set_state(Button::State::NORMAL);
-        buttons_[Buttons::BT_SPUP]->set_state(Button::State::NORMAL);
-    }
-
-    if (!sp_enabled_) {
-        set_skillpoint(true);
+    if (can_raise(id)) {
+        spend_sp(id);
     }
 }
 
@@ -786,7 +743,7 @@ const UISkillBook::SkillDisplayMeta *UISkillBook::skill_by_position(
     Point<int16_t> cursorpos) const {
     int16_t x = cursorpos.x();
 
-    if (x < SKILL_OFFSET_.x() || x > SKILL_OFFSET_.x() + 2 * ROW_WIDTH_) {
+    if (x < SKILL_OFFSET_.x() || x > SKILL_OFFSET_.x() + ROW_WIDTH_) {
         return nullptr;
     }
 
@@ -802,15 +759,7 @@ const UISkillBook::SkillDisplayMeta *UISkillBook::skill_by_position(
         return nullptr;
     }
 
-    uint16_t offset_row = offset_ + row;
-
-    if (offset_row >= ROWS_) {
-        return nullptr;
-    }
-
-    uint16_t col = (x - SKILL_OFFSET_.x()) / ROW_WIDTH_;
-
-    uint16_t skill_idx = 2 * offset_row + col;
+    uint16_t skill_idx = offset_ + row;
 
     if (skill_idx >= skills_.size()) {
         return nullptr;
