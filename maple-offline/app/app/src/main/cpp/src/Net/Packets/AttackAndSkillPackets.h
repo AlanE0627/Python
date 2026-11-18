@@ -51,7 +51,13 @@ public:
             skip(1);
             write_byte(attack.toleft);
             skip(7);
-            // TODO: skip(4); If hurricane, piercing arrow or rapidfire
+
+            // Hurricane, Piercing Arrow, Rapid Fire (and the Wind Archer
+            // Hurricane) carry 4 more bytes here
+            if (attack.skill == 3121004 || attack.skill == 3221001
+                || attack.skill == 5221004 || attack.skill == 13111002) {
+                skip(4);
+            }
         } else {
             skip(4);
         }

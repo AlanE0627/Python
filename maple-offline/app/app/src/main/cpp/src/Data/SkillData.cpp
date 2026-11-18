@@ -108,6 +108,15 @@ SkillData::SkillData(int32_t id) {
             flags_ = ATTACK;
         }
     }
+    // Snipe has no damage field (the server fixes its damage) and Shadow Meso
+    // only a meso cost, but both attack; Ninja Ambush carries damage yet is a
+    // monster-status special move (the server applies it in range)
+    if (id == 3221007 || id == 4111004) {
+        flags_ = ATTACK;
+    } else if (id == 4121004 || id == 4221004) {
+        flags_ = NONE;
+    }
+
     invisible_ = src["invisible"].get_bool();
 
     /// Load required skills
