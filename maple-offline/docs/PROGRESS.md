@@ -69,4 +69,6 @@
 - [x] 터치 오버레이: 컨트롤러 입력이 들어오면 숨김, 화면 터치 시 다시 표시 → 됨 (데스크톱은 MS_HIDE_TOUCH=1로 확인)
 - [ ] 각 창 v83화(UIWindow.img 기준): 현재 창들이 UIWindow2/4·StatusBar3 노드를 참조해 열려도 배경이 안 보임(글자만 표시). 크래시는 없음. 순서:
   스탯(Stat) → 아이템(Item) → 장비(Equip) → 스킬(Skill) → NPC대화(UtilDlgEx) → 상점(Shop) → 퀘스트(Quest) → 미니맵(MiniMap) → 키설정(KeyConfig) → 게임메뉴/옵션(GameMenu·SysOpt·GameOpt) → 채널(Channel) → 캐릭터정보(UserInfo) → 월드맵(WorldMap) → 종료(GameMenu)
+  - [x] 스탯 창 v83: UIWindow.img/Stat 배경·상세(DETAIL) 패널, 이름/직업/레벨/길드/HP/MP/EXP/인기도, AP·스탯 4종 + AP 올리기 버튼, AUTO-ASSIGN(주 스탯 일괄 확인창), 상세: 공격력/방어/마력/마법방어/명중/회피/손재주/이동속도/점프 → 됨
+  - [ ] 아이템 창: UIItemInventory가 UIWindow2 노드(BtCoin3 등) 사용 → v83 Item(backgrnd 175x289, Tab enabled/disabled, BtCoin/BtSort/BtGather/BtFull/BtSmall/BtCashshop, FullBackgrnd 603x289)로 교체 필요 — 생성자·set_full·draw 위치(get_slotpos/get_tabpos/메소 표시) 수정
 - 미처리 패킷: LAST_CONNECTED_WORLD(26) 경고만 발생 → 이후 패킷 점검 때 정리

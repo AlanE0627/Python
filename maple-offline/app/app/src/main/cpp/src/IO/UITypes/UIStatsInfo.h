@@ -43,51 +43,38 @@ protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
 private:
+    // maple-offline: v83 layout (UIWindow.img/Stat).
     enum StatLabel {
-        // Normal
         NAME,
         JOB,
+        LEVEL,
         GUILD,
-        FAME,
-        DAMAGE,
         HP,
         MP,
+        EXP,
+        FAME,
         AP,
         STR,
         DEX,
         INT,
         LUK,
-        NUM_NORMAL,
-        // Detailed
-        DAMAGE_DETAILED,
-        DAMAGE_BONUS,
-        BOSS_DAMAGE,
-        FINAL_DAMAGE,
-        IGNORE_DEFENSE,
-        CRITICAL_RATE,
-        CRITICAL_DAMAGE,
-        STATUS_RESISTANCE,
-        KNOCKBACK_RESISTANCE,
-        DEFENSE,
+        ATTACK,
+        WDEF,
+        MAGIC,
+        MDEF,
+        ACC,
+        AVOID,
+        HANDS,
         SPEED,
         JUMP,
-        HONOR,
-        // Total
         NUM_LABELS
     };
 
     void update_ap();
-
     void update_simple(StatLabel label, MapleStat::Id stat);
-
-    void update_basevstotal(StatLabel label,
-                            MapleStat::Id bstat,
-                            EquipStat::Id tstat);
-
+    void update_basevstotal(StatLabel label, MapleStat::Id bstat, EquipStat::Id tstat);
     void update_buffed(StatLabel label, EquipStat::Id stat);
-
     void send_apup(MapleStat::Id stat) const;
-
     void set_detail(bool enabled);
 
     enum Buttons {
@@ -99,26 +86,14 @@ private:
         BT_INT,
         BT_LUK,
         BT_AUTO,
-        BT_HYPER_STAT_OPEN,
-        BT_HYPER_STAT_CLOSE,
-        BT_DETAIL_OPEN,
-        BT_DETAIL_CLOSE,
-        BT_ABILITY,
-        BT_DETAIL_DETAIL_CLOSE
+        BT_DETAIL
     };
 
     const CharStats &stats_;
-
-    enum Ability { RARE, EPIC, UNIQUE, LEGENDARY, NONE, NUM_ABILITIES };
-
-    std::array<Texture, Ability::NUM_ABILITIES> abilities_;
-    BoolPair<Texture> inner_ability_;
-
-    std::vector<Texture> textures_detail_;
+    Texture backgrnd_;
+    Texture backgrnd2_;
     bool show_detail_;
-
     bool has_ap_;
-
     std::array<Text, StatLabel::NUM_LABELS> stat_labels_;
     std::array<Point<int16_t>, StatLabel::NUM_LABELS> stat_offsets_;
 };
