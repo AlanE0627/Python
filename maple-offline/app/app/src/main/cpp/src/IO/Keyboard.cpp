@@ -20,7 +20,8 @@
 namespace ms {
     constexpr int32_t Keytable[90] = {0,
                                       0,  // 1
-                                      GLFMKeyCode0,
+                                      // maple-offline: DirectInput scancodes 2..11 are
+                                      // the keys 1..9 and 0 (was shifted by one).
                                       GLFMKeyCode1,
                                       GLFMKeyCode2,
                                       GLFMKeyCode3,
@@ -30,6 +31,7 @@ namespace ms {
                                       GLFMKeyCode7,
                                       GLFMKeyCode8,
                                       GLFMKeyCode9,
+                                      GLFMKeyCode0,
                                       GLFMKeyCodeMinus,
                                       GLFMKeyCodeEqual,
                                       0,

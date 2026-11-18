@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -42,7 +43,7 @@ namespace ms {
         keyboard_ = &UI::get().get_keyboard();
         staged_mappings_ = keyboard_->get_maplekeys();
 
-        nl::node KeyConfig = nl::nx::ui["StatusBar3.img"]["KeyConfig"];
+        nl::node KeyConfig = nl::nx::ui["UIWindow.img"]["KeyConfig"];
 
         icon_ = KeyConfig["icon"];
         key_ = KeyConfig["key"];
@@ -51,24 +52,24 @@ namespace ms {
         Texture bg = backgrnd;
         Point<int16_t> bg_dimensions = bg.get_dimensions();
 
-        sprites_.emplace_back(backgrnd);
-        sprites_.emplace_back(KeyConfig["backgrnd2"]);
-        sprites_.emplace_back(KeyConfig["backgrnd3"]);
+        // v83 backgrnd has its origin at the centre (314,186).
+        sprites_.emplace_back(backgrnd, bg.get_origin());
 
-        nl::node BtClose3 = nl::nx::ui["Basic.img"]["BtClose3"];
+
+        nl::node BtClose3 = KeyConfig["BtClose"];
         buttons_[Buttons::CLOSE] = std::make_unique<MapleButton>(
                 BtClose3,
-                Point<int16_t>(bg_dimensions.x() - 18, 3));
+                Point<int16_t>(bg_dimensions.x() - 18, 6));
         buttons_[Buttons::CANCEL] =
-                std::make_unique<MapleButton>(KeyConfig["button:Cancel"]);
+                std::make_unique<MapleButton>(KeyConfig["BtCancel"], Point<int16_t>(575, 240));
         buttons_[Buttons::DEFAULT] =
-                std::make_unique<MapleButton>(KeyConfig["button:Default"]);
+                std::make_unique<MapleButton>(KeyConfig["BtDefault"], Point<int16_t>(12, 240));
         buttons_[Buttons::DELETE] =
-                std::make_unique<MapleButton>(KeyConfig["button:Delete"]);
+                std::make_unique<MapleButton>(KeyConfig["BtDelete"], Point<int16_t>(76, 240));
         buttons_[Buttons::KEY_SETTING] =
-                std::make_unique<MapleButton>(KeyConfig["button:keySetting"]);
+                std::make_unique<MapleButton>(KeyConfig["BtQuickSlot"], Point<int16_t>(158, 240));
         buttons_[Buttons::OK] =
-                std::make_unique<MapleButton>(KeyConfig["button:OK"]);
+                std::make_unique<MapleButton>(KeyConfig["BtOK"], Point<int16_t>(524, 240));
 
         dimension_ = bg_dimensions;
         drag_area_ = Point<int16_t>(bg_dimensions.x(), 20);
@@ -82,171 +83,73 @@ namespace ms {
         load_skill_icons();
 
         bind_staged_action_keys();
+#ifdef MS_DESKTOP_DEBUG
+        for (auto const &[k, m] : staged_mappings_) {
+            auto p = keys_pos_[KeyConfig::actionbyid(k)];
+            std::fprintf(stderr, "[dbg] kc key %d -> %d/%d at %d,%d\n", k, (int) m.type, m.action, p.x(), p.y());
+        }
+#endif
     }
 
 /// Load
     void UIKeyConfig::load_keys_pos() {
-        int16_t slot_width = 33;
-        int16_t slot_width_lg = 98;
-        int16_t slot_height = 33;
+        // maple-offline: key cells measured on v83 UIWindow.img/KeyConfig/
+        // backgrnd (629x373). Values are top-left corners of each key.
+        using K = KeyConfig::Key;
+        const int16_t y0 = 27, y1 = 66, y2 = 99, y3 = 132, y4 = 165, y5 = 198;
 
-        int16_t row_y = 126;
-        int16_t row_special_y = row_y - slot_height - 5;
+        auto set = [&](uint8_t key, int16_t x, int16_t y) {
+            keys_pos_[static_cast<K>(key)] = Point<int16_t>(x, y);
+        };
 
-        int16_t row_quickslot_x = 535;
+        set(K::ESCAPE, 12, y0);
+        const int16_t fx[12] = { 80, 112, 146, 180, 224, 256, 290, 323, 368, 400, 434, 468 };
+        for (int i = 0; i < 12; i++) set(K::F1 + i, fx[i], y0);
+        set(K::SCROLL_LOCK, 545, y0);
 
-        int16_t row_one_x = 31;
-        int16_t row_two_x = 80;
-        int16_t row_three_x = 96;
-        int16_t row_four_x = 55;
-        int16_t row_five_x = 39;
+        // Row 1: ` 1..0 - =   (scancodes 41, 2..11, 12, 13)
+        set(K::GRAVE_ACCENT, 12, y1);
+        const int16_t nx[10] = { 45, 78, 112, 146, 180, 214, 248, 282, 316, 350 };
+        for (int i = 0; i < 10; i++) set(2 + i, nx[i], y1);
+        set(K::MINUS, 384, y1);
+        set(K::EQUAL, 418, y1);
+        set(K::INSERT, 512, y1);
+        set(K::HOME, 544, y1);
+        set(K::PAGE_UP, 578, y1);
 
-        int16_t row_special_x = row_one_x;
+        // Row 2: Q..P [ ] \  (16..27, 43)
+        const int16_t qx[12] = { 60, 94, 128, 162, 196, 230, 264, 298, 332, 366, 400, 434 };
+        for (int i = 0; i < 12; i++) set(K::Q + i, qx[i], y2);
+        set(K::BACKSLASH, 468, y2);
+        set(K::DELETE, 512, y2);
+        set(K::END, 544, y2);
+        set(K::PAGE_DOWN, 578, y2);
 
-        keys_pos_[KeyConfig::Key::ESCAPE] =
-                Point<int16_t>(row_one_x, row_special_y);
+        // Row 3: A..L ; '  (30..40)
+        const int16_t ax[11] = { 78, 111, 145, 179, 213, 247, 281, 315, 349, 383, 417 };
+        for (int i = 0; i < 11; i++) set(K::A + i, ax[i], y3);
 
-        row_special_x += slot_width * 2;
+        // Row 4: LShift Z..M , .  RShift
+        set(K::LEFT_SHIFT, 12, y4);
+        const int16_t zx[9] = { 94, 128, 162, 196, 230, 264, 298, 332, 366 };
+        for (int i = 0; i < 9; i++) set(K::Z + i, zx[i], y4);
+        set(K::RIGHT_SHIFT, 434, y4);
 
-        for (size_t i = KeyConfig::Key::F1; i <= KeyConfig::Key::F12; i++) {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-
-            keys_pos_[id] = Point<int16_t>(row_special_x, row_special_y);
-
-            row_special_x += slot_width;
-
-            if (id == KeyConfig::Key::F4 || id == KeyConfig::Key::F8) {
-                row_special_x += 17;
-            }
-        }
-
-        keys_pos_[KeyConfig::Key::SCROLL_LOCK] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 1), row_special_y);
-
-        keys_pos_[KeyConfig::Key::GRAVE_ACCENT] =
-                Point<int16_t>(row_one_x + (slot_width * 0), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM1] =
-                Point<int16_t>(row_one_x + (slot_width * 1), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM2] =
-                Point<int16_t>(row_one_x + (slot_width * 2), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM3] =
-                Point<int16_t>(row_one_x + (slot_width * 3), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM4] =
-                Point<int16_t>(row_one_x + (slot_width * 4), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM5] =
-                Point<int16_t>(row_one_x + (slot_width * 5), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM6] =
-                Point<int16_t>(row_one_x + (slot_width * 6), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM7] =
-                Point<int16_t>(row_one_x + (slot_width * 7), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM8] =
-                Point<int16_t>(row_one_x + (slot_width * 8), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM9] =
-                Point<int16_t>(row_one_x + (slot_width * 9), row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::NUM0] =
-                Point<int16_t>(row_one_x + (slot_width * 10),
-                               row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::MINUS] =
-                Point<int16_t>(row_one_x + (slot_width * 11),
-                               row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::EQUAL] =
-                Point<int16_t>(row_one_x + (slot_width * 12),
-                               row_y + (slot_height * 0));
-
-        for (size_t i = KeyConfig::Key::Q; i <= KeyConfig::Key::RIGHT_BRACKET;
-             i++) {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-
-            keys_pos_[id] =
-                    Point<int16_t>(row_two_x + (slot_width * (i - KeyConfig::Key::Q)),
-                                   row_y + (slot_height * 1));
-        }
-
-        row_two_x += 9;
-
-        keys_pos_[KeyConfig::Key::BACKSLASH] =
-                Point<int16_t>(row_two_x + (slot_width * 12),
-                               row_y + (slot_height * 1));
-
-        for (size_t i = KeyConfig::Key::A; i <= KeyConfig::Key::APOSTROPHE; i++) {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-
-            keys_pos_[id] =
-                    Point<int16_t>(row_three_x + (slot_width * (i - KeyConfig::Key::A)),
-                                   row_y + (slot_height * 2));
-        }
-
-        keys_pos_[KeyConfig::Key::LEFT_SHIFT] =
-                Point<int16_t>(row_four_x + (slot_width * 0),
-                               row_y + (slot_height * 3));
-
-        row_four_x += 24;
-
-        for (size_t i = KeyConfig::Key::Z; i <= KeyConfig::Key::PERIOD; i++) {
-            KeyConfig::Key id = KeyConfig::actionbyid(i);
-
-            keys_pos_[id] = Point<int16_t>(
-                    row_four_x + (slot_width * (i - KeyConfig::Key::Z + 1)),
-                    row_y + (slot_height * 3));
-        }
-
-        row_four_x += 24;
-
-        keys_pos_[KeyConfig::Key::RIGHT_SHIFT] =
-                Point<int16_t>(row_four_x + (slot_width * 11),
-                               row_y + (slot_height * 3));
-
-        keys_pos_[KeyConfig::Key::LEFT_CONTROL] =
-                Point<int16_t>(row_five_x + (slot_width_lg * 0),
-                               row_y + (slot_height * 4));
-        keys_pos_[KeyConfig::Key::LEFT_ALT] =
-                Point<int16_t>(row_five_x + (slot_width_lg * 1),
-                               row_y + (slot_height * 4));
-
-        row_five_x += 24;
-
-        keys_pos_[KeyConfig::Key::SPACE] =
-                Point<int16_t>(row_five_x + (slot_width_lg * 2),
-                               row_y + (slot_height * 4));
-
-        row_five_x += 27;
-
-        keys_pos_[KeyConfig::Key::RIGHT_ALT] =
-                Point<int16_t>(row_five_x + (slot_width_lg * 3),
-                               row_y + (slot_height * 4));
-
-        row_five_x += 2;
-
-        keys_pos_[KeyConfig::Key::RIGHT_CONTROL] =
-                Point<int16_t>(row_five_x + (slot_width_lg * 4),
-                               row_y + (slot_height * 4));
-
-        keys_pos_[KeyConfig::Key::INSERT] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 0),
-                               row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::HOME] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 1),
-                               row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::PAGE_UP] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 2),
-                               row_y + (slot_height * 0));
-        keys_pos_[KeyConfig::Key::DELETE] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 0),
-                               row_y + (slot_height * 1));
-        keys_pos_[KeyConfig::Key::END] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 1),
-                               row_y + (slot_height * 1));
-        keys_pos_[KeyConfig::Key::PAGE_DOWN] =
-                Point<int16_t>(row_quickslot_x + (slot_width * 2),
-                               row_y + (slot_height * 1));
+        // Row 5: LCtrl LAlt Space RAlt RCtrl
+        set(K::LEFT_CONTROL, 12, y5);
+        set(K::LEFT_ALT, 110, y5);
+        set(K::SPACE, 162, y5);
+        set(K::RIGHT_ALT, 332, y5);
+        set(K::RIGHT_CONTROL, 445, y5);
     }
 
     void UIKeyConfig::load_unbound_actions_pos() {
-        int16_t row_x = 26;
-        int16_t row_y = 307;
+        // v83 bottom grid (18 x 3 cells, 34 px apart).
+        int16_t row_x = 9;
+        int16_t row_y = 267;
 
-        int16_t slot_width = 36;
-        int16_t slot_height = 36;
+        int16_t slot_width = 34;
+        int16_t slot_height = 34;
 
         unbound_actions_pos_[KeyAction::Id::MAPLE_CHAT] =
                 Point<int16_t>(row_x + (slot_width * 0), row_y + (slot_height * 0));
@@ -968,35 +871,35 @@ namespace ms {
 
                     if (maplekey == KeyConfig::Key::SPACE) {
                         ficon->draw(position_ + keys_pos_[fkey]
-                                    - Point<int16_t>(0, 3));
+                                    + Point<int16_t>(0, 0));
                     } else {
                         if (fkey == KeyConfig::Key::LEFT_CONTROL
                             || fkey == KeyConfig::Key::RIGHT_CONTROL) {
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::LEFT_CONTROL]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::RIGHT_CONTROL]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                         } else if (fkey == KeyConfig::Key::LEFT_ALT
                                    || fkey == KeyConfig::Key::RIGHT_ALT) {
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::LEFT_ALT]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::RIGHT_ALT]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                         } else if (fkey == KeyConfig::Key::LEFT_SHIFT
                                    || fkey == KeyConfig::Key::RIGHT_SHIFT) {
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::LEFT_SHIFT]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                             ficon->draw(position_
                                         + keys_pos_[KeyConfig::Key::RIGHT_SHIFT]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                         } else {
                             ficon->draw(position_ + keys_pos_[fkey]
-                                        - Point<int16_t>(2, 3));
+                                        + Point<int16_t>(0, 0));
                         }
                     }
                 }
@@ -1010,13 +913,14 @@ namespace ms {
                               key_actionid)
                     == bound_actions_.end()) {
                     ubaction_icon->draw(position_
-                                        + unbound_actions_pos_[key_actionid]);
+                                        + unbound_actions_pos_[key_actionid]
+                                        + Point<int16_t>(0, 0));
                 }
             }
         }
 
         for (auto [key, tx]: key_textures_) {
-            tx.draw(position_ + keys_pos_[key]);
+            tx.draw(position_ + keys_pos_[key] + Point<int16_t>(2, 1));
         }
     }
 
