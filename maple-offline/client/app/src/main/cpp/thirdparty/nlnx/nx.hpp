@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "nxfwd.hpp"
-#include "../glfm/include/glfm.h"
+#include "glfm.h"
 #include <android/asset_manager.h>
 
 namespace nl::nx

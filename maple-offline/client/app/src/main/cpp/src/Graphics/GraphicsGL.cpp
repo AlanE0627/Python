@@ -55,7 +55,7 @@ namespace ms {
                 "in vec2 texpos;"
                 "in vec4 colormod;"
                 "out vec4 FragColor;"
-                "uniform sampler2D texture;"
+                "uniform sampler2D atlas;"
                 "uniform vec2 atlassize;"
                 "uniform int fontregion;"
 
@@ -67,12 +67,12 @@ namespace ms {
                 "	}"
                 "	else if (texpos.y <= float(fontregion))"
                 "	{"
-                "		FragColor = vec4(1.0, 1.0, 1.0, texture(texture, texpos / "
+                "		FragColor = vec4(1.0, 1.0, 1.0, texture(atlas, texpos / "
                 "atlassize).r) * colormod;"
                 "	}"
                 "	else"
                 "	{"
-                "		FragColor = texture(texture, texpos / atlassize).bgra * "
+                "		FragColor = texture(atlas, texpos / atlassize).bgra * "
                 "colormod;"
                 "	}"
                 "}";
@@ -160,7 +160,7 @@ namespace ms {
 
         attribute_coord_ = glGetAttribLocation(shader_program_, "coord");
         attribute_color_ = glGetAttribLocation(shader_program_, "color");
-        uniform_texture_ = glGetUniformLocation(shader_program_, "texture");
+        uniform_texture_ = glGetUniformLocation(shader_program_, "atlas");
         uniform_atlas_size_ = glGetUniformLocation(shader_program_, "atlassize");
         uniform_screen_size_ = glGetUniformLocation(shader_program_, "screensize");
         uniform_yoffset = glGetUniformLocation(shader_program_, "yoffset");

@@ -28,11 +28,8 @@ Error init(GLFMDisplay *pApp) {
         return Error(Error::Code::NLNX, message.c_str());
     }
 
-    constexpr const char *POSTCHAOS_BITMAP =
-        "Login.img/WorldSelect/BtChannel/layer:bg";
-
-    if (nl::nx::ui.resolve(POSTCHAOS_BITMAP).data_type()
-        != nl::node::type::bitmap) {
+    // maple-offline targets the original GMS v83 UI.wz (UIWindow.img / StatusBar.img layout).
+    if (nl::nx::ui["UIWindow.img"].size() == 0 || nl::nx::ui["StatusBar.img"].size() == 0) {
         return Error::Code::WRONG_UI_FILE;
     }
 

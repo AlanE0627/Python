@@ -162,7 +162,10 @@ namespace ms {
     void onDraw(GLFMDisplay *display) {
         if (ms::program_ == 0) {
             program_ = glCreateProgram();
-            GraphicsGL::get().init(display);
+            if (Error gerr = GraphicsGL::get().init(display)) {
+                std::cerr << "GraphicsGL init failed: " << gerr.get_message() << " / "
+                          << gerr.get_details() << std::endl;
+            }
             GraphicsGL::get().reinit();
             Char::init();
             DamageNumber::init();

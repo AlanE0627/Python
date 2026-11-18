@@ -32,3 +32,10 @@ MapleStory GMS v83 오프라인 싱글플레이 Android 단일 APK 프로젝트 
 
 - server/client/tools: AGPL-3.0 (upstream 라이선스 유지)
 - BASS 오디오 라이브러리: un4seen 라이선스 (비상업 무료)
+
+## 데스크톱 테스트 빌드 (Linux)
+
+- `client/desktop/`: Android 클라이언트 소스를 그대로 Linux에서 실행하는 테스트용 빌드
+- 의존: clang, libc++, GLFW3, Mesa(GLES 3.2/EGL), FreeType, Xvfb
+- 선행: Android 빌드 1회 실행으로 `thirdparty/glfm` 내려받기(FetchContent)
+- 실행: `MS_DATA_DIR`(NX 파일·hostip.txt 폴더), `MS_ASSET_DIR`(폰트 폴더) 환경변수 지정

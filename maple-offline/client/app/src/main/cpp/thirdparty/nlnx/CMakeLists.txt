@@ -6,4 +6,5 @@ target_include_directories(NoLifeNx
         PRIVATE
         .
         ${CMAKE_SOURCE_DIR}/thirdparty/nlnx/lz4/lib
+        ${CMAKE_SOURCE_DIR}/thirdparty/glfm/include
         )
