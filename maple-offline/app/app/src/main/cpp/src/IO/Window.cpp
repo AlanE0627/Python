@@ -123,7 +123,9 @@ namespace ms {
                     auto diff_ms = ContinuousTimer::get().stop(start) / 1000;
                     start = ContinuousTimer::get().start();
 
-                    if (diff_ms > 10 && diff_ms < 200) {
+                    // two taps within 0.4 s (frames can batch both taps, so
+                    // no lower bound)
+                    if (diff_ms < 400) {
                         UI::get().doubleclick();
                     }
                     UI::get().send_cursor(false);

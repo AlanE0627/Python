@@ -92,6 +92,17 @@ SkillData::SkillData(int32_t id) {
     master_level_ = static_cast<int32_t>(stats_.size());
     passive_ = (id % 10000) / 1000 == 0;
     flags_ = flags_of(id);
+
+    // maple-offline: the table above only lists a few skills; any active
+    // skill whose level data deals damage (and is not a summon) attacks
+    if (flags_ == NONE && !passive_ && src["summon"].size() == 0) {
+        nl::node lv1 = src["level"]["1"];
+
+        if (static_cast<int32_t>(lv1["damage"]) > 0 || static_cast<int32_t>(lv1["mad"]) > 0
+            || static_cast<int32_t>(lv1["fixdamage"]) > 0) {
+            flags_ = ATTACK;
+        }
+    }
     invisible_ = src["invisible"].get_bool();
 
     /// Load required skills

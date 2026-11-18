@@ -142,6 +142,10 @@ Animation::Animation() : animated_(false), zigzag_(false) {
 }
 
 void Animation::reset() {
+    if (frames_.empty()) {
+        frames_.emplace_back();
+    }
+
     frame_.set(0);
     opacity_.set(frames_[0].start_opacity());
     xyscale_.set(frames_[0].start_scale());
@@ -157,6 +161,11 @@ void Animation::stop() {
 
 void Animation::draw(const DrawArgument &args, float alpha) const {
     int16_t interframe = frame_.get(alpha);
+
+    if (frames_.empty() || interframe < 0 || static_cast<size_t>(interframe) >= frames_.size()) {
+        return;
+    }
+
     float interopc = opacity_.get(alpha) / 255;
     float interscale = xyscale_.get(alpha) / 100;
 
@@ -176,6 +185,10 @@ bool Animation::update() {
 }
 
 bool Animation::update(uint16_t timestep) {
+    if (frames_.empty()) {
+        return true;
+    }
+
     const Frame &framedata = get_frame();
 
     opacity_ += framedata.opcstep(timestep);
@@ -274,6 +287,15 @@ Rectangle<int16_t> Animation::get_bounds() const {
 }
 
 const Frame &Animation::get_frame() const {
-    return frames_[frame_.get()];
+    // maple-offline: an animation copied from a moved-from or empty source
+    // has no frames; projectiles (Lucky Seven stars) crashed here
+    static const Frame empty_frame;
+    int16_t index = frame_.get();
+
+    if (frames_.empty() || index < 0 || static_cast<size_t>(index) >= frames_.size()) {
+        return empty_frame;
+    }
+
+    return frames_[index];
 }
 }  // namespace ms

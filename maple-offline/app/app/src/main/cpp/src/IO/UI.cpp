@@ -171,6 +171,9 @@ namespace ms {
 
     void UI::doubleclick() {
         Point<int16_t> pos = cursor_.get_position();
+#ifdef MS_DESKTOP_DEBUG
+        std::fprintf(stderr, "[dbg] doubleclick %d,%d\n", pos.x(), pos.y());
+#endif
         state_->doubleclick(pos);
     }
 

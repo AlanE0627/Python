@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIItemInventory.h"
 
+#include <cstdio>
+
 #include <nlnx/nx.hpp>
 #include <string>
 
@@ -376,6 +378,10 @@ Button::State UIItemInventory::button_pressed(uint16_t buttonid) {
 
 void UIItemInventory::doubleclick(Point<int16_t> cursorpos) {
     int16_t slot = slot_by_position(cursorpos - position_);
+#ifdef MS_DESKTOP_DEBUG
+    fprintf(stderr, "[dbg] inv doubleclick slot %d icon %d wear %d\n", slot, (int) icons_.count(slot),
+            icons_.count(slot) ? (int) can_wear_equip(slot) : -1);
+#endif
 
     if (icons_.count(slot) && is_visible(slot)) {
         if (int32_t item_id = inventory_.get_item_id(tab_, slot)) {
@@ -637,12 +643,9 @@ bool UIItemInventory::can_wear_equip(int16_t slot) const {
     const CharLook &look = player.get_look();
     const bool alerted = look.get_alerted();
 
-    if (alerted) {
-        UI::get().emplace<UIOk>("You cannot complete this action right "
-                                "now.\\nEvade the attack and try again.",
-                                [](bool) {});
-        return false;
-    }
+    // maple-offline: the "alerted" equip lock is a later-version rule;
+    // v83 lets you change equipment in combat
+    (void) alerted;
 
     const int32_t item_id =
         inventory_.get_item_id(InventoryType::Id::EQUIP, slot);
@@ -677,7 +680,26 @@ bool UIItemInventory::can_wear_equip(int16_t slot) const {
 
     int16_t reqJOB = equipdata.get_reqstat(MapleStat::Id::JOB);
 
-    if (!stats.get_job().is_sub_job(reqJOB)) {
+    // maple-offline: reqJob is a bit mask (1 warrior, 2 magician, 4 bowman,
+    // 8 thief, 16 pirate; 0 everyone, -1 beginners only), not a job id
+    int32_t jobid = stats.get_stat(MapleStat::Id::JOB);
+    int32_t branch = (jobid / 100) % 10;
+
+    if (jobid / 100 == 21) {
+        branch = 1;  // Aran wears warrior gear
+    }
+
+    bool job_ok;
+
+    if (reqJOB == 0) {
+        job_ok = true;
+    } else if (reqJOB < 0) {
+        job_ok = branch == 0;
+    } else {
+        job_ok = branch > 0 && (reqJOB & (1 << (branch - 1))) != 0;
+    }
+
+    if (!job_ok) {
         UI::get().emplace<UIOk>(
             "Your current job\\ncannot equip the selected item.",
             [](bool) {});
