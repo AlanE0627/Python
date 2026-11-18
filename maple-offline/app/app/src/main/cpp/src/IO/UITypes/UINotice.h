@@ -37,6 +37,8 @@ protected:
     void draw(bool textfield) const;
 
     int16_t box2offset(bool textfield) const;
+    int16_t body_height(bool textfield) const;
+    int16_t field_y() const;
 
 private:
     Texture top_;

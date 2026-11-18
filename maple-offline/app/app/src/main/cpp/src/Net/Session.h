@@ -66,6 +66,8 @@ private:
     size_t pos_;
     // maple-offline: bytes received but not yet forming a whole packet.
     std::vector<int8_t> pending_;
+    // Bumped on every (re)connect; a packet handler may switch servers.
+    uint32_t generation_ = 0;
     bool is_connected_;
 
 #ifdef USE_ASIO

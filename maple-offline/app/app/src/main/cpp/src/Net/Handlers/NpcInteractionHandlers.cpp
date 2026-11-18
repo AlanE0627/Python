@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "NpcInteractionHandlers.h"
 
+#include "../../IO/UITypes/UINotice.h"
+
 #include "../IO/UI.h"
 #include "../IO/UITypes/UINpcTalk.h"
 #include "../IO/UITypes/UIShop.h"
@@ -95,5 +97,23 @@ void OpenNpcShopHandler::handle(InPacket &recv) const {
                                  slotmax);
         }
     }
+}
+void ConfirmShopTransactionHandler::handle(InPacket &recv) const {
+    int8_t code = recv.read_byte();
+
+    const char *msg = nullptr;
+
+    switch (code) {
+        case 1: msg = "This item is sold out."; break;
+        case 2: msg = "You do not have enough mesos."; break;
+        case 3: msg = "Please check if your inventory is full."; break;
+        default: break;
+    }
+
+    if (msg) {
+        UI::get().emplace<UIOk>(msg, [](bool) {});
+    }
+
+    UI::get().enable();
 }
 }  // namespace ms

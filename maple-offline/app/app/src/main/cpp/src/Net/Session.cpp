@@ -34,6 +34,7 @@ Session::~Session() {
 bool Session::init(const char *host, const char *port) {
     // Connect to the server
     pending_.clear();
+    generation_++;
     is_connected_ = socket_.open(host, port);
 
     if (is_connected_) {
@@ -117,10 +118,18 @@ void Session::process(const int8_t *bytes, size_t available) {
         memcpy(buffer_, head + HEADER_LENGTH, length);
         cryptography_.decrypt(buffer_, length);
 
+        uint32_t generation = generation_;
+
         try {
             packet_forwarder_->forward(buffer_, length);
         } catch (const PacketError &err) {
             std::cout << err.what() << std::endl;
+        }
+
+        if (generation != generation_) {
+            // The handler reconnected (e.g. SERVER_IP -> channel server).
+            // pending_ now belongs to the new connection; stop here.
+            return;
         }
 
         offset += HEADER_LENGTH + length;

@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UINotice.h"
 
+#include "../../Graphics/Geometry.h"
+
 #include <nlnx/nx.hpp>
 #include <utility>
 
@@ -29,15 +31,17 @@ UINotice::UINotice(const std::string &message,
     UIDragElement<PosNOTICE>(),
     type_(t),
     alignment_(a) {
-    nl::node src = nl::nx::ui["Basic.img"]["Notice6"];
+    // maple-offline: v83 notice frame (Basic.img/Notice3: blue body, grey
+    // button panel at the bottom).
+    nl::node src = nl::nx::ui["Basic.img"]["Notice3"];
 
     top_ = src["t"];
     center_ = src["c"];
-    centerbox_ = src["c_box"];
-    box_ = src["box"];
-    box2_ = src["box2"];
+    centerbox_ = nl::node();
+    box_ = nl::node();
+    box2_ = nl::node();
     bottom_ = src["s"];
-    bottombox_ = src["s_box"];
+    bottombox_ = nl::node();
 
     if (type_ == NoticeType::YESNO) {
         position_.shift_y(-8);
@@ -66,7 +70,8 @@ UINotice::UINotice(const std::string &message,
 
     height_ = question_.height();
     dimension_ = Point<int16_t>(top_.width(),
-                                top_.height() + height_ + bottom_.height());
+                                top_.height() + body_height(type_ == NoticeType::ENTER_NUMBER)
+                                    + bottom_.height());
     position_ = Point<int16_t>(position_.x() - dimension_.x() / 2,
                                position_.y() - dimension_.y() / 2);
     drag_area_ = Point<int16_t>(dimension_.x(), 20);
@@ -79,54 +84,46 @@ UINotice::UINotice(const std::string &message,
 UINotice::UINotice(std::string message, NoticeType t) :
     UINotice(std::move(message), t, Text::Alignment::CENTER) {}
 
+int16_t UINotice::body_height(bool textfield) const {
+    int16_t text = height_ >= 32 ? height_ : 32;
+
+    return text + 12 + (textfield ? 26 : 0);
+}
+
 void UINotice::draw(bool textfield) const {
     Point<int16_t> start = position_;
+    int16_t body = body_height(textfield);
 
     top_.draw(start);
     start.shift_y(top_.height());
 
+    center_.draw(DrawArgument(start, Point<int16_t>(0, body)));
+
     if (textfield) {
-        center_.draw(start);
-        start.shift_y(center_.height());
-        centerbox_.draw(start);
-        start.shift_y(centerbox_.height() - 1);
-        box2_.draw(start);
-        start.shift_y(box2_.height());
-        box_.draw(DrawArgument(start, Point<int16_t>(0, 29)));
-        start.shift_y(29);
-
-        question_.draw(position_ + Point<int16_t>(13, 13));
-    } else {
-        int16_t pos_y = height_ >= 32 ? height_ : 32;
-
-        center_.draw(DrawArgument(start, Point<int16_t>(0, pos_y)));
-        start.shift_y(pos_y);
-        centerbox_.draw(start);
-        start.shift_y(centerbox_.height());
-        box_.draw(start);
-        start.shift_y(box_.height());
-
-        if (type_ == NoticeType::YESNO && alignment_ == Text::Alignment::LEFT) {
-            question_.draw(position_ + Point<int16_t>(31, 14));
-        } else {
-            question_.draw(position_ + Point<int16_t>(131, 14));
-        }
+        // v83 has no input-box image here; a white field under the text.
+        ColorBox(234, 20, Color::Name::WHITE, 1.0f)
+            .draw(DrawArgument(position_ + Point<int16_t>(16, field_y() - 2)));
     }
 
-    bottombox_.draw(start);
+    start.shift_y(body);
+    bottom_.draw(start);
+
+    int16_t ty = top_.height() + 6;
+
+    if (alignment_ == Text::Alignment::LEFT || type_ == NoticeType::ENTER_NUMBER) {
+        question_.draw(position_ + Point<int16_t>(18, ty));
+    } else {
+        question_.draw(position_ + Point<int16_t>(top_.width() / 2, ty));
+    }
+}
+
+int16_t UINotice::field_y() const {
+    return top_.height() + 6 + height_ + 6;
 }
 
 int16_t UINotice::box2offset(bool textfield) const {
-    int16_t offset = top_.height() + centerbox_.height() + box_.height()
-                     + height_ - (textfield ? 0 : 16);
-
-    if (type_ == NoticeType::OK) {
-        if (height_ < 34) {
-            offset += 15;
-        }
-    }
-
-    return offset;
+    // y of the buttons: centred in the grey panel of the bottom part.
+    return top_.height() + body_height(textfield) + 22;
 }
 
 UIYesNo::UIYesNo(std::string message,
@@ -140,11 +137,11 @@ UIYesNo::UIYesNo(std::string message,
     nl::node src = nl::nx::ui["Basic.img"];
 
     buttons_[Buttons::YES] =
-        std::make_unique<MapleButton>(src["BtOK4"],
-                                      Point<int16_t>(156, belowtext));
+        std::make_unique<MapleButton>(src["BtYes"],
+                                      Point<int16_t>(60, belowtext));
     buttons_[Buttons::NO] =
-        std::make_unique<MapleButton>(src["BtCancel4"],
-                                      Point<int16_t>(198, belowtext));
+        std::make_unique<MapleButton>(src["BtNo"],
+                                      Point<int16_t>(141, belowtext));
 }
 
 UIYesNo::UIYesNo(std::string message,
@@ -191,20 +188,20 @@ UIEnterNumber::UIEnterNumber(std::string message,
     numhandler = std::move(nh);
     max = m;
 
-    int16_t belowtext = box2offset(true) - 21;
-    int16_t pos_y = belowtext + 35;
+    int16_t belowtext = field_y();
+    int16_t pos_y = box2offset(true);
 
     nl::node src = nl::nx::ui["Basic.img"];
 
     buttons_[Buttons::OK] =
-        std::make_unique<MapleButton>(src["BtOK4"], 156, pos_y);
+        std::make_unique<MapleButton>(src["BtOK"], 60, pos_y);
     buttons_[Buttons::CANCEL] =
-        std::make_unique<MapleButton>(src["BtCancel4"], 198, pos_y);
+        std::make_unique<MapleButton>(src["BtCancel"], 141, pos_y);
 
     numfield = Textfield(Text::Font::A11M,
                          Text::Alignment::LEFT,
-                         Color::Name::LIGHTGREY,
-                         Rectangle<int16_t>(24, 232, belowtext, belowtext + 20),
+                         Color::Name::BLACK,
+                         Rectangle<int16_t>(20, 246, belowtext, belowtext + 18),
                          10);
     numfield.change_text(std::to_string(quantity));
 
@@ -309,7 +306,7 @@ UIOk::UIOk(std::string message, std::function<void(bool ok)> oh) :
     nl::node src = nl::nx::ui["Basic.img"];
 
     buttons_[Buttons::OK] =
-        std::make_unique<MapleButton>(src["BtOK4"], 197, box2offset(false));
+        std::make_unique<MapleButton>(src["BtOK"], 100, box2offset(false));
 }
 
 void UIOk::draw(float alpha) const {

@@ -522,6 +522,7 @@ PacketSwitch::PacketSwitch() {
     // NPC Interaction Handlers
     emplace<NPC_DIALOGUE, NpcDialogueHandler>();
     emplace<OPEN_NPC_SHOP, OpenNpcShopHandler>();
+    emplace<CONFIRM_SHOP_TRANSACTION, ConfirmShopTransactionHandler>();
 
     // Player Interaction
     emplace<CHAR_INFO, CharInfoHandler>();
