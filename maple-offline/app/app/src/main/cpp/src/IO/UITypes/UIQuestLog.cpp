@@ -20,6 +20,7 @@
 #include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
 #include "../../Util/MapleText.h"
+#include "../../Util/QuestCheck.h"
 #include "../../Graphics/Geometry.h"
 #include <algorithm>
 
@@ -93,68 +94,7 @@ UIQuestLog::UIQuestLog(const QuestLog &ql) :
 }
 
 bool UIQuestLog::can_start(int16_t qid) const {
-    if (questlog_.is_started(qid) || questlog_.is_completed(qid)) {
-        return false;
-    }
-
-    nl::node check = nl::nx::quest["Check.img"][std::to_string(qid)]["0"];
-
-    // only quests handed out by an NPC show up as available
-    if (static_cast<int32_t>(check["npc"]) == 0) {
-        return false;
-    }
-
-    // dated event quests (all from 2008-2010) are long expired and the
-    // server refuses them, so they are never offered
-    if (check["end"].data_type() != nl::node::type::none) {
-        return false;
-    }
-
-    const Player &player = Stage::get().get_player();
-    int32_t level = player.get_level();
-    int32_t lvmin = check["lvmin"];
-    int32_t lvmax = check["lvmax"];
-
-    if (level < lvmin || (lvmax > 0 && level > lvmax)) {
-        return false;
-    }
-
-    nl::node jobs = check["job"];
-
-    if (jobs.size() > 0) {
-        int32_t job = player.get_stats().get_job().get_id();
-        bool ok = false;
-
-        for (nl::node j : jobs) {
-            if (static_cast<int32_t>(j) == job) {
-                ok = true;
-                break;
-            }
-        }
-
-        if (!ok) {
-            return false;
-        }
-    }
-
-    for (nl::node q : check["quest"]) {
-        int16_t pre = static_cast<int16_t>(static_cast<int32_t>(q["id"]));
-        int32_t state = q["state"];
-
-        if (state == 2 && !questlog_.is_completed(pre)) {
-            return false;
-        }
-
-        if (state == 1 && !questlog_.is_started(pre)) {
-            return false;
-        }
-
-        if (state == 0 && (questlog_.is_started(pre) || questlog_.is_completed(pre))) {
-            return false;
-        }
-    }
-
-    return true;
+    return QuestCheck::can_start(qid);
 }
 
 void UIQuestLog::load_list() {

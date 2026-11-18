@@ -49,7 +49,12 @@ void Camera::update(Point<int16_t> position) {
         next_y += vdelta * (12.0 / VHEIGHT);
     }
 
-    if (next_x > hbounds_.first() || hbounds_.length() < VWIDTH) {
+    if (hbounds_.length() < VWIDTH) {
+        // maple-offline: the wide view is larger than small maps (job
+        // instructor rooms, shops); centre them instead of leaving the
+        // empty space on one side
+        next_x = hbounds_.first() + (VWIDTH - hbounds_.length()) / 2.0;
+    } else if (next_x > hbounds_.first()) {
         next_x = hbounds_.first();
     } else if (next_x < hbounds_.second() + VWIDTH) {
         next_x = hbounds_.second() + VWIDTH;

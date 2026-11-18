@@ -35,7 +35,12 @@ public:
         started_.erase(qid);
         in_progress_.erase(qid);
         completed_.erase(qid);
+        revision_++;
     }
+
+    // maple-offline: bumps on every change so caches (NPC quest icons)
+    // know when to rebuild
+    uint32_t revision() const { return revision_; }
 
     bool is_started(int16_t qid) const;
 
@@ -51,5 +56,6 @@ private:
     std::map<int16_t, std::string> started_;
     std::map<int16_t, std::pair<int16_t, std::string>> in_progress_;
     std::map<int16_t, int64_t> completed_;
+    uint32_t revision_ = 0;
 };
 }  // namespace ms

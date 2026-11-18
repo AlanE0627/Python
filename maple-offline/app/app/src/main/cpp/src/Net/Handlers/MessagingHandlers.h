@@ -29,6 +29,20 @@ private:
     void show_status(Color::Name color, const std::string &message) const;
 };
 
+// maple-offline: quest action results (time limits, success, failures)
+// Opcode: UPDATE_QUEST_INFO(211)
+class UpdateQuestInfoHandler : public PacketHandler {
+public:
+    void handle(InPacket &recv) const override;
+};
+
+// maple-offline: plays the quest clear effect
+// Opcode: QUEST_CLEAR(49)
+class QuestClearHandler : public PacketHandler {
+public:
+    void handle(InPacket &recv) const override;
+};
+
 // Show a server message
 // Opcode: SERVER_MESSAGE(68)
 class ServerMessageHandler : public PacketHandler {

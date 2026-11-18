@@ -46,6 +46,11 @@ Slider::Slider(int32_t t,
         }
 
         src = nl::nx::ui["Basic.img"][VScr];
+
+        // maple-offline: v83 Basic.img only has VScr..VScr8
+        if (src.size() == 0) {
+            src = nl::nx::ui["Basic.img"]["VScr"];
+        }
     }
 
     nl::node dsrc = src["disabled"];
@@ -126,7 +131,9 @@ void Slider::draw(Point<int16_t> position) const {
     int16_t height = dbase_.height();
     int16_t maxheight = vertical_.first() + height;
 
-    while (maxheight < vertical_.second()) {
+    // maple-offline: a slider style missing from v83 Basic.img has an
+    // empty base texture; without this guard the loop never ends
+    while (height > 0 && maxheight < vertical_.second()) {
         dbase_.draw(position + Point<int16_t>(start_.x(), maxheight));
 
         maxheight += height;

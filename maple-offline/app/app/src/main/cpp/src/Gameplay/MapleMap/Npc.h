@@ -88,6 +88,9 @@ private:
     bool control_;
 
     Randomizer random_;
+    // maple-offline: overhead quest marker (UIWindow.img/QuestIcon)
+    Animation quest_icons_[3];
+    int8_t quest_icon_ = -1;
     Text name_label_;
     Text func_label_;
 };

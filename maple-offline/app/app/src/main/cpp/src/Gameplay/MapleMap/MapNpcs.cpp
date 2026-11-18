@@ -18,6 +18,7 @@
 
 #include "../Net/Packets/NpcInteractionPackets.h"
 #include "Npc.h"
+#include "../QuestTalk.h"
 #include "UI.h"
 #include "UINpcTalk.h"
 
@@ -78,6 +79,11 @@ Cursor::State MapNpcs::send_cursor(bool pressed,
 
         if (npc && npc->is_active() && npc->inrange(position, viewpos)) {
             if (pressed) {
+                // maple-offline: quests at this NPC come first (v83 order)
+                if (QuestTalk::open(npc->get_id(), npc->get_oid(), npc->isscripted())) {
+                    return Cursor::State::IDLE;
+                }
+
                 npc->talk([](int id,
                              int msgtype,
                              int b0,

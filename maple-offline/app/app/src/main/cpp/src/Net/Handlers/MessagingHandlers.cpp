@@ -194,6 +194,78 @@ void ShowStatusInfoHandler::show_status(Color::Name color,
     }
 }
 
+namespace {
+void quest_status(Color::Name color, const std::string &message) {
+    if (auto messenger = UI::get().get_element<UIStatusMessenger>()) {
+        messenger->get().show_status(color, message);
+    }
+}
+
+std::string quest_name(int16_t qid) {
+    return nl::nx::quest["QuestInfo.img"][std::to_string(qid)]["name"];
+}
+}  // namespace
+
+void UpdateQuestInfoHandler::handle(InPacket &recv) const {
+    int8_t mode = recv.read_byte();
+
+    switch (mode) {
+        case 6: {
+            // time limit started: count, then (qid, ms) pairs
+            int16_t count = recv.read_short();
+
+            for (int16_t i = 0; i < count && recv.length() >= 6; i++) {
+                int16_t qid = recv.read_short();
+                int32_t ms = recv.read_int();
+                std::string name = quest_name(qid);
+
+                if (!name.empty()) {
+                    quest_status(Color::Name::YELLOW, "[Quest] " + name + ": "
+                                 + std::to_string(ms / 60000) + " min time limit.");
+                }
+            }
+
+            break;
+        }
+        case 7:
+            // time limit removed
+            if (recv.length() >= 4) {
+                recv.read_short();
+                recv.read_short();
+            }
+
+            break;
+        case 8:
+        case 10:
+            // action accepted; the record itself arrives as status info
+            if (auto questlog = UI::get().get_element<UIQuestLog>()) {
+                questlog->get().refresh();
+            }
+
+            break;
+        case 11: quest_status(Color::Name::RED, "You do not have enough mesos."); break;
+        case 13: quest_status(Color::Name::RED, "Unequip the item first."); break;
+        case 14: quest_status(Color::Name::RED, "Check that your inventory has room."); break;
+        case 15: {
+            int16_t qid = recv.length() >= 2 ? recv.read_short() : 0;
+            std::string name = quest_name(qid);
+            quest_status(Color::Name::RED, "[Quest] " + (name.empty() ? std::string("Quest") : name)
+                         + " has expired.");
+            break;
+        }
+        default: break;
+    }
+}
+
+void QuestClearHandler::handle(InPacket &recv) const {
+    // quest id (unused); the original client plays BasicEff/QuestClear
+    if (recv.length() >= 2) {
+        recv.read_short();
+    }
+
+    Stage::get().get_player().show_effect_id(CharEffect::Id::QUEST_CLEAR);
+}
+
 void ServerMessageHandler::handle(InPacket &recv) const {
     int8_t type = recv.read_byte();
     bool servermessage = recv.inspect_bool();

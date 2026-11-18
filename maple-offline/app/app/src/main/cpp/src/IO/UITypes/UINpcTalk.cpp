@@ -25,6 +25,10 @@
 #include <sstream>
 #include <regex>
 
+#include "../../Util/MapleText.h"
+#include "../../Graphics/Geometry.h"
+#include "../KeyAction.h"
+
 namespace ms {
     namespace {
         auto fn_npc_talk_more = []<typename... T>(T &&...args) {
@@ -141,7 +145,14 @@ namespace ms {
                 element.draw(position_ + Point<int16_t>(166, init_height));
                 init_height += element.height();
             }
-            for (auto &element: content_.text_button_content_) {
+            for (size_t i = 0; i < content_.text_button_content_.size(); i++) {
+                auto &element = content_.text_button_content_[i];
+
+                if (type_ == TalkType::SEND_SIMPLE && static_cast<int16_t>(i) == key_sel_) {
+                    ColorBox(330, element.height(), Color::Name::MEDIUMBLUE, 0.15f)
+                        .draw(DrawArgument(position_ + Point<int16_t>(160, init_height + 2)));
+                }
+
                 element.draw(position_ + Point<int16_t>(166, init_height));
                 init_height += element.height();
             }
@@ -171,8 +182,44 @@ namespace ms {
 //        }
     }
 
+    void UINpcTalk::set_local(LocalResponder responder) {
+        local_ = std::move(responder);
+    }
+
+    void UINpcTalk::respond(int8_t type, int8_t action) {
+        if (local_) {
+            LocalResponder cb = std::move(local_);
+            local_ = nullptr;
+            cb(action, -1);
+        } else {
+            fn_npc_talk_more(type, action);
+        }
+    }
+
+    void UINpcTalk::respond(int32_t selection) {
+#ifdef MS_DESKTOP_DEBUG
+        fprintf(stderr, "[dbg] npctalk respond sel %d local %d\n", selection, (int)(bool)local_);
+#endif
+        if (local_) {
+            LocalResponder cb = std::move(local_);
+            local_ = nullptr;
+            cb(1, selection);
+        } else {
+            fn_npc_talk_more(selection);
+        }
+    }
+
     Button::State UINpcTalk::button_pressed(uint16_t buttonid) {
         deactivate();
+
+        // maple-offline: drop the option buttons first; a local responder
+        // may put the next page into this same window before we return
+        for (auto &element: content_.text_button_content_) {
+            auto it = buttons_.find(Buttons::TEXT_BUTTON + element.get_option_number());
+            if (it != buttons_.end()) {
+                buttons_.erase(it);
+            }
+        }
 
         switch (type_) {
             case TalkType::SEND_NEXT:
@@ -180,11 +227,11 @@ namespace ms {
                 // Type = 0
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, -1);
+                        respond(type_, -1);
                         break;
                     case Buttons::NEXT:
                     case Buttons::OK:
-                        fn_npc_talk_more(type_, 1);
+                        respond(type_, 1);
                         break;
                 }
                 break;
@@ -192,13 +239,13 @@ namespace ms {
                 // Type = 0
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, -1);
+                        respond(type_, -1);
                         break;
                     case Buttons::NEXT:
-                        fn_npc_talk_more(type_, 1);
+                        respond(type_, 1);
                         break;
                     case Buttons::PREV:
-                        fn_npc_talk_more(type_, 0);
+                        respond(type_, 0);
                         break;
                 }
                 break;
@@ -206,13 +253,13 @@ namespace ms {
                 // Type = 1
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, -1);
+                        respond(type_, -1);
                         break;
                     case Buttons::NO:
-                        fn_npc_talk_more(type_, 0);
+                        respond(type_, 0);
                         break;
                     case Buttons::YES:
-                        fn_npc_talk_more(type_, 1);
+                        respond(type_, 1);
                         break;
                 }
                 break;
@@ -220,13 +267,13 @@ namespace ms {
                 // Type = 1
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, -1);
+                        respond(type_, -1);
                         break;
                     case Buttons::QNO:
-                        fn_npc_talk_more(type_, 0);
+                        respond(type_, 0);
                         break;
                     case Buttons::QYES:
-                        fn_npc_talk_more(type_, 1);
+                        respond(type_, 1);
                         break;
                 }
                 break;
@@ -237,10 +284,10 @@ namespace ms {
                 // Type = 3
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, 0);
+                        respond(type_, 0);
                         break;
                     case Buttons::OK:
-                        fn_npc_talk_more(type_, 1);
+                        respond(type_, 1);
                         break;
                 }
                 break;
@@ -248,23 +295,16 @@ namespace ms {
                 // Type = 4
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        fn_npc_talk_more(type_, 0);
+                        respond(type_, 0);
                         break;
                     default:
-                        fn_npc_talk_more(content_.text_button_content_[buttonid -
-                                                                       Buttons::TEXT_BUTTON].get_option_number());
+                        // the button id already carries the option number
+                        respond(static_cast<int32_t>(buttonid - Buttons::TEXT_BUTTON));
                         break;
                 }
                 break;
             default:
                 break;
-        }
-
-        for (auto &element: content_.text_button_content_) {
-            auto it = buttons_.find(Buttons::TEXT_BUTTON + element.get_option_number());
-            if (it != buttons_.end()) {
-                buttons_.erase(it);
-            }
         }
 
         return Button::State::NORMAL;
@@ -277,6 +317,17 @@ namespace ms {
             if (Cursor::State sstate =
                     slider_.send_cursor(cursor_relative, clicked)) {
                 return sstate;
+            }
+        }
+
+        // maple-offline: list options are matched directly; the generic
+        // button pass does not report clicks on inactive text buttons
+        if (clicked && !draw_text_ && type_ == TalkType::SEND_SIMPLE) {
+            for (auto &element: content_.text_button_content_) {
+                if (element.bounds(position_).contains(cursorpos)) {
+                    button_pressed(Buttons::TEXT_BUTTON + element.get_option_number());
+                    return Cursor::State::IDLE;
+                }
             }
         }
 
@@ -300,10 +351,52 @@ namespace ms {
     }
 
     void UINpcTalk::send_key(int32_t keycode, bool pressed, bool escape) {
-        if (pressed && escape) {
+        if (!pressed) {
+            return;
+        }
+
+        if (escape) {
             deactivate();
 
-            fn_npc_talk_more(type_, 0);
+            if (local_) {
+                // closing a client-side dialog just ends it
+                local_ = nullptr;
+            } else {
+                respond(type_, 0);
+            }
+
+            return;
+        }
+
+        // maple-offline: keyboard / controller (d-pad + confirm) navigation
+        auto &options = content_.text_button_content_;
+
+        if (keycode == KeyAction::Id::UP || keycode == KeyAction::Id::DOWN) {
+            if (type_ == TalkType::SEND_SIMPLE && !options.empty()) {
+                int16_t count = static_cast<int16_t>(options.size());
+                int16_t step = keycode == KeyAction::Id::UP ? -1 : 1;
+                key_sel_ = static_cast<int16_t>((key_sel_ + step + count) % count);
+            }
+        } else if (keycode == KeyAction::Id::RETURN) {
+            if (draw_text_) {
+                draw_text_ = false;
+                content_.text_.change_text(formatted_text_);
+                return;
+            }
+
+            switch (type_) {
+                case TalkType::SEND_SIMPLE:
+                    if (key_sel_ >= 0 && key_sel_ < static_cast<int16_t>(options.size())) {
+                        button_pressed(Buttons::TEXT_BUTTON + options[key_sel_].get_option_number());
+                    }
+                    break;
+                case TalkType::SEND_OK: button_pressed(Buttons::OK); break;
+                case TalkType::SEND_NEXT:
+                case TalkType::SEND_NEXT_PREV: button_pressed(Buttons::NEXT); break;
+                case TalkType::SEND_YESNO: button_pressed(Buttons::YES); break;
+                case TalkType::SEND_ACCEPT_DECLINE: button_pressed(Buttons::QYES); break;
+                default: break;
+            }
         }
     }
 
@@ -345,61 +438,8 @@ namespace ms {
 // TODO: Move this to GraphicsGL?
     std::string UINpcTalk::format_text(const std::string &tx,
                                        const int32_t &npcid) {
-        std::string formatted_text = tx;
-        size_t begin = formatted_text.find("#p");
-
-        if (begin != std::string::npos) {
-            size_t end = formatted_text.find("#", begin + 1);
-
-            if (end != std::string::npos) {
-                std::string namestr =
-                        nl::nx::string["Npc.img"][std::to_string(npcid)]["name"];
-                formatted_text.replace(begin, end - begin, namestr);
-            }
-        }
-
-        begin = formatted_text.find("#h");
-
-        if (begin != std::string::npos) {
-            size_t end = formatted_text.find("#", begin + 1);
-
-            if (end != std::string::npos) {
-                std::string charstr = Stage::get().get_player().get_name();
-                formatted_text.replace(begin, end - begin, charstr);
-            }
-        }
-
-        begin = formatted_text.find("#t");
-
-        if (begin != std::string::npos) {
-            size_t end = formatted_text.find("#", begin + 1);
-
-            if (end != std::string::npos) {
-                size_t b = begin + 2;
-                int32_t itemid = std::stoi(formatted_text.substr(b, end - b));
-                std::string itemname =
-                        nl::nx::string["Consume.img"][itemid]["name"];
-
-                formatted_text.replace(begin, end - begin, itemname);
-            }
-        }
-
-        begin = 0;
-        while ((begin = formatted_text.find("#m", begin)) != std::string::npos) {
-            std::string::size_type end = formatted_text.find("#", begin + 1);
-
-            if (end != std::string::npos) {
-                std::string::size_type b = begin + 2;
-                int32_t mapid = std::stoi(formatted_text.substr(b, end - b));
-                auto map_info = NxHelper::Map::get_map_info_by_id(mapid);
-
-                formatted_text.replace(begin, end - begin + 1, map_info.name);
-            }
-
-            begin = end;
-        }
-
-        return formatted_text;
+        // maple-offline: shared tag resolver (#p/#t/#m/#o/#h/#c ...)
+        return MapleText::format(tx, true);
     }
 
     void UINpcTalk::change_text(int32_t npcid,
@@ -412,6 +452,7 @@ namespace ms {
 
         timestep_ = 0;
         draw_text_ = true;
+        key_sel_ = 0;
         formatted_text_pos_ = 0;
         formatted_text_ = format_text(tx, npcid);
         content_ = convert_npc_text(formatted_text_);
@@ -563,6 +604,9 @@ namespace ms {
                 line_color_ = Color::Name::BLUE;
             }
             selection_ = std::stoi(match[1].str());
+            // maple-offline: the option markers are not part of the label
+            line = std::regex_replace(line, pattern, "");
+            line = std::regex_replace(line, std::regex("#l"), "");
             TextButton button = TextButton(Text(Text::Font::A18M,
                                                 Text::Alignment::LEFT,
                                                 line_color_,

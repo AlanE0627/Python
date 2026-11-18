@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Npc.h"
 
+#include "../../Util/QuestCheck.h"
+
 #include <nlnx/nx.hpp>
 
 namespace ms {
@@ -77,6 +79,12 @@ Npc::Npc(int32_t id,
                        Text::Background::NAMETAG,
                        func_);
 
+    nl::node qicon = nl::nx::ui["UIWindow.img"]["QuestIcon"];
+
+    for (int i = 0; i < 3; i++) {
+        quest_icons_[i] = qicon[std::to_string(i)];
+    }
+
     npc_id_ = id;
     flip_ = !fl;
     control_ = cnt;
@@ -93,6 +101,18 @@ void Npc::draw(double viewx, double viewy, float alpha) const {
         animations_.at(stance_).draw(DrawArgument(absp, flip_), alpha);
     }
 
+    if (quest_icon_ >= 0 && quest_icon_ < 3 && animations_.count(stance_)) {
+        const Animation &body = animations_.at(stance_);
+        int16_t top = absp.y() - body.get_origin().y();
+        Point<int16_t> dim = quest_icons_[quest_icon_].get_dimensions();
+        Point<int16_t> origin = quest_icons_[quest_icon_].get_origin();
+
+        quest_icons_[quest_icon_].draw(
+            DrawArgument(Point<int16_t>(absp.x() - dim.x() / 2 + origin.x(),
+                                        top - dim.y() - 2 + origin.y())),
+            alpha);
+    }
+
     if (!hide_name_) {
         // If ever changing code for namelabel confirm placements with map 10000
         name_label_.draw(absp + Point<int16_t>(0, -4));
@@ -106,6 +126,12 @@ int8_t Npc::update(const Physics &physics) {
     }
 
     physics.move_object(phobj_);
+
+    quest_icon_ = QuestCheck::npc_icon(npc_id_);
+
+    if (quest_icon_ >= 0 && quest_icon_ < 3) {
+        quest_icons_[quest_icon_].update();
+    }
 
     if (animations_.count(stance_)) {
         bool aniend = animations_.at(stance_).update();

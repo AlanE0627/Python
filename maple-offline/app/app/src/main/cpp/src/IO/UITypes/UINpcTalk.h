@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <functional>
+
 #include "../Components/Slider.h"
 #include "../Graphics/Text.h"
 #include "../UIElement.h"
@@ -72,6 +74,12 @@ public:
                      int8_t speaker,
                      const std::string &text);
 
+    // maple-offline: client-side dialogs (quest menus, quest Say.img text)
+    // answer through this callback instead of NPC_TALK_MORE.
+    // action: -1 closed, 0 no/prev, 1 yes/next/ok; selection for lists.
+    using LocalResponder = std::function<void(int8_t action, int32_t selection)>;
+    void set_local(LocalResponder responder);
+
 protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
@@ -83,6 +91,12 @@ private:
     NPCTalkContent convert_npc_text(std::string& formatted_text_);
 
     void reset_content_pos();
+
+    void respond(int8_t type, int8_t action);
+    void respond(int32_t selection);
+
+    LocalResponder local_;
+    int16_t key_sel_ = 0;
 
     static constexpr int16_t MAX_HEIGHT_ = 248;
 

@@ -370,6 +370,7 @@ enum Opcode : uint16_t {
 
     /// Messaging 1
     SHOW_STATUS_INFO = 39,
+    QUEST_CLEAR = 49,
 
     /// Inventory 2
     GATHER_RESULT = 52,
@@ -408,6 +409,7 @@ enum Opcode : uint16_t {
     GIVE_FOREIGN_BUFF = 199,
     CANCEL_FOREIGN_BUFF = 200,
     SHOW_ITEM_GAIN_INCHAT = 206,  // TODO: Rename this (Terribly named)
+    UPDATE_QUEST_INFO = 211,
 
     /// Player
     ADD_COOLDOWN = 234,
@@ -507,6 +509,8 @@ PacketSwitch::PacketSwitch() {
 
     // Messaging handlers
     emplace<SHOW_STATUS_INFO, ShowStatusInfoHandler>();
+    emplace<UPDATE_QUEST_INFO, UpdateQuestInfoHandler>();
+    emplace<QUEST_CLEAR, QuestClearHandler>();
     emplace<CHAT_RECEIVED, ChatReceivedHandler>();
     emplace<SCROLL_RESULT, ScrollResultHandler>();
     emplace<SERVER_MESSAGE, ServerMessageHandler>();

@@ -56,6 +56,19 @@ public:
     }
 };
 
+// maple-offline: start (1) / complete (2) / scripted start (4) /
+// scripted complete (5) a quest at an NPC
+// Opcode: QUEST_ACTION(107)
+class QuestActionPacket : public OutPacket {
+public:
+    QuestActionPacket(int8_t action, int16_t qid, int32_t npcid) :
+        OutPacket(OutPacket::Opcode::QUEST_ACTION) {
+        write_byte(action);
+        write_short(qid);
+        write_int(npcid);
+    }
+};
+
 // Packet which tells the server of an interaction with an NPC shop
 // Opcode: NPC_SHOP_ACTION(61)
 class NpcShopActionPacket : public OutPacket {

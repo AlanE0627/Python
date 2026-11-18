@@ -20,6 +20,7 @@
 namespace ms {
 void QuestLog::add_started(int16_t qid, const std::string &qdata) {
     started_[qid] = qdata;
+    revision_++;
 }
 
 void QuestLog::add_in_progress(int16_t qid,
@@ -30,6 +31,7 @@ void QuestLog::add_in_progress(int16_t qid,
 
 void QuestLog::add_completed(int16_t qid, int64_t time) {
     completed_[qid] = time;
+    revision_++;
 }
 
 bool QuestLog::is_started(int16_t qid) const {
