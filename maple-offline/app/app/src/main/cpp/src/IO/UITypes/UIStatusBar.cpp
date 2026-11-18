@@ -307,9 +307,12 @@ Button::State UIStatusBar::button_pressed(uint16_t id) {
                                          channel_count_);
             break;
         case BT_GM_GAMEOPT:
+            remove_menus();
+            UI::get().emplace<UIOptionMenu>(true);
+            break;
         case BT_GM_SYSOPT:
             remove_menus();
-            UI::get().emplace<UIOptionMenu>();
+            UI::get().emplace<UIOptionMenu>(false);
             break;
         case BT_GM_QUIT:
             remove_menus();

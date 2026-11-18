@@ -15,19 +15,19 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
-#include <array>
-
-#include "../Components/MapleComboBox.h"
 #include "../UIDragElement.h"
 
 namespace ms {
+// maple-offline: v83 option windows. game_option = UIWindow.img/GameOpt
+// (social permissions, informational in single-player); otherwise
+// UIWindow.img/SysOpt with working BGM / sound volume and mute.
 class UIOptionMenu : public UIDragElement<PosOPTIONMENU> {
 public:
     static constexpr Type TYPE = UIElement::Type::OPTION_MENU;
     static constexpr bool FOCUSED = true;
     static constexpr bool TOGGLED = false;
 
-    UIOptionMenu();
+    explicit UIOptionMenu(bool game_option = false);
 
     void draw(float inter) const override;
 
@@ -41,21 +41,16 @@ protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
 private:
-    void change_tab(uint16_t tabid);
+    enum Buttons : uint16_t { OK, CANCEL };
 
-    enum Buttons : uint16_t {
-        TAB0,
-        TAB1,
-        TAB2,
-        TAB3,
-        TAB4,
-        CANCEL,
-        OK,
-        UIRESET,
-        SELECT_RES
-    };
+    void apply(bool save);
+    void draw_bar(int16_t y, uint8_t volume, bool muted) const;
 
-    uint16_t selected_tab_;
-    std::array<Texture, Buttons::CANCEL> tab_background_;
+    bool game_option_;
+    Texture backgrnd_;
+    uint8_t bgm_, sfx_, bgm_old_, sfx_old_;
+    bool bgm_mute_, sfx_mute_;
+    bool dragging_bgm_, dragging_sfx_;
+    std::vector<Text> labels_;
 };
 }  // namespace ms

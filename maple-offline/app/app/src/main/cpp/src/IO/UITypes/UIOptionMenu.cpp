@@ -17,209 +17,153 @@
 
 #include <nlnx/nx.hpp>
 
+#include "../../Audio/Audio.h"
+#include "../../Configuration.h"
+#include "../../Graphics/Geometry.h"
 #include "../Components/MapleButton.h"
-#include "../Components/TwoSpriteButton.h"
 #include "../KeyAction.h"
 
 namespace ms {
-UIOptionMenu::UIOptionMenu() :
+namespace {
+// SysOpt rows (backgrnd 299x366): BGM and SOUND value strips.
+constexpr int16_t BGM_Y = 70;
+constexpr int16_t SFX_Y = 100;
+constexpr int16_t BAR_X0 = 66;
+constexpr int16_t BAR_X1 = 238;
+constexpr int16_t MUTE_X0 = 244;
+constexpr int16_t MUTE_X1 = 290;
+}  // namespace
+
+UIOptionMenu::UIOptionMenu(bool game_option) :
     UIDragElement<PosOPTIONMENU>(),
-    selected_tab_(0) {
-    nl::node OptionMenu = nl::nx::ui["StatusBar3.img"]["OptionMenu"];
-    nl::node backgrnd = OptionMenu["backgrnd"];
+    game_option_(game_option),
+    dragging_bgm_(false),
+    dragging_sfx_(false) {
+    nl::node win = nl::nx::ui["UIWindow.img"][game_option_ ? "GameOpt" : "SysOpt"];
+    backgrnd_ = win["backgrnd"];
 
-    sprites_.emplace_back(backgrnd);
-    sprites_.emplace_back(OptionMenu["backgrnd2"]);
+    bgm_ = bgm_old_ = Setting<BGMVolume>::get().load();
+    sfx_ = sfx_old_ = Setting<SFXVolume>::get().load();
+    bgm_mute_ = bgm_ == 0;
+    sfx_mute_ = sfx_ == 0;
 
-    nl::node graphic = OptionMenu["graphic"];
+    if (bgm_mute_) bgm_ = 50;
+    if (sfx_mute_) sfx_ = 50;
 
-    tab_background_[Buttons::TAB0] = graphic["layer:backgrnd"];
-    tab_background_[Buttons::TAB1] = OptionMenu["sound"]["layer:backgrnd"];
-    tab_background_[Buttons::TAB2] = OptionMenu["game"]["layer:backgrnd"];
-    tab_background_[Buttons::TAB3] = OptionMenu["invite"]["layer:backgrnd"];
-    tab_background_[Buttons::TAB4] = OptionMenu["screenshot"]["layer:backgrnd"];
+    Point<int16_t> dim = backgrnd_.get_dimensions();
+    nl::node basic = nl::nx::ui["Basic.img"];
 
-    buttons_[Buttons::CANCEL] =
-        std::make_unique<MapleButton>(OptionMenu["button:Cancel"]);
-    buttons_[Buttons::OK] =
-        std::make_unique<MapleButton>(OptionMenu["button:OK"]);
-    buttons_[Buttons::UIRESET] =
-        std::make_unique<MapleButton>(OptionMenu["button:UIReset"]);
+    buttons_[OK] = std::make_unique<MapleButton>(basic["BtOK2"], Point<int16_t>(dim.x() - 104, dim.y() - 23));
+    buttons_[CANCEL] = std::make_unique<MapleButton>(basic["BtCancel2"], Point<int16_t>(dim.x() - 54, dim.y() - 23));
 
-    nl::node tab = OptionMenu["tab"];
-    nl::node tab_disabled = tab["disabled"];
-    nl::node tab_enabled = tab["enabled"];
-
-    for (size_t i = Buttons::TAB0; i < Buttons::CANCEL; i++) {
-        buttons_[i] =
-            std::make_unique<TwoSpriteButton>(tab_disabled[i], tab_enabled[i]);
+    if (game_option_) {
+        // Single-player: there is nobody to send invites; everything is "allowed".
+        buttons_[CANCEL]->set_active(false);
+        buttons_[OK]->set_position(Point<int16_t>(dim.x() / 2 - 23, dim.y() - 23));
     }
 
-    std::string sButtonUOL =
-        graphic["combo:resolution"]["sButtonUOL"].get_string();
-    std::string ctype = std::string(1, sButtonUOL.back());
-    MapleComboBox::Type type =
-        static_cast<MapleComboBox::Type>(std::stoi(ctype));
+    dimension_ = dim;
+    drag_area_ = Point<int16_t>(dim.x(), 20);
+}
 
-    std::vector<std::string> resolutions = { "800 x 600 ( 4 : 3 )",
-                                             "1024 x 768 ( 4 : 3 )",
-                                             "1280 x 720 ( 16 : 9 )",
-                                             "1366 x 768 ( 16 : 9 )",
-                                             "1920 x 1080 ( 16 : 9 ) - Beta" };
+void UIOptionMenu::draw_bar(int16_t y, uint8_t volume, bool muted) const {
+    int16_t width = BAR_X1 - BAR_X0;
+    int16_t filled = muted ? 0 : static_cast<int16_t>(width * volume / 100);
 
-    int16_t max_width = Configuration::get().get_max_width();
-    int16_t max_height = Configuration::get().get_max_height();
+    ColorBox(width, 6, Color::Name::DUSTYGRAY, 0.6f).draw(DrawArgument(position_ + Point<int16_t>(BAR_X0, y + 8)));
+    ColorBox(filled, 6, Color::Name::MEDIUMBLUE, 0.9f).draw(DrawArgument(position_ + Point<int16_t>(BAR_X0, y + 8)));
+    ColorBox(4, 14, Color::Name::BLACK, 0.8f)
+        .draw(DrawArgument(position_ + Point<int16_t>(BAR_X0 + filled - 2, y + 4)));
 
-    if (max_width >= 1920 && max_height >= 1200) {
-        resolutions.emplace_back("1920 x 1200 ( 16 : 10 ) - Beta");
+    if (muted) {
+        ColorBox(MUTE_X1 - MUTE_X0, 18, Color::Name::RED, 0.25f)
+            .draw(DrawArgument(position_ + Point<int16_t>(MUTE_X0, y + 2)));
     }
-
-    uint16_t default_option = 0;
-    int16_t screen_width = Constants::Constants::get().get_viewwidth();
-    int16_t screen_height = Constants::Constants::get().get_viewheight();
-
-    switch (screen_width) {
-        case 800: default_option = 0; break;
-        case 1024: default_option = 1; break;
-        case 1280: default_option = 2; break;
-        case 1366: default_option = 3; break;
-        case 1920:
-            switch (screen_height) {
-                case 1080: default_option = 4; break;
-                case 1200: default_option = 5; break;
-            }
-
-            break;
-    }
-
-    int64_t combobox_width =
-        graphic["combo:resolution"]["boxWidth"].get_integer();
-    Point<int16_t> lt = Point<int16_t>(graphic["combo:resolution"]["lt"]);
-
-    buttons_[Buttons::SELECT_RES] =
-        std::make_unique<MapleComboBox>(type,
-                                        resolutions,
-                                        default_option,
-                                        position_,
-                                        lt,
-                                        combobox_width);
-
-    Point<int16_t> bg_dimensions = Texture(backgrnd).get_dimensions();
-
-    dimension_ = bg_dimensions;
-    drag_area_ = Point<int16_t>(bg_dimensions.x(), 20);
-
-    change_tab(Buttons::TAB2);
 }
 
 void UIOptionMenu::draw(float inter) const {
-    UIElement::draw_sprites(inter);
+    backgrnd_.draw(position_);
 
-    tab_background_[selected_tab_].draw(position_);
+    if (!game_option_) {
+        draw_bar(BGM_Y, bgm_, bgm_mute_);
+        draw_bar(SFX_Y, sfx_, sfx_mute_);
+    }
 
     UIElement::draw_buttons(inter);
 }
 
-Button::State UIOptionMenu::button_pressed(uint16_t buttonid) {
-    switch (buttonid) {
-        case Buttons::TAB0:
-        case Buttons::TAB1:
-        case Buttons::TAB2:
-        case Buttons::TAB3:
-        case Buttons::TAB4:
-            change_tab(buttonid);
-            return Button::State::IDENTITY;
-        case Buttons::CANCEL: deactivate(); return Button::State::NORMAL;
-        case Buttons::OK:
-            switch (selected_tab_) {
-                case Buttons::TAB0: {
-                    uint16_t selected_value =
-                        buttons_[Buttons::SELECT_RES]->get_selected();
+void UIOptionMenu::apply(bool save) {
+    uint8_t bgm = bgm_mute_ ? 0 : bgm_;
+    uint8_t sfx = sfx_mute_ ? 0 : sfx_;
 
-                    int16_t width = Constants::Constants::get().get_viewwidth();
-                    int16_t height =
-                        Constants::Constants::get().get_viewheight();
+    Music::set_bgmvolume(bgm);
+    Sound::set_sfxvolume(sfx);
 
-                    switch (selected_value) {
-                        case 0:
-                            width = 800;
-                            height = 600;
-                            break;
-                        case 1:
-                            width = 1024;
-                            height = 768;
-                            break;
-                        case 2:
-                            width = 1280;
-                            height = 720;
-                            break;
-                        case 3:
-                            width = 1366;
-                            height = 768;
-                            break;
-                        case 4:
-                            width = 1920;
-                            height = 1080;
-                            break;
-                        case 5:
-                            width = 1920;
-                            height = 1200;
-                            break;
-                    }
+    if (save) {
+        Setting<BGMVolume>::get().save(bgm);
+        Setting<SFXVolume>::get().save(sfx);
+        bgm_old_ = bgm;
+        sfx_old_ = sfx;
 
-                    Setting<Width>::get().save(width);
-                    Setting<Height>::get().save(height);
-
-                    Constants::Constants::get().set_viewwidth(width);
-                    Constants::Constants::get().set_viewheight(height);
-                } break;
-                case Buttons::TAB1:
-                case Buttons::TAB2:
-                case Buttons::TAB3:
-                case Buttons::TAB4:
-                default: break;
-            }
-
-            deactivate();
-            return Button::State::NORMAL;
-        case Buttons::UIRESET: return Button::State::DISABLED;
-        case Buttons::SELECT_RES:
-            buttons_[Buttons::SELECT_RES]->toggle_pressed();
-            return Button::State::NORMAL;
-        default: return Button::State::DISABLED;
+        // Settings are otherwise only written at exit, which Android may skip.
+        Configuration::get().save();
     }
 }
 
-Cursor::State UIOptionMenu::send_cursor(bool clicked,
-                                        Point<int16_t> cursorpos) {
-    Cursor::State dstate = UIDragElement::send_cursor(clicked, cursorpos);
+Cursor::State UIOptionMenu::send_cursor(bool clicked, Point<int16_t> cursorpos) {
+    if (!game_option_) {
+        Point<int16_t> local = cursorpos - position_;
+        auto in_row = [&](int16_t y) { return local.y() >= y && local.y() < y + 26; };
+        auto to_volume = [&](int16_t x) {
+            int16_t v = static_cast<int16_t>(100 * (x - BAR_X0) / (BAR_X1 - BAR_X0));
+            return static_cast<uint8_t>(std::max<int16_t>(0, std::min<int16_t>(100, v)));
+        };
 
-    if (dragged_) {
-        return dstate;
-    }
+        if (!clicked) {
+            dragging_bgm_ = dragging_sfx_ = false;
+        }
 
-    auto &button = buttons_[Buttons::SELECT_RES];
+        bool on_bar = local.x() >= BAR_X0 - 4 && local.x() <= BAR_X1 + 4;
+        bool on_mute = local.x() >= MUTE_X0 && local.x() <= MUTE_X1;
 
-    if (button->is_pressed()) {
-        if (button->in_combobox(cursorpos)) {
-            if (Cursor::State new_state =
-                    button->send_cursor(clicked, cursorpos)) {
-                return new_state;
-            }
-        } else {
-            remove_cursor();
+        if (clicked && in_row(BGM_Y) && on_mute) {
+            bgm_mute_ = !bgm_mute_;
+            apply(false);
+            return Cursor::State::CLICKING;
+        }
+
+        if (clicked && in_row(SFX_Y) && on_mute) {
+            sfx_mute_ = !sfx_mute_;
+            apply(false);
+            return Cursor::State::CLICKING;
+        }
+
+        if ((clicked && in_row(BGM_Y) && on_bar) || dragging_bgm_) {
+            dragging_bgm_ = clicked;
+            bgm_ = to_volume(local.x());
+            bgm_mute_ = false;
+            apply(false);
+            return Cursor::State::CLICKING;
+        }
+
+        if ((clicked && in_row(SFX_Y) && on_bar) || dragging_sfx_) {
+            dragging_sfx_ = clicked;
+            sfx_ = to_volume(local.x());
+            sfx_mute_ = false;
+            apply(false);
+            return Cursor::State::CLICKING;
         }
     }
 
-    return UIElement::send_cursor(clicked, cursorpos);
+    return UIDragElement::send_cursor(clicked, cursorpos);
 }
 
 void UIOptionMenu::send_key(int32_t keycode, bool pressed, bool escape) {
     if (pressed) {
         if (escape) {
-            deactivate();
+            button_pressed(CANCEL);
         } else if (keycode == KeyAction::Id::RETURN) {
-            button_pressed(Buttons::OK);
+            button_pressed(OK);
         }
     }
 }
@@ -228,23 +172,24 @@ UIElement::Type UIOptionMenu::get_type() const {
     return TYPE;
 }
 
-void UIOptionMenu::change_tab(uint16_t tabid) {
-    buttons_[selected_tab_]->set_state(Button::State::NORMAL);
-    buttons_[tabid]->set_state(Button::State::PRESSED);
-
-    selected_tab_ = tabid;
-
-    switch (tabid) {
-        case Buttons::TAB0:
-            buttons_[Buttons::SELECT_RES]->set_active(true);
+Button::State UIOptionMenu::button_pressed(uint16_t buttonid) {
+    switch (buttonid) {
+        case OK:
+            if (!game_option_) {
+                apply(true);
+            }
+            deactivate();
             break;
-        case Buttons::TAB1:
-        case Buttons::TAB2:
-        case Buttons::TAB3:
-        case Buttons::TAB4:
-            buttons_[Buttons::SELECT_RES]->set_active(false);
+        case CANCEL:
+            if (!game_option_) {
+                Music::set_bgmvolume(bgm_old_);
+                Sound::set_sfxvolume(sfx_old_);
+            }
+            deactivate();
             break;
         default: break;
     }
+
+    return Button::State::NORMAL;
 }
 }  // namespace ms

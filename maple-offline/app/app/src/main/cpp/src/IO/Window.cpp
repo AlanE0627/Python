@@ -149,6 +149,12 @@ namespace ms {
 
     void focus_callback(GLFMDisplay *display, bool focused) {
         UI::get().send_focus(focused);
+
+        // maple-offline: Android may kill a backgrounded app without running
+        // destructors; keep client settings on disk.
+        if (!focused) {
+            Configuration::get().save();
+        }
     }
 
     void scroll_callback(GLFMDisplay *display, double xoffset, double yoffset) {
