@@ -418,5 +418,535 @@
 "id": 1321007,
 "name": "비홀더",
 "certain": true
+},
+{
+"id": 2000000,
+"name": "MP 회복 향상",
+"certain": false
+},
+{
+"id": 2000001,
+"name": "최대 MP 증가",
+"certain": false
+},
+{
+"id": 2001003,
+"name": "매직 아머",
+"certain": true
+},
+{
+"id": 2001004,
+"name": "에너지 볼트",
+"certain": true
+},
+{
+"id": 2001005,
+"name": "매직 클로",
+"certain": true
+},
+{
+"id": 2101002,
+"name": "텔레포트",
+"certain": true
+},
+{
+"id": 2101003,
+"name": "슬로우",
+"certain": true
+},
+{
+"id": 2111004,
+"name": "실",
+"certain": true
+},
+{
+"id": 2111005,
+"name": "스펠 부스터",
+"certain": true
+},
+{
+"id": 2111006,
+"name": "엘리먼트 컴포지션",
+"certain": true
+},
+{
+"id": 2121001,
+"name": "빅뱅",
+"certain": true
+},
+{
+"id": 2121002,
+"name": "마나 리플렉션",
+"certain": true
+},
+{
+"id": 2201002,
+"name": "텔레포트",
+"certain": true
+},
+{
+"id": 2201003,
+"name": "슬로우",
+"certain": true
+},
+{
+"id": 2201004,
+"name": "콜드 빔",
+"certain": true
+},
+{
+"id": 2211003,
+"name": "썬더 스피어",
+"certain": true
+},
+{
+"id": 2211004,
+"name": "실",
+"certain": true
+},
+{
+"id": 2211005,
+"name": "스펠 부스터",
+"certain": true
+},
+{
+"id": 2211006,
+"name": "엘리먼트 컴포지션",
+"certain": true
+},
+{
+"id": 2221001,
+"name": "빅뱅",
+"certain": true
+},
+{
+"id": 2221002,
+"name": "마나 리플렉션",
+"certain": true
+},
+{
+"id": 2221003,
+"name": "아이스 데몬",
+"certain": true
+},
+{
+"id": 2301001,
+"name": "텔레포트",
+"certain": true
+},
+{
+"id": 2301003,
+"name": "인빈서블",
+"certain": true
+},
+{
+"id": 2310000,
+"name": "엘리멘탈 레지스턴스",
+"certain": true
+},
+{
+"id": 2311005,
+"name": "둠",
+"certain": true
+},
+{
+"id": 2311006,
+"name": "서먼 드래곤",
+"certain": true
+},
+{
+"id": 2321002,
+"name": "마나 리플렉션",
+"certain": true
+},
+{
+"id": 3000000,
+"name": "아마존의 축복",
+"certain": false
+},
+{
+"id": 3001003,
+"name": "포커스",
+"certain": true
+},
+{
+"id": 3001005,
+"name": "더블 샷",
+"certain": true
+},
+{
+"id": 3101003,
+"name": "파워 넉백",
+"certain": true
+},
+{
+"id": 3110000,
+"name": "스러스트",
+"certain": true
+},
+{
+"id": 3111002,
+"name": "퍼펫",
+"certain": true
+},
+{
+"id": 3111004,
+"name": "애로우 레인",
+"certain": true
+},
+{
+"id": 3111006,
+"name": "스트레이핑",
+"certain": true
+},
+{
+"id": 3121003,
+"name": "드래곤의 숨결",
+"certain": false
+},
+{
+"id": 3121004,
+"name": "폭풍의 시",
+"certain": true
+},
+{
+"id": 3121006,
+"name": "피닉스",
+"certain": true
+},
+{
+"id": 3121008,
+"name": "집중",
+"certain": true
+},
+{
+"id": 3201003,
+"name": "파워 넉백",
+"certain": true
+},
+{
+"id": 3210000,
+"name": "스러스트",
+"certain": true
+},
+{
+"id": 3211002,
+"name": "퍼펫",
+"certain": true
+},
+{
+"id": 3211003,
+"name": "블리자드",
+"certain": true
+},
+{
+"id": 3211004,
+"name": "애로우 이럽션",
+"certain": true
+},
+{
+"id": 3211006,
+"name": "스트레이핑",
+"certain": true
+},
+{
+"id": 3221001,
+"name": "피어싱",
+"certain": true
+},
+{
+"id": 3221003,
+"name": "드래곤의 숨결",
+"certain": false
+},
+{
+"id": 3221005,
+"name": "프리저",
+"certain": true
+},
+{
+"id": 4000001,
+"name": "킨 아이즈",
+"certain": true
+},
+{
+"id": 4001002,
+"name": "디스오더",
+"certain": true
+},
+{
+"id": 4100002,
+"name": "인듀어",
+"certain": true
+},
+{
+"id": 4101004,
+"name": "헤이스트",
+"certain": true
+},
+{
+"id": 4101005,
+"name": "드레인",
+"certain": true
+},
+{
+"id": 4110000,
+"name": "알케미스트",
+"certain": true
+},
+{
+"id": 4111001,
+"name": "메소 업",
+"certain": true
+},
+{
+"id": 4111004,
+"name": "섀도우 메소",
+"certain": true
+},
+{
+"id": 4111005,
+"name": "어벤져",
+"certain": true
+},
+{
+"id": 4111006,
+"name": "플래시 점프",
+"certain": true
+},
+{
+"id": 4120005,
+"name": "베놈",
+"certain": true
+},
+{
+"id": 4121003,
+"name": "도발",
+"certain": true
+},
+{
+"id": 4121004,
+"name": "닌자 앰부시",
+"certain": true
+},
+{
+"id": 4121006,
+"name": "섀도우 스타",
+"certain": true
+},
+{
+"id": 4121007,
+"name": "트리플 스로우",
+"certain": true
+},
+{
+"id": 4121008,
+"name": "닌자 스톰",
+"certain": true
+},
+{
+"id": 4200001,
+"name": "인듀어",
+"certain": true
+},
+{
+"id": 4201003,
+"name": "헤이스트",
+"certain": true
+},
+{
+"id": 4201005,
+"name": "새비지 블로우",
+"certain": true
+},
+{
+"id": 4210000,
+"name": "실드 마스터리",
+"certain": true
+},
+{
+"id": 4211001,
+"name": "차크라",
+"certain": true
+},
+{
+"id": 4211004,
+"name": "밴드 오브 시브즈",
+"certain": true
+},
+{
+"id": 4211005,
+"name": "메소 가드",
+"certain": true
+},
+{
+"id": 4220005,
+"name": "베놈",
+"certain": true
+},
+{
+"id": 4221001,
+"name": "암살",
+"certain": true
+},
+{
+"id": 4221003,
+"name": "도발",
+"certain": true
+},
+{
+"id": 4221004,
+"name": "닌자 앰부시",
+"certain": true
+},
+{
+"id": 5001001,
+"name": "플래시 피스트",
+"certain": true
+},
+{
+"id": 5100000,
+"name": "최대 HP 증가",
+"certain": false
+},
+{
+"id": 5101002,
+"name": "백 스핀 블로우",
+"certain": true
+},
+{
+"id": 5101003,
+"name": "더블 어퍼",
+"certain": true
+},
+{
+"id": 5101005,
+"name": "MP 회복",
+"certain": true
+},
+{
+"id": 5101007,
+"name": "오크통",
+"certain": false
+},
+{
+"id": 5110001,
+"name": "에너지 차지",
+"certain": true
+},
+{
+"id": 5111004,
+"name": "에너지 드레인",
+"certain": true
+},
+{
+"id": 5111005,
+"name": "트랜스폼",
+"certain": true
+},
+{
+"id": 5111006,
+"name": "쇼크웨이브",
+"certain": true
+},
+{
+"id": 5121002,
+"name": "에너지 오브",
+"certain": true
+},
+{
+"id": 5121003,
+"name": "슈퍼 트랜스폼",
+"certain": true
+},
+{
+"id": 5121004,
+"name": "데몰리션",
+"certain": true
+},
+{
+"id": 5121005,
+"name": "스내치",
+"certain": true
+},
+{
+"id": 5201002,
+"name": "그레네이드",
+"certain": true
+},
+{
+"id": 5201004,
+"name": "블랭크 샷",
+"certain": true
+},
+{
+"id": 5210000,
+"name": "버스트 파이어",
+"certain": true
+},
+{
+"id": 5211001,
+"name": "문어 포대",
+"certain": false
+},
+{
+"id": 5211002,
+"name": "갈매기 특공대",
+"certain": false
+},
+{
+"id": 5211004,
+"name": "플레임 쓰로워",
+"certain": true
+},
+{
+"id": 5211005,
+"name": "아이스 스플리터",
+"certain": true
+},
+{
+"id": 5211006,
+"name": "호밍 비컨",
+"certain": true
+},
+{
+"id": 5220001,
+"name": "엘리멘탈 부스트",
+"certain": true
+},
+{
+"id": 5220002,
+"name": "문어 포대의 분노",
+"certain": false
+},
+{
+"id": 5220011,
+"name": "불스아이",
+"certain": true
+},
+{
+"id": 5221003,
+"name": "에어 스트라이크",
+"certain": true
+},
+{
+"id": 5221006,
+"name": "배틀쉽",
+"certain": true
+},
+{
+"id": 5221007,
+"name": "배틀쉽 캐논",
+"certain": true
+},
+{
+"id": 5221008,
+"name": "배틀쉽 토르페도",
+"certain": true
+},
+{
+"id": 5221009,
+"name": "최면",
+"certain": true
 }
 ]

@@ -451,7 +451,9 @@ namespace ms {
         type_ = get_by_value(msgtype, style_b0, style_b1);
 
         timestep_ = 0;
-        draw_text_ = true;
+        // maple-offline: gradual text is disabled (see update()), so the
+        // first click must not be spent on "show the rest of the text"
+        draw_text_ = false;
         key_sel_ = 0;
         formatted_text_pos_ = 0;
         formatted_text_ = format_text(tx, npcid);

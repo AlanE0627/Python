@@ -191,9 +191,14 @@ void BuffHandler::handle(InPacket &recv) const {
         }
     }
 
+    // maple-offline: COMBO and SUMMON share one bit in v83; read its data
+    // once (the skill id tells them apart in ApplyBuffHandler)
+    uint64_t done = 0;
+
     for (const auto &[buff_id, mask] : Buffstat::second_codes) {
-        if (secondmask & mask) {
-            handle_buff(recv, buff_id);
+        if ((secondmask & mask) && !(done & mask)) {
+            done |= mask;
+            handle_buff(recv, buff_id == Buffstat::Id::SUMMON ? Buffstat::Id::COMBO : buff_id);
         }
     }
 
@@ -217,6 +222,11 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
         int32_t skillid = recv.read_int();
         int32_t duration = recv.read_int();
 
+        // shared COMBO/SUMMON bit: only Combo Attack skills are combos
+        if (bs == Buffstat::Id::COMBO && skillid != 1111002 && skillid != 11111001) {
+            bs = Buffstat::Id::SUMMON;
+        }
+
         Stage::get().get_player().give_buff({ bs, value, skillid, duration });
 
         if (auto bufflist = UI::get().get_element<UIBuffList>()) {
@@ -227,6 +237,11 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
 
 void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
     Stage::get().get_player().cancel_buff(bs);
+
+    // shared COMBO/SUMMON bit: clear both
+    if (bs == Buffstat::Id::COMBO) {
+        Stage::get().get_player().cancel_buff(Buffstat::Id::SUMMON);
+    }
 }
 
 void RecalculateStatsHandler::handle(InPacket &) const {

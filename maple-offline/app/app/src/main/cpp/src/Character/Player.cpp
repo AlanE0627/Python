@@ -14,6 +14,9 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Player.h"
+#include <nlnx/nx.hpp>
+#include <algorithm>
+#include <cmath>
 
 #include <cstdio>
 
@@ -150,10 +153,36 @@ void Player::draw(Layer::Id layer,
                   float alpha) const {
     if (layer == get_layer()) {
         Char::draw(viewx, viewy, alpha);
+
+        // maple-offline: Combo Attack orbs circle the player (buff value =
+        // orbs + 1)
+        const Buff &combo = buffs_[Buffstat::Id::COMBO];
+
+        if (combo.stat == Buffstat::Id::COMBO && combo.value > 1) {
+            static Texture orb = nl::nx::skill["111.img"]["skill"]["1111002"]["state"]["1"];
+            int orbs = std::min<int>(combo.value - 1, 10);
+            double t = combo_phase_;
+            Point<int16_t> center = get_position() + Point<int16_t>(
+                    static_cast<int16_t>(std::round(viewx)),
+                    static_cast<int16_t>(std::round(viewy) - 35));
+
+            for (int i = 0; i < orbs; i++) {
+                double a = t + i * 2.0 * 3.14159265 / orbs;
+                Point<int16_t> p = center + Point<int16_t>(static_cast<int16_t>(std::cos(a) * 48),
+                                                           static_cast<int16_t>(std::sin(a) * 14));
+                orb.draw(DrawArgument(p));
+            }
+        }
     }
 }
 
 int8_t Player::update(const Physics &physics) {
+    combo_phase_ += 0.03;
+
+    if (combo_phase_ > 6.2831853) {
+        combo_phase_ -= 6.2831853;
+    }
+
     const PlayerState *pst = get_state(state_);
 
     if (pst) {

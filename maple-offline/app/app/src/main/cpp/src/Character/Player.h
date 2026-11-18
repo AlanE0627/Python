@@ -187,6 +187,7 @@ public:
 
 private:
     int32_t attack_ticks_ = 0;
+    double combo_phase_ = 0.0;
     CharStats stats_;
     Inventory inventory_;
     SkillBook skill_book_;

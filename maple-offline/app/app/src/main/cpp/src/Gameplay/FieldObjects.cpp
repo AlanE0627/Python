@@ -89,13 +89,16 @@ void FieldObjects::draw(double viewx, double viewy, float alpha) const {
     };
 
     for (const auto &[oid, mist] : mists_) {
-        // tile the mist animation across its box, along the bottom edge
+        // fill the mist box with the skill's tile animation
         int16_t width = mist.box.right() - mist.box.left();
-        int16_t step = 100;
+        int16_t height = mist.box.bottom() - mist.box.top();
 
-        for (int16_t x = 0; x <= width; x = static_cast<int16_t>(x + step)) {
-            Point<int16_t> p(static_cast<int16_t>(mist.box.left() + x), mist.box.bottom());
-            mist.anim.draw(DrawArgument(screen(p)), alpha);
+        for (int16_t y = 40; y <= height; y = static_cast<int16_t>(y + 70)) {
+            for (int16_t x = 45; x <= width; x = static_cast<int16_t>(x + 90)) {
+                Point<int16_t> p(static_cast<int16_t>(mist.box.left() + x),
+                                 static_cast<int16_t>(mist.box.top() + y));
+                mist.anim.draw(DrawArgument(screen(p)), alpha);
+            }
         }
     }
 
