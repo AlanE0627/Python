@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -15,6 +16,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIWorldMap.h"
 
+#include "../../Graphics/Geometry.h"
+
 #include <nlnx/nx.hpp>
 
 #include "../Gameplay/Stage.h"
@@ -24,8 +27,12 @@
 
 namespace ms {
 UIWorldMap::UIWorldMap() : UIDragElement<PosMAP>() {
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
+    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
     nl::node WorldMap = nl::nx::ui["UIWindow2.img"]["WorldMap"];
+
+    for (size_t i = 0; i < border_.size(); i++) {
+        border_[i] = nl::nx::ui["UIWindow.img"]["WorldMap"]["Border"][std::to_string(i)];
+    }
     nl::node WorldMapSearch = WorldMap["WorldMapSearch"];
     nl::node Border = WorldMap["Border"]["0"];
     nl::node backgrnd = WorldMapSearch["backgrnd"];
@@ -80,13 +87,47 @@ UIWorldMap::UIWorldMap() : UIDragElement<PosMAP>() {
                              search_text_dim,
                              8);
 
-    set_search(true);
+    // v83 has no map search / auto-fly / navigation.
+    buttons_[Buttons::BT_SEARCH]->set_active(false);
+    buttons_[Buttons::BT_AUTOFLY]->set_active(false);
+    buttons_[Buttons::BT_NAVIREG]->set_active(false);
+    set_search(false);
 
     drag_area_ = Point<int16_t>(bg_dimension_x, 20);
 }
 
+void UIWorldMap::layout_frame() {
+#ifdef MS_DESKTOP_DEBUG
+    std::fprintf(stderr, "[dbg] worldmap base %d,%d valid %d\n", base_img_.width(), base_img_.height(), base_img_.is_valid());
+#endif
+    // Inner area = world map image; top band 33 px (title), bottom 18, sides 7.
+    Point<int16_t> inner = base_img_.get_dimensions();
+
+    bg_dimensions_ = Point<int16_t>(inner.x() + 14, inner.y() + 33 + 18);
+    base_position_ = Point<int16_t>(7, 33) + base_img_.get_origin();
+    dimension_ = bg_dimensions_;
+    drag_area_ = Point<int16_t>(bg_dimensions_.x(), 20);
+
+    buttons_[Buttons::BT_CLOSE]->set_position(Point<int16_t>(bg_dimensions_.x() - 19, 8));
+}
+
 void UIWorldMap::draw(float alpha) const {
-    UIElement::draw_sprites(alpha);
+    {
+        int16_t w = bg_dimensions_.x(), h = bg_dimensions_.y();
+        int16_t iw = w - 14, ih = h - 33 - 18;
+
+        ColorBox(iw, ih, Color::Name::BLACK, 1.0f).draw(DrawArgument(position_ + Point<int16_t>(7, 33)));
+        border_[0].draw(position_);
+        border_[1].draw(DrawArgument(position_ + Point<int16_t>(7, 0), Point<int16_t>(iw, 0)));
+        border_[2].draw(position_ + Point<int16_t>(w - 7, 0));
+        border_[3].draw(DrawArgument(position_ + Point<int16_t>(0, 33), Point<int16_t>(0, ih)));
+        border_[4].draw(DrawArgument(position_ + Point<int16_t>(w - 7, 33), Point<int16_t>(0, ih)));
+        border_[5].draw(position_ + Point<int16_t>(0, h - 18));
+        border_[6].draw(DrawArgument(position_ + Point<int16_t>(7, h - 18), Point<int16_t>(iw, 0)));
+        border_[7].draw(position_ + Point<int16_t>(w - 7, h - 18));
+        static const Texture title = nl::nx::ui["UIWindow.img"]["WorldMap"]["title"];
+        title.draw(position_ + Point<int16_t>(10, 8));
+    }
 
     if (search_) {
         search_background_.draw(position_ + background_dimensions_);
@@ -143,6 +184,9 @@ void UIWorldMap::draw(float alpha) const {
 }
 
 void UIWorldMap::update() {
+#ifdef MS_DESKTOP_DEBUG
+    static int n = 0; if (n++ < 2) std::fprintf(stderr, "[dbg] worldmap update active %d\n", active_);
+#endif
     int32_t mid = Stage::get().get_mapid();
 
     if (mid != mapid_) {
@@ -277,6 +321,8 @@ void UIWorldMap::update_world(const std::string &map) {
 
     base_img_ = WorldMap["BaseImg"][0];
     parent_map_ = std::string(WorldMap["info"]["parentMap"]);
+
+    layout_frame();
 
     link_images_.clear();
     link_maps_.clear();

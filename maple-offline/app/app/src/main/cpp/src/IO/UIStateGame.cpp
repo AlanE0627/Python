@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -171,12 +172,16 @@ namespace ms {
                                bool pressed,
                                bool escape) {
         if (UIElement *focusedelement = get(focused_)) {
+#ifdef MS_DESKTOP_DEBUG
+            if (pressed) std::fprintf(stderr, "[dbg] key to focused type %d active %d\n", (int) focused_, focusedelement->is_active());
+#endif
             if (focusedelement->is_active()) {
                 return focusedelement->send_key(action, pressed, escape);
             }
-            focused_ = UIElement::NONE;
 
-            return;
+            // maple-offline: a closed focused window (e.g. the shop) used to
+            // swallow the next key press; clear it and handle the key normally.
+            focused_ = UIElement::NONE;
         }
         switch (type) {
             case KeyType::Id::MENU:
@@ -232,6 +237,9 @@ namespace ms {
                         }
                             break;
                         case KeyAction::Id::WORLD_MAP:
+#ifdef MS_DESKTOP_DEBUG
+                            std::fprintf(stderr, "[dbg] worldmap key\n");
+#endif
                             emplace<UIWorldMap>();
                             break;
                         case KeyAction::Id::MAPLE_CHAT: {

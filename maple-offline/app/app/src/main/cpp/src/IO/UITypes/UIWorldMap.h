@@ -94,6 +94,9 @@ private:
     Texture search_background_;
     Texture search_notice_;
     Texture base_img_;
+    // maple-offline: v83 eight-piece border (UIWindow.img/WorldMap/Border)
+    std::array<Texture, 8> border_;
+    void layout_frame();
     Texture path_img_;
 
     Animation cur_pos_;
