@@ -47,7 +47,7 @@ private:
     static constexpr int16_t CENTER_START_X_ = 64;
     static constexpr int16_t BTN_MIN_Y_ = 4;
     static constexpr int16_t ML_MR_Y_ = 17;
-    static constexpr int16_t MAX_ADJ_ = 40;
+    static constexpr int16_t MAX_ADJ_ = 43;  // v83: MaxMap top 72 - MinMap top 29
     static constexpr int16_t M_START_ = 36;
     static constexpr int16_t LISTNPC_ITEM_HEIGHT_ = 17;
     static constexpr int16_t LISTNPC_ITEM_WIDTH_ = 140;

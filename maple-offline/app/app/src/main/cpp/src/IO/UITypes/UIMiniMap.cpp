@@ -36,11 +36,12 @@ UIMiniMap::UIMiniMap(const CharStats &stats) :
 
     type_ = Setting<MiniMapType>::get().load();
     user_type_ = type_;
-    simple_mode_ = Setting<MiniMapSimpleMode>::get().load();
+    // maple-offline: v83 has a single minimap style (UIWindow.img/MiniMap:
+    // Min / MinMap / MaxMap frames and the world-map button).
+    simple_mode_ = false;
 
-    std::string node = simple_mode_ ? "MiniMapSimpleMode" : "MiniMap";
-    mini_map_ = nl::nx::ui["UIWindow2.img"][node];
-    list_npc_ = nl::nx::ui["UIWindow2.img"]["MiniMap"]["ListNpc"];
+    mini_map_ = nl::nx::ui["UIWindow.img"]["MiniMap"];
+    list_npc_ = nl::node();
 
     buttons_[Buttons::BT_MIN] =
         std::make_unique<MapleButton>(mini_map_["BtMin"],
@@ -68,10 +69,13 @@ UIMiniMap::UIMiniMap(const CharStats &stats) :
     combined_text_ =
         Text(Text::Font::A12M, Text::Alignment::LEFT, Color::Name::WHITE);
 
-    marker_ =
-        Setting<MiniMapDefaultHelpers>::get().load()
-            ? nl::nx::ui["UIWindow2.img"]["MiniMapSimpleMode"]["DefaultHelper"]
-            : nl::nx::mapLatest["MapHelper.img"]["minimap"];
+    marker_ = nl::nx::mapLatest["MapHelper.img"]["minimap"];
+
+    // Later-version buttons do not exist in v83.
+    for (auto id : { Buttons::BT_MIN, Buttons::BT_MAX, Buttons::BT_SMALL, Buttons::BT_BIG,
+                     Buttons::BT_NPC }) {
+        buttons_[id]->set_active(false);
+    }
 
     player_marker_ = Animation(marker_["user"]);
     selected_marker_ = Animation(mini_map_["iconNpc"]);
@@ -466,6 +470,12 @@ void UIMiniMap::toggle_buttons() {
 
         drag_area_ = Point<int16_t>(dimension_.x(), 20);
     }
+
+    // maple-offline: these buttons have no v83 images.
+    for (auto id : { Buttons::BT_MIN, Buttons::BT_MAX, Buttons::BT_SMALL, Buttons::BT_BIG,
+                     Buttons::BT_NPC }) {
+        buttons_[id]->set_active(false);
+    }
 }
 
 void UIMiniMap::update_text() {
@@ -559,92 +569,56 @@ void UIMiniMap::update_canvas() {
         DrawArgument(WINDOW_UL_POS_
                      + Point<int16_t>(min_c_stretch + CENTER_START_X_, 0)));
 
-    // Normal sprites queue
-    // (7, 10) is the top left corner of the inner window
-    // 114 = 128 (width of left and right borders) - 14 (width of middle borders
-    // * 2). 27 = height of inner frame drawn on up and down borders
-    normal_sprites_.emplace_back(
-        MiddleCenter,
-        DrawArgument(Point<int16_t>(7, 10),
-                     Point<int16_t>(c_stretch + 114, m_stretch + 27)));
+    // maple-offline: v83 nine-slice frames (UIWindow.img/MiniMap/MinMap and
+    // MaxMap: 6 px sides, top 29 / 72, bottom 14 / 15, 1x1 centre).
+    auto build = [&](std::vector<Sprite> &out, nl::node frame, int16_t top_h,
+                     int16_t bottom_h, Point<int16_t> &dims, bool max) {
+        int16_t pad = 4;
+        int16_t inner_w = std::max<int16_t>(map_dimensions.x() + 2 * pad,
+                                            static_cast<int16_t>(window_width - 12));
+        int16_t inner_h = std::max<int16_t>(map_dimensions.y() + 2 * pad, 20);
+        int16_t tw = inner_w + 12;
 
-    if (has_map_) {
-        normal_sprites_.emplace_back(
-            map_["miniMap"]["canvas"],
-            DrawArgument(
-                Point<int16_t>(map_draw_origin_x_, map_draw_origin_y_)));
-    }
+        out.emplace_back(frame["c"], DrawArgument(Point<int16_t>(6, top_h),
+                                                  Point<int16_t>(inner_w, inner_h)));
 
-    normal_sprites_.emplace_back(Normal[MiddleLeft],
-                                 DrawArgument(Point<int16_t>(0, ML_MR_Y_),
-                                              Point<int16_t>(0, m_stretch)));
-    normal_sprites_.emplace_back(
-        Normal[MiddleRight],
-        DrawArgument(Point<int16_t>(middle_right_x_, ML_MR_Y_),
-                     Point<int16_t>(0, m_stretch)));
-    normal_sprites_.emplace_back(
-        Normal[UpCenter],
-        DrawArgument(Point<int16_t>(CENTER_START_X_, 0) + WINDOW_UL_POS_,
-                     Point<int16_t>(c_stretch, 0)));
-    normal_sprites_.emplace_back(Normal[UpLeft], WINDOW_UL_POS_);
-    normal_sprites_.emplace_back(
-        Normal[UpRight],
-        DrawArgument(Point<int16_t>(ur_x_offset, 0) + WINDOW_UL_POS_));
-    normal_sprites_.emplace_back(
-        Normal[DownCenter],
-        DrawArgument(Point<int16_t>(CENTER_START_X_, down_y_offset + 18),
-                     Point<int16_t>(c_stretch, 0)));
-    normal_sprites_.emplace_back(Normal[DownLeft],
-                                 Point<int16_t>(0, down_y_offset));
-    normal_sprites_.emplace_back(Normal[DownRight],
-                                 Point<int16_t>(ur_x_offset, down_y_offset));
+        if (has_map_) {
+            out.emplace_back(map_["miniMap"]["canvas"],
+                             DrawArgument(Point<int16_t>(map_draw_origin_x_,
+                                                         map_draw_origin_y_ + (max ? MAX_ADJ_ : 0))));
+        }
 
-    normal_dimensions_ = Point<int16_t>(ur_x_offset + 64, down_y_offset + 27);
+        out.emplace_back(frame["nw"], DrawArgument(Point<int16_t>(0, 0)));
+        out.emplace_back(frame["n"], DrawArgument(Point<int16_t>(6, 0), Point<int16_t>(inner_w, 0)));
+        out.emplace_back(frame["ne"], DrawArgument(Point<int16_t>(tw - 6, 0)));
+        out.emplace_back(frame["w"], DrawArgument(Point<int16_t>(0, top_h), Point<int16_t>(0, inner_h)));
+        out.emplace_back(frame["e"], DrawArgument(Point<int16_t>(tw - 6, top_h), Point<int16_t>(0, inner_h)));
+        out.emplace_back(frame["sw"], DrawArgument(Point<int16_t>(0, top_h + inner_h)));
+        out.emplace_back(frame["s"], DrawArgument(Point<int16_t>(6, top_h + inner_h), Point<int16_t>(inner_w, 0)));
+        out.emplace_back(frame["se"], DrawArgument(Point<int16_t>(tw - 6, top_h + inner_h)));
 
-    // Max sprites queue
-    max_sprites_.emplace_back(
-        MiddleCenter,
-        DrawArgument(Point<int16_t>(7, 50),
-                     Point<int16_t>(c_stretch + 114, m_stretch + 27)));
+        dims = Point<int16_t>(tw, top_h + inner_h + bottom_h);
+        middle_right_x_ = tw - 6;
+    };
 
-    if (has_map_) {
-        max_sprites_.emplace_back(
-            map_["miniMap"]["canvas"],
-            DrawArgument(Point<int16_t>(map_draw_origin_x_,
-                                        map_draw_origin_y_ + MAX_ADJ_)));
-    }
+    map_draw_origin_x_ = 6 + std::max<int16_t>(4, (std::max<int16_t>(map_dimensions.x() + 8,
+                                                                      window_width - 12)
+                                                    - map_dimensions.x()) / 2);
+    map_draw_origin_y_ = 29 + 4;
 
-    max_sprites_.emplace_back(
-        Max[MiddleLeft],
-        DrawArgument(Point<int16_t>(0, ML_MR_Y_ + MAX_ADJ_),
-                     Point<int16_t>(0, m_stretch)));
-    max_sprites_.emplace_back(
-        Max[MiddleRight],
-        DrawArgument(Point<int16_t>(middle_right_x_, ML_MR_Y_ + MAX_ADJ_),
-                     Point<int16_t>(0, m_stretch)));
-    max_sprites_.emplace_back(
-        Max[UpCenter],
-        DrawArgument(Point<int16_t>(CENTER_START_X_, 0) + WINDOW_UL_POS_,
-                     Point<int16_t>(c_stretch, 0)));
-    max_sprites_.emplace_back(Max[UpLeft], WINDOW_UL_POS_);
-    max_sprites_.emplace_back(
-        Max[UpRight],
-        DrawArgument(Point<int16_t>(ur_x_offset, 0) + WINDOW_UL_POS_));
-    max_sprites_.emplace_back(
-        Max[DownCenter],
-        DrawArgument(
-            Point<int16_t>(CENTER_START_X_, down_y_offset + MAX_ADJ_ + 18),
-            Point<int16_t>(c_stretch, 0)));
-    max_sprites_.emplace_back(Max[DownLeft],
-                              Point<int16_t>(0, down_y_offset + MAX_ADJ_));
-    max_sprites_.emplace_back(
-        Max[DownRight],
-        Point<int16_t>(ur_x_offset, down_y_offset + MAX_ADJ_));
+    build(normal_sprites_, Normal, 29, 14, normal_dimensions_, false);
+    build(max_sprites_, Max, 72, 15, max_dimensions_, true);
+
     max_sprites_.emplace_back(
         nl::nx::mapLatest["MapHelper.img"]["mark"][map_["info"]["mapMark"]],
         DrawArgument(Point<int16_t>(7, 17)));
 
-    max_dimensions_ = normal_dimensions_ + Point<int16_t>(0, MAX_ADJ_);
+    (void) c_stretch;
+    (void) ur_x_offset;
+    (void) m_stretch;
+    (void) down_y_offset;
+    (void) dl_dr_y;
+    (void) MiddleCenter;
 }
 
 void UIMiniMap::draw_movable_markers(Point<int16_t> init_pos,
