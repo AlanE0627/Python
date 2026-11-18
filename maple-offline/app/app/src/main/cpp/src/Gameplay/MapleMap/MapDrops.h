@@ -15,6 +15,10 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include <array>
 #include <queue>
 
@@ -50,6 +54,12 @@ public:
 
     Loot find_loot_at(Point<int16_t> playerpos);
 
+    // Meso drops lying inside range, closest first: (oid, amount)
+    std::vector<std::pair<int32_t, int32_t>> find_mesos(
+        Rectangle<int16_t> range,
+        Point<int16_t> origin,
+        size_t max) const;
+
 private:
     MapObjects drops_;
 
@@ -57,6 +67,7 @@ private:
 
     std::array<Animation, MesoIcon::NUM_ICONS> meso_icons_;
     bool loot_enabled_;
+    std::unordered_map<int32_t, int32_t> meso_amounts_;
 
     std::queue<DropSpawn> spawns_;
 };

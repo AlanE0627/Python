@@ -16,10 +16,12 @@
 #include "Combat.h"
 
 #include <nlnx/nx.hpp>
+#include "../Stage.h"
 
 #include "../../Data/SkillData.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 #include "../../Character/SkillId.h"
 #include "../../IO/Messages.h"
@@ -159,6 +161,11 @@ void Combat::apply_move(const SpecialMove &move) {
         uint8_t mobcount = attack.mobcount;
         AttackResult result = attack;
 
+        if (move.get_id() == 4211006) {
+            meso_explosion(attack, range, origin);
+            return;
+        }
+
         MapObjects *mob_objs = mobs_.get_mobs();
         MapObjects *reactor_objs = reactors_.get_reactors();
 
@@ -230,6 +237,58 @@ void Combat::apply_move(const SpecialMove &move) {
             fn_use_skill(moveid, level, player_.get_position(), player_.getflip());
         } else {
             fn_use_skill(moveid, level);
+        }
+    }
+}
+
+// Meso Explosion: every meso on the ground in range explodes and hits one
+// of the mobs in range (assigned in turn). Per-drop damage is an
+// interpretation: no verified v83 formula was found, so it scales the
+// skill's x with the drop's meso amount: high = x * (0.5 + 0.5 * m / (m + 250)),
+// low = high / 2.
+void Combat::meso_explosion(const Attack &attack,
+                            Rectangle<int16_t> range,
+                            Point<int16_t> origin) {
+    int32_t level = player_.get_skilllevel(4211006);
+    int32_t x = nl::nx::skill["421.img"]["skill"]["4211006"]["level"]
+                             [std::to_string(level)]["x"]
+                                 .get_integer(1000);
+    size_t maxmesos = attack.hitcount > 0 ? attack.hitcount : 15;
+
+    auto mesos = Stage::get().get_drops().find_mesos(range, origin, maxmesos);
+    std::vector<int32_t> mobs =
+        find_closest(mobs_.get_mobs(), range, origin, attack.mobcount, true);
+
+    std::vector<MesoExplosionPacket::Target> targets;
+
+    for (int32_t oid : mobs) {
+        targets.push_back({ oid, mobs_.get_mob_head_position(oid), {} });
+    }
+
+    std::vector<int32_t> meso_oids;
+
+    for (size_t i = 0; i < mesos.size(); i++) {
+        meso_oids.push_back(mesos[i].first);
+
+        if (targets.empty()) {
+            continue;
+        }
+
+        double m = mesos[i].second;
+        double high = x * (0.5 + 0.5 * m / (m + 250.0));
+        double low = high * 0.5;
+        auto damage = static_cast<int32_t>(
+            low + (high - low) * (std::rand() % 1000) / 1000.0);
+
+        targets[i % targets.size()].damage.push_back(damage);
+    }
+
+    MesoExplosionPacket(targets, meso_oids, attack.toleft, attack.stance)
+        .dispatch();
+
+    for (const auto &target : targets) {
+        for (int32_t damage : target.damage) {
+            show_summon_damage(target.oid, damage);
         }
     }
 }

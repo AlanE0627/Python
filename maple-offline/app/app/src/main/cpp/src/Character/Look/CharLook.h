@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <vector>
 #include "../../Graphics/Texture.h"
+#include "../../Graphics/Animation.h"
 #include "CharEquips.h"
 #include "Face.h"
 #include "Hair.h"
@@ -98,6 +99,13 @@ public:
 
     int32_t get_mount() const { return mount_id_; }
 
+    // Transformation (MORPH buff): Morph.nx/<id>.img replaces the character
+    void set_morph(int32_t morph_id);
+
+    void clear_morph();
+
+    int32_t get_morph() const { return morph_id_; }
+
     // Initialize drawinfo
     static void init();
 
@@ -151,6 +159,12 @@ private:
     void draw_mount(const DrawArgument &args,
                     Stance::Id stance,
                     bool front) const;
+
+    std::string morph_stance_name(Stance::Id stance) const;
+
+    int32_t morph_id_ = 0;
+    std::unordered_map<std::string, Animation> morph_anims_;
+    std::string morph_stance_;
 
     int32_t mount_id_ = 0;
     std::unordered_map<std::string, std::vector<MountFrame>> mount_anims_;

@@ -1104,6 +1104,12 @@ public class MapleMap {
         if (!YamlConfig.config.server.USE_AUTO_LOOT || chr == null || mdrop.isPlayerDrop()) {
             return;
         }
+        // Chief Bandit / Shadower keep meso drops on the ground for Meso
+        // Explosion; items are still looted automatically
+        int jobId = chr.getJob().getId();
+        if (mdrop.getMeso() > 0 && (jobId == 421 || jobId == 422)) {
+            return;
+        }
         TimerManager.getInstance().schedule(() -> {
             if (!mdrop.isPickedUp() && chr.isLoggedinWorld() && chr.getMap() == this) {
                 chr.pickupItem(mdrop);

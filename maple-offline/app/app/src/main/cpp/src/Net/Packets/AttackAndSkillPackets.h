@@ -15,6 +15,7 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <algorithm>
 #include <vector>
 
 #include "../Gameplay/Combat/Attack.h"
@@ -118,6 +119,64 @@ public:
                          result.mobid,
                          result.oid,
                          result.direction) {}
+};
+
+// Meso Explosion (4211006), parsed by the server separately from other
+// close-range attacks: per mob oid, positions and damage lines, then the
+// exploded meso drops
+// Opcode: CLOSE_ATTACK(44)
+class MesoExplosionPacket : public OutPacket {
+public:
+    struct Target {
+        int32_t oid;
+        Point<int16_t> pos;
+        std::vector<int32_t> damage;
+    };
+
+    MesoExplosionPacket(const std::vector<Target> &targets,
+                        const std::vector<int32_t> &mesos,
+                        bool toleft,
+                        uint8_t stance) :
+        OutPacket(OutPacket::Opcode::CLOSE_ATTACK) {
+        skip(1);
+        uint8_t lines = 0;
+
+        for (const auto &t : targets) {
+            lines = std::max<uint8_t>(lines, static_cast<uint8_t>(t.damage.size()));
+        }
+
+        write_byte(static_cast<uint8_t>((targets.size() << 4) | (lines & 0xF)));
+        write_int(4211006);
+        skip(8);
+        write_byte(0);  // display
+        write_byte(toleft);
+        write_byte(stance);
+        skip(6);
+
+        for (const auto &t : targets) {
+            write_int(t.oid);
+            skip(4);
+            write_point(t.pos);
+            write_point(t.pos);
+            write_byte(static_cast<uint8_t>(t.damage.size()));
+
+            for (int32_t d : t.damage) {
+                write_int(d);
+            }
+
+            skip(4);
+        }
+
+        skip(4);
+        write_byte(static_cast<uint8_t>(mesos.size()));
+
+        for (int32_t oid : mesos) {
+            write_int(oid);
+            skip(1);
+        }
+
+        write_short(0);
+    }
 };
 
 // Monster Magnet (1121001/1221001/1321001): pulled mobs and facing

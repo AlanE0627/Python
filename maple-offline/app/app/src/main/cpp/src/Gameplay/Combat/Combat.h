@@ -29,6 +29,10 @@ public:
     // server applies the damage and sends the mob HP / death)
     void show_summon_damage(int32_t mob_oid, int32_t damage);
 
+    void meso_explosion(const Attack &attack,
+                        Rectangle<int16_t> range,
+                        Point<int16_t> origin);
+
     Combat(Player &player,
            MapChars &chars,
            MapMobs &mobs,

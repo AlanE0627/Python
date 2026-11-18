@@ -111,7 +111,7 @@ SkillData::SkillData(int32_t id) {
     // Snipe has no damage field (the server fixes its damage) and Shadow Meso
     // only a meso cost, but both attack; Ninja Ambush carries damage yet is a
     // monster-status special move (the server applies it in range)
-    if (id == 3221007 || id == 4111004) {
+    if (id == 3221007 || id == 4111004 || id == 4211006) {
         flags_ = ATTACK;
     } else if (id == 4121004 || id == 4221004) {
         flags_ = NONE;

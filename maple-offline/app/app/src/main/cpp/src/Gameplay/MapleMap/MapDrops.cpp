@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MapDrops.h"
 
+#include <map>
+
 #include <nlnx/node.hpp>
 #include <nlnx/nx.hpp>
 
@@ -65,6 +67,7 @@ void MapDrops::update(const Physics &physics) {
 
                 const Animation &icon = meso_icons_[mesotype];
                 drops_.add(spawn.instantiate(icon));
+                meso_amounts_[oid] = itemid;
             } else if (const ItemData &itemdata = ItemData::get(itemid)) {
                 const Texture &icon = itemdata.get_icon(true);
                 drops_.add(spawn.instantiate(icon));
@@ -86,6 +89,8 @@ void MapDrops::spawn(DropSpawn &&spawn) {
 }
 
 void MapDrops::remove(int32_t oid, int8_t mode, const PhysicsObject *looter) {
+    meso_amounts_.erase(oid);
+
     if (auto drop = drops_.get<Drop>(oid)) {
         drop->get().expire(mode, looter);
     }
@@ -93,6 +98,36 @@ void MapDrops::remove(int32_t oid, int8_t mode, const PhysicsObject *looter) {
 
 void MapDrops::clear() {
     drops_.clear();
+    meso_amounts_.clear();
+}
+
+std::vector<std::pair<int32_t, int32_t>> MapDrops::find_mesos(
+    Rectangle<int16_t> range,
+    Point<int16_t> origin,
+    size_t max) const {
+    std::multimap<uint16_t, std::pair<int32_t, int32_t>> found;
+
+    for (const auto &[oid, amount] : meso_amounts_) {
+        if (auto drop = drops_.get<Drop>(oid)) {
+            Point<int16_t> pos = drop->get().get_position();
+
+            if (drop->get().is_active() && range.contains(pos)) {
+                found.emplace(pos.distance(origin), std::make_pair(oid, amount));
+            }
+        }
+    }
+
+    std::vector<std::pair<int32_t, int32_t>> result;
+
+    for (const auto &entry : found) {
+        if (result.size() >= max) {
+            break;
+        }
+
+        result.push_back(entry.second);
+    }
+
+    return result;
 }
 
 MapDrops::Loot MapDrops::find_loot_at(Point<int16_t> playerpos) {

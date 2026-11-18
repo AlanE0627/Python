@@ -592,7 +592,12 @@ void RemoveLootHandler::handle(InPacket &recv) const {
 
     std::optional<std::reference_wrapper<PhysicsObject>> looter = {};
 
-    if (mode > 1) {
+    // 4: exploded by Meso Explosion, followed by a short delay only
+    if (mode == 4) {
+        if (recv.length() >= 2) {
+            recv.read_short();
+        }
+    } else if (mode > 1) {
         int32_t cid = recv.read_int();
 
         if (recv.length() > 0) {
@@ -604,7 +609,7 @@ void RemoveLootHandler::handle(InPacket &recv) const {
         Sound(Sound::Name::PICKUP).play();
     }
 
-    Stage::get().get_drops().remove(oid, mode, &looter->get());
+    Stage::get().get_drops().remove(oid, mode, looter ? &looter->get() : nullptr);
 }
 
 void HitReactorHandler::handle(InPacket &recv) const {

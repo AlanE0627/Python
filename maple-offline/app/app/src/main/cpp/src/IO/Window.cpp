@@ -61,7 +61,7 @@ namespace ms {
         std::cout << "key_callback" << keyCode << " action " << action << std::endl;
 #ifdef MS_DESKTOP_DEBUG
         // test hook: F11 casts the skill in MS_DEBUG_SKILL
-        if (keyCode == GLFMKeyCodeF11 && action == GLFMKeyActionPressed) {
+        if (keyCode == GLFMKeyCodeF11 && action != GLFMKeyActionRepeated) {
             // /tmp/ms_skill (if present) overrides the env var so a test
             // script can switch skills without restarting the client
             int32_t dbgskill = 0;
@@ -81,7 +81,10 @@ namespace ms {
             }
 
             if (dbgskill) {
-                Stage::get().get_combat().use_move(dbgskill);
+                // through the normal skill-key path so holding F11 behaves
+                // like holding a skill key (keydown skills)
+                Stage::get().send_key(KeyType::Id::SKILL, dbgskill,
+                                      action == GLFMKeyActionPressed);
                 return true;
             }
         }

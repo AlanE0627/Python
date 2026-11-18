@@ -16,6 +16,7 @@
 #include "CharLook.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <nlnx/nx.hpp>
 #include <nlnx/node.hpp>
 
@@ -477,6 +478,19 @@ namespace ms {
                 break;
         }
 
+        if (morph_id_ != 0) {
+            auto iter = morph_anims_.find(morph_stance_);
+
+            if (iter == morph_anims_.end()) {
+                iter = morph_anims_.find("stand");
+            }
+
+            if (iter != morph_anims_.end()) {
+                iter->second.draw(relargs + args + DrawArgument(flip_), alpha);
+                return;
+            }
+        }
+
         if (mount_id_ != 0) {
             const std::vector<MountFrame> *frames = mount_frames(interstance);
 
@@ -611,6 +625,62 @@ namespace ms {
         }
     }
 
+    void CharLook::set_morph(int32_t morph_id) {
+        if (morph_id == morph_id_) {
+            return;
+        }
+
+        morph_anims_.clear();
+        morph_stance_.clear();
+        morph_id_ = morph_id;
+
+        std::string sid = std::to_string(morph_id);
+        sid = std::string(4 - std::min<size_t>(4, sid.size()), '0') + sid + ".img";
+        nl::node src = nl::nx::morph[sid];
+
+        for (const auto &stnode : src) {
+            if (stnode.name() != "info") {
+                morph_anims_.emplace(stnode.name(), Animation(stnode));
+            }
+        }
+
+        if (morph_anims_.empty()) {
+            morph_id_ = 0;
+        }
+    }
+
+    void CharLook::clear_morph() {
+        morph_id_ = 0;
+        morph_anims_.clear();
+        morph_stance_.clear();
+    }
+
+    std::string CharLook::morph_stance_name(Stance::Id stance) const {
+        // skill actions the morph has its own frames for (dragonstrike, ...)
+        if (!actionstr_.empty() && morph_anims_.count(actionstr_)) {
+            return actionstr_;
+        }
+
+        switch (stance) {
+            case Stance::Id::WALK1:
+            case Stance::Id::WALK2: return "walk";
+            case Stance::Id::JUMP: return "jump";
+            case Stance::Id::PRONE: return "prone";
+            case Stance::Id::PRONESTAB: return "proneStab";
+            case Stance::Id::LADDER: return "ladder";
+            case Stance::Id::ROPE: return "rope";
+            case Stance::Id::SIT: return "sit";
+            case Stance::Id::FLY: return "fly";
+            case Stance::Id::ALERT: return "alert";
+            case Stance::Id::STAND1:
+            case Stance::Id::STAND2: return alerted_ ? "alert" : "stand";
+            default: {
+                std::string name = Stance::names[stance];
+                return morph_anims_.count(name) ? name : std::string("stabO1");
+            }
+        }
+    }
+
     void CharLook::clear_mount() {
         mount_id_ = 0;
         mount_anims_.clear();
@@ -664,6 +734,26 @@ namespace ms {
         }
 
         alerted_.update();
+
+        if (morph_id_ != 0) {
+            std::string name = morph_stance_name(stance_.get());
+
+            if (name != morph_stance_) {
+                morph_stance_ = name;
+
+                auto iter = morph_anims_.find(name);
+
+                if (iter != morph_anims_.end()) {
+                    iter->second.reset();
+                }
+            }
+
+            auto iter = morph_anims_.find(morph_stance_);
+
+            if (iter != morph_anims_.end()) {
+                iter->second.update(timestep);
+            }
+        }
 
         if (mount_id_ != 0) {
             std::string name = mount_stance_name(stance_.get());

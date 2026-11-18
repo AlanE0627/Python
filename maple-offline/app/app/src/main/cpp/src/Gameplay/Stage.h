@@ -169,6 +169,9 @@ private:
     MapEffect effect_;
 
     Combat combat_;
+
+    // Skill key held down for a keydown skill (Hurricane, Rapid Fire, ...)
+    int32_t held_skill_ = 0;
     Summons summons_;
     FieldObjects field_objects_;
     Point<int16_t> spawn_override_;

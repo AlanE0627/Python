@@ -14,6 +14,9 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "PlayerHandlers.h"
+#include <unordered_map>
+#include <vector>
+#include <algorithm>
 
 #include "../../Gameplay/Stage.h"
 #include "../../IO/UI.h"
@@ -185,17 +188,40 @@ void BuffHandler::handle(InPacket &recv) const {
             return;
     }
 
-    for (const auto &[buff_id, mask] : Buffstat::first_codes) {
-        if (firstmask & mask) {
+    // maple-offline: the values follow the mask bits from the highest bit
+    // down (first long, then second long), not hash-map order
+    auto by_bit = [](const std::unordered_map<Buffstat::Id, uint64_t> &codes) {
+        std::vector<std::pair<uint64_t, Buffstat::Id>> sorted;
+
+        for (const auto &[buff_id, mask] : codes) {
+            // single-bit stats only: BATTLESHIP is a combined mask handled
+            // before this loop
+            if (mask != 0 && (mask & (mask - 1)) == 0) {
+                sorted.emplace_back(mask, buff_id);
+            }
+        }
+
+        std::sort(sorted.begin(), sorted.end(), [](const auto &a, const auto &b) {
+            return a.first > b.first;
+        });
+
+        return sorted;
+    };
+
+    uint64_t done_first = 0;
+
+    for (const auto &[mask, buff_id] : by_bit(Buffstat::first_codes)) {
+        if ((firstmask & mask) && !(done_first & mask)) {
+            done_first |= mask;
             handle_buff(recv, buff_id);
         }
     }
 
-    // maple-offline: COMBO and SUMMON share one bit in v83; read its data
-    // once (the skill id tells them apart in ApplyBuffHandler)
+    // COMBO and SUMMON share one bit in v83; read its data once (the skill
+    // id tells them apart in ApplyBuffHandler)
     uint64_t done = 0;
 
-    for (const auto &[buff_id, mask] : Buffstat::second_codes) {
+    for (const auto &[mask, buff_id] : by_bit(Buffstat::second_codes)) {
         if ((secondmask & mask) && !(done & mask)) {
             done |= mask;
             handle_buff(recv, buff_id == Buffstat::Id::SUMMON ? Buffstat::Id::COMBO : buff_id);
@@ -241,6 +267,11 @@ void ApplyBuffHandler::handle_buff(InPacket &recv, Buffstat::Id bs) const {
             return;
         }
 
+        // Transformation: the value is the Morph.nx id
+        if (bs == Buffstat::Id::MORPH) {
+            Stage::get().get_player().get_look().set_morph(value);
+        }
+
         // shared COMBO/SUMMON bit: only Combo Attack skills are combos
         if (bs == Buffstat::Id::COMBO && skillid != 1111002 && skillid != 11111001) {
             bs = Buffstat::Id::SUMMON;
@@ -260,6 +291,10 @@ void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
 
     if (bs == Buffstat::Id::MONSTER_RIDING) {
         player.get_look().clear_mount();
+    }
+
+    if (bs == Buffstat::Id::MORPH) {
+        player.get_look().clear_morph();
     }
 
     // Drop the icon once no other active stat still comes from that source

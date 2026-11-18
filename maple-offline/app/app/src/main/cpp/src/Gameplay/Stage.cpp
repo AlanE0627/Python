@@ -199,6 +199,11 @@ void Stage::update() {
     }
 
     combat_.update();
+
+    if (held_skill_ != 0 && !player_.is_attacking()) {
+        combat_.use_move(held_skill_);
+    }
+
     mob_combat_.update();
     summons_.update();
     AutoPotion::update();
@@ -316,7 +321,26 @@ void Stage::send_key(KeyType::Id type, int32_t action, bool down) {
             playable_->get().send_action(KeyAction::get_action_by_id(action),
                                          down);
             break;
-        case KeyType::Id::SKILL: combat_.use_move(action); break;
+        case KeyType::Id::SKILL:
+            if (down) {
+                combat_.use_move(action);
+
+                // Keydown skills keep firing while the key stays pressed
+                std::string sid = std::to_string(action);
+
+                if (sid.size() < 7) {
+                    sid.insert(0, 7 - sid.size(), '0');
+                }
+
+                held_skill_ = nl::nx::skill[sid.substr(0, sid.size() - 4) + ".img"]
+                                           ["skill"][sid]["keydown"]
+                                  ? action
+                                  : 0;
+            } else if (action == held_skill_) {
+                held_skill_ = 0;
+            }
+
+            break;
         case KeyType::Id::ITEM: player_.use_item(action); break;
         case KeyType::Id::FACE: player_.set_expression(action); break;
     }

@@ -101,7 +101,10 @@ int8_t Drop::update(const Physics &physics) {
 
 void Drop::expire(int8_t type, const PhysicsObject *lt) {
     switch (type) {
-        case 0: state_ = Drop::State::PICKED_UP; break;
+        case 0:
+        case 4:  // exploded (Meso Explosion): fade out where it lies
+            state_ = Drop::State::PICKED_UP;
+            break;
         case 1: deactivate(); break;
         case 2:
             angle_.set(0.0f);
