@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <vector>
+
 #include <memory>
 
 #include "../Error.h"
@@ -62,6 +64,8 @@ private:
     int8_t buffer_[MAX_PACKET_LENGTH];
     size_t length_;
     size_t pos_;
+    // maple-offline: bytes received but not yet forming a whole packet.
+    std::vector<int8_t> pending_;
     bool is_connected_;
 
 #ifdef USE_ASIO

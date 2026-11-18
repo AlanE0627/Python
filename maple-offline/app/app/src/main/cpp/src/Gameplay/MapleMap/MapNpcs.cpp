@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -90,6 +91,9 @@ Cursor::State MapNpcs::send_cursor(bool pressed,
                     }
                 });
 
+#ifdef MS_DESKTOP_DEBUG
+                std::fprintf(stderr, "[dbg] talk oid %d\n", npc->get_oid());
+#endif
                 fn_talk_to_npc(npc->get_oid());
 
                 return Cursor::State::IDLE;

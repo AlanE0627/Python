@@ -33,6 +33,7 @@ Session::~Session() {
 
 bool Session::init(const char *host, const char *port) {
     // Connect to the server
+    pending_.clear();
     is_connected_ = socket_.open(host, port);
 
     if (is_connected_) {
@@ -92,46 +93,41 @@ void Session::reconnect(const char *address, const char *port) {
 }
 
 void Session::process(const int8_t *bytes, size_t available) {
-    if (pos_ == 0) {
-        // Position is zero, meaning this is the start of a new packet. Start by
-        // determining length.
-        length_ = cryptography_.check_length(bytes);
-        // Reading the length means we processed the header. Move forward by the
-        // header length.
-        bytes = bytes + HEADER_LENGTH;
-        available -= HEADER_LENGTH;
-    }
+    // maple-offline: TCP may split or join packets anywhere, including inside
+    // the 4-byte header. Keep every received byte and only cut out packets
+    // that are complete; the old code dropped short tails and lost sync.
+    pending_.insert(pending_.end(), bytes, bytes + available);
 
-    // Determine how much we can write. Write data into the buffer.
-    size_t towrite = length_ - pos_;
+    size_t offset = 0;
 
-    if (towrite > available) {
-        towrite = available;
-    }
+    while (pending_.size() - offset >= HEADER_LENGTH) {
+        const int8_t *head = pending_.data() + offset;
+        size_t length = cryptography_.check_length(head);
 
-    memcpy(buffer_ + pos_, bytes, towrite);
-    pos_ += towrite;
+        if (length > MAX_PACKET_LENGTH) {
+            std::cout << "Invalid packet length " << length << ", dropping stream" << std::endl;
+            pending_.clear();
+            return;
+        }
 
-    // Check if the current packet has been fully processed
-    if (pos_ >= length_) {
-        cryptography_.decrypt(buffer_, length_);
+        if (pending_.size() - offset < HEADER_LENGTH + length) {
+            break;
+        }
+
+        memcpy(buffer_, head + HEADER_LENGTH, length);
+        cryptography_.decrypt(buffer_, length);
 
         try {
-            packet_forwarder_->forward(buffer_, length_);
+            packet_forwarder_->forward(buffer_, length);
         } catch (const PacketError &err) {
             std::cout << err.what() << std::endl;
         }
 
-        pos_ = 0;
-        length_ = 0;
+        offset += HEADER_LENGTH + length;
+    }
 
-        // Check if there is more available
-        size_t remaining = available - towrite;
-
-        if (remaining >= MIN_PACKET_LENGTH) {
-            // More packets are available, so we start over.
-            process(bytes + towrite, remaining);
-        }
+    if (offset > 0) {
+        pending_.erase(pending_.begin(), pending_.begin() + offset);
     }
 }
 
@@ -153,10 +149,8 @@ void Session::read() {
     // (header) + 2 bytes (opcode) = 6 bytes.
     size_t result = socket_.receive(&is_connected_);
 
-    if (result >= MIN_PACKET_LENGTH || length_ > 0) {
-        // Retrieve buffer from the socket and process it
-        const int8_t *bytes = socket_.get_buffer();
-        process(bytes, result);
+    if (result > 0) {
+        process(socket_.get_buffer(), result);
     }
 }
 

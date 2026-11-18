@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -425,6 +426,9 @@ void SpawnNpcHandler::handle(InPacket &recv) const {
     recv.read_short();  // 'rx'
     recv.read_short();  // 'ry'
 
+#ifdef MS_DESKTOP_DEBUG
+    std::fprintf(stderr, "[dbg] spawn npc oid %d id %d\n", oid, id);
+#endif
     Stage::get().get_npcs().spawn({ oid, id, position, flip, fh });
 }
 

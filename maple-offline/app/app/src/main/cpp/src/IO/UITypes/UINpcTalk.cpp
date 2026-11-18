@@ -41,7 +41,8 @@ namespace ms {
             formatted_text_(""),
             formatted_text_pos_(0),
             timestep_(0) {
-        nl::node UIWindow2 = nl::nx::ui["UIWindow2.img"];
+        // maple-offline: v83 dialog parts live in UIWindow.img/UtilDlgEx.
+        nl::node UIWindow2 = nl::nx::ui["UIWindow.img"];
         nl::node UtilDlgEx = UIWindow2["UtilDlgEx"];
 
         top_ = UtilDlgEx["t"];
@@ -65,7 +66,7 @@ namespace ms {
 
         nl::node Quest = UIWindow2["Quest"];
 
-        buttons_[Buttons::NO] = std::make_unique<MapleButton>(Quest["BtNo"]);
+        buttons_[Buttons::NO] = std::make_unique<MapleButton>(UtilDlgEx["BtNo"]);
         buttons_[Buttons::OK] = std::make_unique<MapleButton>(UtilDlgEx["BtOK"]);
         buttons_[Buttons::PREV] =
                 std::make_unique<MapleButton>(UtilDlgEx["BtPrev"]);
