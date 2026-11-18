@@ -17,6 +17,8 @@
 
 #include <nlnx/nx.hpp>
 
+#include "../../Util/Lang.h"
+
 #include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/NpcInteractionPackets.h"
 #include "../../Util/MapleText.h"
@@ -67,7 +69,7 @@ UIQuestLog::UIQuestLog(const QuestLog &ql) :
     detail_bg_reward_ = quest["backgrnd4"];
     reward_label_ = quest["reward"];
 
-    empty_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::DUSTYGRAY, "No quests.");
+    empty_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::DUSTYGRAY, Lang::NO_QUESTS);
     detail_name_ = Text(Text::Font::A12B, Text::Alignment::LEFT, Color::Name::WHITE, "", 160);
     detail_npc_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::WHITE, "", 100);
     detail_level_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::WHITE, "", 100);
@@ -206,15 +208,15 @@ void UIQuestLog::select(int16_t qid) {
     int32_t fame = act["pop"];
 
     if (exp > 0) {
-        add_reward("EXP +" + std::to_string(exp));
+        add_reward(std::string(Lang::EXP) + " +" + std::to_string(exp));
     }
 
     if (meso > 0) {
-        add_reward("Mesos +" + std::to_string(meso));
+        add_reward(std::string(Lang::MESOS) + " +" + std::to_string(meso));
     }
 
     if (fame > 0) {
-        add_reward("Fame +" + std::to_string(fame));
+        add_reward(std::string(Lang::FAME) + " +" + std::to_string(fame));
     }
 
     for (nl::node item : act["item"]) {
@@ -235,7 +237,7 @@ void UIQuestLog::select(int16_t qid) {
         bool random = item["prop"].data_type() != nl::node::type::none
                       && static_cast<int32_t>(item["prop"]) > 0;
         add_reward(name + (count > 1 ? " x" + std::to_string(count) : "")
-                   + (random ? " (random)" : ""));
+                   + (random ? std::string(" ") + Lang::RANDOM : std::string()));
     }
 
     has_reward_ = !reward_lines_.empty();

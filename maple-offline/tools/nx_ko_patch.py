@@ -8,6 +8,11 @@ new strings are appended and a new string offset table is written at the
 end, then the header is updated.
 
 usage: nx_ko_patch.py <String.nx> <out String_ko.nx> <i18n dir>
+       nx_ko_patch.py --quest <Quest.nx> <out Quest_ko.nx> <i18n dir>
+
+Skill names / descriptions (Skill.img) are also replaced; per-level skill
+lines (h1..hN) stay as they are, since later KMS numbers differ from v83.
+With --quest, QuestInfo.img quest names are replaced in Quest.nx.
 """
 import json
 import mmap
@@ -56,14 +61,18 @@ def load(dirpath, kind):
 
 
 def main():
-    src, dst, i18n = sys.argv[1:4]
+    quest_mode = sys.argv[1] == '--quest'
+    args = sys.argv[2:5] if quest_mode else sys.argv[1:4]
+    src, dst, i18n = args
     shutil.copyfile(src, dst)
     nx = NX(dst)
 
-    items = load(i18n, 'item')
+    items = load(i18n, 'item') if not quest_mode else {}
     maps = load(i18n, 'map')
     mobs = load(i18n, 'mob')
     npcs = load(i18n, 'npc')
+    skills = load(i18n, 'skill')
+    quests = load(i18n, 'quest')
 
     new_strings = []          # appended strings
     patches = []              # (node index, new string id)
@@ -98,6 +107,27 @@ def main():
             set_string(nx.child(node, 'desc'), desc)
 
     root = 0
+
+    if quest_mode:
+        info = nx.child(root, 'QuestInfo.img')
+
+        for k, c in (nx.children(info).items() if info is not None else []):
+            if k.isdigit() and int(k) in quests:
+                if set_string(nx.child(c, 'name'), quests[int(k)].get('name')):
+                    counts['quest'] = counts.get('quest', 0) + 1
+
+        return finish(nx, dst, new_strings, patches, counts)
+
+    skillimg = nx.child(root, 'Skill.img')
+
+    for k, c in (nx.children(skillimg).items() if skillimg is not None else []):
+        if k.isdigit() and int(k) in skills:
+            r = skills[int(k)]
+
+            if set_string(nx.child(c, 'name'), r.get('name')):
+                counts['skill'] = counts.get('skill', 0) + 1
+
+            set_string(nx.child(c, 'desc'), r.get('desc'))
 
     # items: flat images and the nested equipment / etc trees
     for img in ('Consume.img', 'Ins.img', 'Cash.img', 'Pet.img'):
@@ -146,6 +176,10 @@ def main():
                 if set_string(nx.child(c, 'name'), table[int(k)].get('name')):
                     counts[key] = counts.get(key, 0) + 1
 
+    finish(nx, dst, new_strings, patches, counts)
+
+
+def finish(nx, dst, new_strings, patches, counts):
     # write appended strings, then the new offset table
     end = os.path.getsize(dst)
     nx.m.close()

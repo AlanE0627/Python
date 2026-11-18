@@ -58,9 +58,9 @@ EquipData::EquipData(int32_t id) : item_data_(ItemData::get(id)) {
 
     if (index < NON_WEAPON_TYPES) {
         const std::array<std::string, NON_WEAPON_TYPES> types = {
-            "HAT",     "FACE ACCESSORY", "EYE ACCESSORY", "EARRINGS", "TOP",
-            "OVERALL", "BOTTOM",         "SHOES",         "GLOVES",   "SHIELD",
-            "CAPE",    "RING",           "PENDANT",       "BELT",     "MEDAL"
+            "모자",   "얼굴장식", "눈장식", "귀고리", "상의",
+            "한벌옷", "하의",     "신발",   "장갑",   "방패",
+            "망토",   "반지",     "펜던트", "벨트",   "훈장"
         };
 
         constexpr EquipSlot::Id equipslots[NON_WEAPON_TYPES] = {
@@ -78,33 +78,33 @@ EquipData::EquipData(int32_t id) : item_data_(ItemData::get(id)) {
         eq_slot_ = equipslots[index];
     } else if (index >= WEAPON_OFFSET && index < WEAPON_OFFSET + WEAPON_TYPES) {
         const std::array<std::string, WEAPON_TYPES> types = {
-            "ONE-HANDED SWORD",
-            "ONE-HANDED AXE",
-            "ONE-HANDED MACE",
-            "DAGGER",
+            "한손검",
+            "한손도끼",
+            "한손둔기",
+            "단검",
             "",
             "",
             "",
-            "WAND",
-            "STAFF",
+            "완드",
+            "스태프",
             "",
-            "TWO-HANDED SWORD",
-            "TWO-HANDED AXE",
-            "TWO-HANDED MACE",
-            "SPEAR",
-            "POLEARM",
-            "BOW",
-            "CROSSBOW",
-            "CLAW",
-            "KNUCKLE",
-            "GUN"
+            "두손검",
+            "두손도끼",
+            "두손둔기",
+            "창",
+            "폴암",
+            "활",
+            "석궁",
+            "아대",
+            "너클",
+            "건"
         };
 
         size_t weaponindex = index - WEAPON_OFFSET;
         type_ = types[weaponindex];
         eq_slot_ = EquipSlot::Id::WEAPON;
     } else {
-        type_ = "CASH";
+        type_ = "캐시";
         eq_slot_ = EquipSlot::Id::NONE;
     }
 }

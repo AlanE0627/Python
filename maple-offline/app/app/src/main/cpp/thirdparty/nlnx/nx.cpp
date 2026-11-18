@@ -64,7 +64,7 @@ void load_all(GLFMDisplay *pApp)
         mob = add_file("Mob.nx");
         morph = add_file("Morph.nx");
         npc = add_file("Npc.nx");
-        quest = add_file("Quest.nx");
+        quest = add_file(exists("Quest_ko.nx", pApp) ? "Quest_ko.nx" : "Quest.nx");
         reactor = add_file("Reactor.nx");
         skill = add_file("Skill.nx");
         sound = add_file("Sound.nx");

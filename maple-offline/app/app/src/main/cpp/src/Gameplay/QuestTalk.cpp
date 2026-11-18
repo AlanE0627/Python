@@ -8,6 +8,8 @@
 #include <vector>
 #include <nlnx/nx.hpp>
 
+#include "../Util/Lang.h"
+
 #include "../IO/UI.h"
 #include "../IO/UITypes/UINpcTalk.h"
 #include "../Net/Packets/NpcInteractionPackets.h"
@@ -190,7 +192,7 @@ bool open(int32_t npcid, int32_t oid, bool scripted) {
         return false;
     }
 
-    std::string text = "What do you want to do?\r\n";
+    std::string text = std::string(Lang::QUEST_MENU) + "\r\n";
     std::vector<std::pair<int16_t, bool>> options;  // qid, complete?
 
     auto name_of = [](int16_t qid) {
@@ -199,7 +201,7 @@ bool open(int32_t npcid, int32_t oid, bool scripted) {
     };
 
     if (!completable.empty()) {
-        text += "#r[Quest can be completed]#k\r\n";
+        text += std::string("#r") + Lang::QUEST_CAN_COMPLETE + "#k\r\n";
 
         for (int16_t qid : completable) {
             text += "#L" + std::to_string(options.size()) + "##b" + name_of(qid) + "#k#l\r\n";
@@ -208,7 +210,7 @@ bool open(int32_t npcid, int32_t oid, bool scripted) {
     }
 
     if (!available.empty()) {
-        text += "#r[Quest available]#k\r\n";
+        text += std::string("#r") + Lang::QUEST_AVAILABLE + "#k\r\n";
 
         for (int16_t qid : available) {
             text += "#L" + std::to_string(options.size()) + "##b" + name_of(qid) + "#k#l\r\n";
@@ -217,7 +219,7 @@ bool open(int32_t npcid, int32_t oid, bool scripted) {
     }
 
     if (scripted) {
-        text += "#L" + std::to_string(TALK_OPTION) + "#Talk#l";
+        text += "#L" + std::to_string(TALK_OPTION) + "#" + Lang::TALK + "#l";
     }
 
     show_menu(npcid, text, [=](int8_t action, int32_t selection) {

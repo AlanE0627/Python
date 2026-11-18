@@ -19,6 +19,10 @@
 
 #include "../Constants.h"
 #include "../Data/ItemData.h"
+#include "../Graphics/Geometry.h"
+#include "../Util/Lang.h"
+
+#include <algorithm>
 
 namespace ms {
 // TODO: Add blue dot next to name
@@ -57,38 +61,38 @@ bool ItemTooltip::set_item(int32_t iid) {
     std::string quality = "";
 
     if (unique_ && untradable_) {
-        quality = "One-of-a-kind Item, Untradable";
+        quality = std::string(Lang::ONE_OF_A_KIND) + ", " + Lang::UNTRADABLE;
     } else if (unique_ && !untradable_) {
-        quality = "One-of-a-kind Item";
+        quality = Lang::ONE_OF_A_KIND;
     } else if (!unique_ && untradable_) {
-        quality = "Untradable";
+        quality = Lang::UNTRADABLE;
     } else {
         quality = "";
     }
 
     name_ = Text(Text::Font::A12B,
-                 Text::Alignment::LEFT,
+                 Text::Alignment::CENTER,
                  Color::Name::WHITE,
                  idata.get_name(),
                  240);
-    desc_ = Text(Text::Font::A12M,
+    desc_ = Text(Text::Font::A11M,
                  Text::Alignment::LEFT,
                  Color::Name::WHITE,
                  idata.get_desc(),
-                 185);
+                 190);
     qual_ = Text(Text::Font::A12M,
                  Text::Alignment::CENTER,
                  Color::Name::ORANGE,
                  quality,
                  185);
 
-    fill_width_ = 264;
-    fill_height_ = 83 + name_.height();
-    desc_delta_ = desc_.height() - 80;
-
-    if (desc_delta_ > 0) {
-        fill_height_ += desc_delta_;
-    }
+    // maple-offline: v83 layout — name on top, icon left, text right
+    fill_width_ = 260;
+    int16_t body = std::max<int16_t>(40, desc_.height());
+    fill_height_ = static_cast<int16_t>(10 + name_.height() + 6
+                                        + ((untradable_ || unique_) ? qual_.height() + 2 : 0)
+                                        + body + 10);
+    desc_delta_ = 0;
 
     return true;
 }
@@ -100,39 +104,29 @@ void ItemTooltip::draw(Point<int16_t> pos) const {
 
     int16_t max_width = Constants::Constants::get().get_viewwidth();
     int16_t max_height = Constants::Constants::get().get_viewheight();
-    int16_t cur_width = pos.x() + fill_width_ + 32;
-    int16_t cur_height = pos.y() + fill_height_ + 40;
 
-    int16_t adj_x = cur_width - max_width;
-    int16_t adj_y = cur_height - max_height;
-
-    int16_t adj_d = desc_delta_ > 0 ? desc_delta_ : 0;
-    int16_t adj_t = (untradable_ || unique_) ? 19 : 0;
-
-    if (adj_x > 0) {
-        pos.shift_x(adj_x * -1);
+    if (pos.x() + fill_width_ > max_width) {
+        pos.set_x(static_cast<int16_t>(max_width - fill_width_));
     }
 
-    if (adj_y > 0) {
-        pos.shift_y(adj_y * -1);
+    if (pos.y() + fill_height_ > max_height) {
+        pos.set_y(static_cast<int16_t>(std::max(0, max_height - fill_height_)));
     }
 
-    frame_.draw(pos + Point<int16_t>(150, 118 + adj_d + adj_t),
-                fill_width_,
-                fill_height_ + adj_t);
-    cover_.draw(pos + Point<int16_t>(4, 4));
-    name_.draw(pos + Point<int16_t>(22, 8));
+    ColorBox(fill_width_ + 2, fill_height_ + 2, Color::Name::LIGHTGREY, 0.6f)
+        .draw(DrawArgument(pos + Point<int16_t>(-1, -1)));
+    ColorBox(fill_width_, fill_height_, Color::Name::BLACK, 0.82f).draw(DrawArgument(pos));
+
+    int16_t y = 10;
+    name_.draw(pos + Point<int16_t>(fill_width_ / 2, y));
+    y += name_.height() + 6;
 
     if (untradable_ || unique_) {
-        qual_.draw(pos + Point<int16_t>(148, 27));
+        qual_.draw(pos + Point<int16_t>(fill_width_ / 2, y));
+        y += qual_.height() + 2;
     }
 
-    pos.shift(14, 18 + name_.height() + adj_t);
-
-    base_.draw(pos);
-    type_[true].draw(pos);
-    item_icon_.draw(DrawArgument(pos + Point<int16_t>(8, 72), 2.0f, 2.0f));
-    item_cover_.draw(pos);
-    desc_.draw(pos + Point<int16_t>(90, -6));
+    item_icon_.draw(DrawArgument(pos + Point<int16_t>(12, y + 32)));
+    desc_.draw(pos + Point<int16_t>(60, y));
 }
 }  // namespace ms

@@ -18,6 +18,7 @@
 #include <nlnx/nx.hpp>
 
 #include "../../IO/UITypes/UIQuestLog.h"
+#include "../../Util/Lang.h"
 
 #include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
@@ -126,20 +127,20 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
             quests.remove(qid);
 
             if (was_started && !name.empty()) {
-                show_status(Color::Name::WHITE, "[Quest] " + name + " was forfeited.");
+                show_status(Color::Name::WHITE, Lang::QUEST_TAG + name + Lang::QUEST_FORFEITED);
             }
         } else if (status == 1) {
             quests.add_started(qid, data);
 
             if (!was_started && !name.empty()) {
-                show_status(Color::Name::YELLOW, "[Quest] " + name + " has started.");
+                show_status(Color::Name::YELLOW, Lang::QUEST_TAG + name + Lang::QUEST_STARTED);
             }
         } else if (status == 2) {
             quests.remove(qid);
             quests.add_completed(qid, 0);
 
             if (!was_completed && !name.empty()) {
-                show_status(Color::Name::YELLOW, "[Quest] " + name + " is complete.");
+                show_status(Color::Name::YELLOW, Lang::QUEST_TAG + name + Lang::QUEST_COMPLETED);
             }
         }
 
@@ -220,8 +221,8 @@ void UpdateQuestInfoHandler::handle(InPacket &recv) const {
                 std::string name = quest_name(qid);
 
                 if (!name.empty()) {
-                    quest_status(Color::Name::YELLOW, "[Quest] " + name + ": "
-                                 + std::to_string(ms / 60000) + " min time limit.");
+                    quest_status(Color::Name::YELLOW, Lang::QUEST_TAG + name + ": "
+                                 + std::to_string(ms / 60000) + Lang::QUEST_TIME_LIMIT);
                 }
             }
 
@@ -243,14 +244,13 @@ void UpdateQuestInfoHandler::handle(InPacket &recv) const {
             }
 
             break;
-        case 11: quest_status(Color::Name::RED, "You do not have enough mesos."); break;
-        case 13: quest_status(Color::Name::RED, "Unequip the item first."); break;
-        case 14: quest_status(Color::Name::RED, "Check that your inventory has room."); break;
+        case 11: quest_status(Color::Name::RED, Lang::NOT_ENOUGH_MESOS); break;
+        case 13: quest_status(Color::Name::RED, Lang::UNEQUIP_FIRST); break;
+        case 14: quest_status(Color::Name::RED, Lang::INVENTORY_FULL); break;
         case 15: {
             int16_t qid = recv.length() >= 2 ? recv.read_short() : 0;
             std::string name = quest_name(qid);
-            quest_status(Color::Name::RED, "[Quest] " + (name.empty() ? std::string("Quest") : name)
-                         + " has expired.");
+            quest_status(Color::Name::RED, Lang::QUEST_TAG + name + Lang::QUEST_EXPIRED);
             break;
         }
         default: break;

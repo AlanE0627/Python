@@ -15,14 +15,17 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
-#include "../Character/Inventory/Equip.h"
-#include "../Character/MapleStat.h"
+#include <vector>
+
 #include "../Graphics/Text.h"
-#include "../Template/BoolPair.h"
-#include "Charset.h"
+#include "../Graphics/Texture.h"
 #include "Tooltip.h"
 
 namespace ms {
+// maple-offline: v83-style equipment tooltip — a dark translucent box with
+// the icon, name and text lines (requirements, jobs, category, stats,
+// upgrades). The later-version tooltip graphics (UIToolTip.img) do not
+// exist in v83 data.
 class EquipTooltip : public Tooltip {
 public:
     EquipTooltip();
@@ -31,69 +34,18 @@ public:
 
     void draw(Point<int16_t> position) const override;
 
-    void draw_preview(Point<int16_t> position) const;
+    // kept for callers; v83 has no comparison tooltip
+    void draw_preview(Point<int16_t> position) const {}
 
 private:
+    static constexpr int16_t WIDTH_ = 230;
+
     int16_t inv_pos_;
-    int16_t inv_pos_preview_;
-    int16_t height_;
-    int16_t height_preview_;
-    bool has_desc_;
-    bool has_desc_preview_;
-    bool has_slots_;
-    bool has_slots_preview_;
-    bool is_weapon_;
-    bool is_weapon_preview_;
-    EnumMap<MapleStat::Id, std::string> req_stat_strings_;
-    EnumMap<MapleStat::Id, std::string> req_stat_strings_preview_;
-    Texture item_icon_;
-    Texture item_icon_preview_;
-
+    Tooltip::Parent parent_;
+    Texture icon_;
     Text name_;
-    Text name_preview_;
+    std::vector<Text> lines_;
     Text desc_;
-    Text desc_preview_;
-    Text potflag_;
-    Text potflag_preview_;
-    Text category_;
-    Text category_preview_;
-    Text wepspeed_;
-    Text wepspeed_preview_;
-    Text slots_;
-    Text slots_preview_;
-    Text hammers_;
-    Text hammers_preview_;
-    Text atkinc_;
-    Text atkinc_preview_;
-    EnumMap<EquipStat::Id, Text> stat_labels_;
-    EnumMap<EquipStat::Id, Text> stat_labels_preview_;
-
-    Texture top_;
-    Texture mid_;
-    Texture line_;
-    Texture bot_;
-    Texture base_;
-
-    EnumMap<Equip::Potential, Texture> potential_;
-    Equip::Potential prank_;
-    Equip::Potential prank_preview_;
-
-    Texture cover_;
-    Texture item_cover_;
-    BoolPair<Texture> type_;
-
-    std::vector<MapleStat::Id> requirements_;
-    EnumMap<MapleStat::Id, BoolPair<Texture>> req_stat_textures_;
-    EnumMap<MapleStat::Id, bool> can_equip_;
-    EnumMap<MapleStat::Id, bool> can_equip_preview_;
-    EnumMap<MapleStat::Id, Point<int16_t>> req_stat_positions_;
-    BoolPair<Charset> reqset_;
-    BoolPair<Charset> lvset_;
-    BoolPair<Charset> atkincset_;
-
-    Texture jobs_back_;
-    BoolPair<std::map<uint8_t, Texture>> jobs_;
-    std::vector<uint8_t> okjobs_;
-    std::vector<uint8_t> okjobs_preview_;
+    int16_t height_;
 };
 }  // namespace ms
