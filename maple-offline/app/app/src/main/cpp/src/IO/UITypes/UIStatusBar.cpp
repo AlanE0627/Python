@@ -24,6 +24,7 @@
 #include "../../Net/Packets/GameplayPackets.h"
 #include "../Components/MapleButton.h"
 #include "../UI.h"
+#include "UIChannel.h"
 #include "UIEquipInventory.h"
 #include "UIItemInventory.h"
 #include "UIKeyConfig.h"
@@ -92,6 +93,22 @@ UIStatusBar::UIStatusBar(const CharStats &st, uint8_t channel_count) :
     buttons_[BT_QUICKSLOT_DOWN] = std::make_unique<MapleButton>(
         bar["QuickSlotD"], Point<int16_t>(rx + 12 + 5 * 32, 43));
     buttons_[BT_QUICKSLOT_DOWN]->set_active(false);
+
+    // Game menu popup above the MENU button.
+    nl::node gm = nl::nx::ui["UIWindow.img"]["GameMenu"];
+    menu_backgrnd_ = gm["backgrnd"];
+    menu_pos_ = Point<int16_t>(rx + 54 + 27 - 46, -142);
+
+    const char *const gm_buttons[5] = { "BtChannel", "BtGameOpt", "BtSysOpt", "BtSkin", "BtQuit" };
+
+    for (uint16_t i = 0; i < 5; i++) {
+        buttons_[BT_GM_CHANNEL + i] = std::make_unique<MapleButton>(
+            gm[gm_buttons[i]], menu_pos_ + Point<int16_t>(6, 23 + i * 21));
+        buttons_[BT_GM_CHANNEL + i]->set_active(false);
+    }
+
+    // Skins are not part of v83 single-player.
+    buttons_[BT_GM_SKIN]->set_state(Button::State::DISABLED);
 
     // Trading/NPT is not part of single-player.
     buttons_[BT_TRADE]->set_state(Button::State::DISABLED);
@@ -186,6 +203,10 @@ void UIStatusBar::draw(float alpha) const {
         quickslot_panel_.draw(top + Point<int16_t>(VWIDTH_ - 155, -82));
     }
 
+    if (menu_active_) {
+        menu_backgrnd_.draw(top + menu_pos_);
+    }
+
     UIElement::draw_buttons(alpha);
 }
 
@@ -199,6 +220,15 @@ void UIStatusBar::update() {
 
 bool UIStatusBar::is_in_range(Point<int16_t> cursorpos) const {
     Rectangle<int16_t> bounds(position_, position_ + dimension_);
+
+    if (menu_active_) {
+        Rectangle<int16_t> menu(position_ + menu_pos_,
+                                position_ + menu_pos_ + menu_backgrnd_.get_dimensions());
+
+        if (menu.contains(cursorpos)) {
+            return true;
+        }
+    }
 
     if (quickslot_active_) {
         Rectangle<int16_t> qs(position_ + Point<int16_t>(VWIDTH_ - 155, -82),
@@ -214,7 +244,11 @@ bool UIStatusBar::is_in_range(Point<int16_t> cursorpos) const {
 
 void UIStatusBar::send_key(int32_t keycode, bool pressed, bool escape) {
     if (pressed && escape) {
-        UI::get().emplace<UIQuit>(stats_);
+        if (menu_active_) {
+            remove_menus();
+        } else {
+            UI::get().emplace<UIQuit>(stats_);
+        }
     }
 }
 
@@ -229,13 +263,21 @@ void UIStatusBar::toggle_qs() {
 }
 
 void UIStatusBar::toggle_menu() {
-    UI::get().emplace<UIOptionMenu>();
+    menu_active_ = !menu_active_;
+
+    for (uint16_t i = BT_GM_CHANNEL; i <= BT_GM_QUIT; i++) {
+        buttons_[i]->set_active(menu_active_);
+    }
 }
 
-void UIStatusBar::remove_menus() {}
+void UIStatusBar::remove_menus() {
+    if (menu_active_) {
+        toggle_menu();
+    }
+}
 
 bool UIStatusBar::is_menu_active() {
-    return false;
+    return menu_active_;
 }
 
 Button::State UIStatusBar::button_pressed(uint16_t id) {
@@ -259,6 +301,20 @@ Button::State UIStatusBar::button_pressed(uint16_t id) {
             break;
         case BT_QUICKSLOT:
         case BT_QUICKSLOT_DOWN: toggle_qs(); break;
+        case BT_GM_CHANNEL:
+            remove_menus();
+            UI::get().emplace<UIChannel>(player.get_world_id(), player.get_channel_id(),
+                                         channel_count_);
+            break;
+        case BT_GM_GAMEOPT:
+        case BT_GM_SYSOPT:
+            remove_menus();
+            UI::get().emplace<UIOptionMenu>();
+            break;
+        case BT_GM_QUIT:
+            remove_menus();
+            UI::get().emplace<UIQuit>(stats_);
+            break;
         default: break;
     }
 

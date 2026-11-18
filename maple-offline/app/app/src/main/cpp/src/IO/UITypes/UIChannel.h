@@ -41,6 +41,12 @@ protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
 private:
+    // maple-offline: v83 channel grid
+    static constexpr int16_t CELL_X0 = 12;
+    static constexpr int16_t CELL_DX = 84;
+    static constexpr int16_t CELL_Y0 = 69;
+    Texture normal_cell_;
+    std::vector<Point<int16_t>> cells_;
     void cancel();
 
     void change_channel();

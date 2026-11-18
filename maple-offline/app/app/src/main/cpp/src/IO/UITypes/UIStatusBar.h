@@ -75,7 +75,13 @@ private:
         BT_INVEN,
         BT_SKILL,
         BT_QUICKSLOT,
-        BT_QUICKSLOT_DOWN
+        BT_QUICKSLOT_DOWN,
+        // v83 game menu popup (UIWindow.img/GameMenu)
+        BT_GM_CHANNEL,
+        BT_GM_GAMEOPT,
+        BT_GM_SYSOPT,
+        BT_GM_SKIN,
+        BT_GM_QUIT
     };
 
     const CharStats &stats_;
@@ -94,5 +100,8 @@ private:
     Text job_text_;
     Text name_text_;
     bool quickslot_active_;
+    bool menu_active_ = false;
+    Texture menu_backgrnd_;
+    Point<int16_t> menu_pos_;
 };
 }  // namespace ms

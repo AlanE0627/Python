@@ -31,58 +31,59 @@ UIChannel::UIChannel(uint8_t wid, uint8_t ch, uint8_t ch_count) :
     channel_count_(ch_count) {
     uint8_t selected_world = wid;
 
-    nl::node Channel = nl::nx::ui["UIWindow2.img"]["Channel"];
+    // maple-offline: v83 UIWindow.img/Channel — t (67) + c rows + s (36),
+    // five channels per row, channel0 = normal, channel1 = current,
+    // channel2 = selected.
+    nl::node Channel = nl::nx::ui["UIWindow.img"]["Channel"];
 
-    nl::node backgrnd = Channel["backgrnd"];
-    Texture bg = backgrnd;
+    int16_t rows = static_cast<int16_t>((channel_count_ + 4) / 5);
+    int16_t body = rows * 20 + 6;
+    Texture top = Channel["t"];
 
-    sprites_.emplace_back(backgrnd, Point<int16_t>(1, 0));
-    sprites_.emplace_back(Channel["backgrnd2"]);
-    sprites_.emplace_back(Channel["backgrnd3"]);
-    sprites_.emplace_back(Channel["world"][selected_world],
-                          Point<int16_t>(16, 30));
+    sprites_.emplace_back(Channel["t"]);
+    sprites_.emplace_back(Channel["c"], DrawArgument(Point<int16_t>(0, 67), Point<int16_t>(0, body)));
+    sprites_.emplace_back(Channel["s"], Point<int16_t>(0, 67 + body));
+    sprites_.emplace_back(Channel["world"][selected_world], Point<int16_t>(16, 30));
 
-    buttons_[Buttons::CANCEL] =
-        std::make_unique<MapleButton>(Channel["BtCancel"]);
-    buttons_[Buttons::CHANGE] =
-        std::make_unique<MapleButton>(Channel["BtChange"],
-                                      Point<int16_t>(-20, 0));
+    buttons_[Buttons::CHANGE] = std::make_unique<MapleButton>(
+        Channel["BtChange"], Point<int16_t>(436 - 91 - 47 - 18, 67 + body + 10));
+    buttons_[Buttons::CANCEL] = std::make_unique<MapleButton>(
+        Channel["BtCancel"], Point<int16_t>(436 - 47 - 12, 67 + body + 10));
 
-    channel_[true] = Channel["channel1"];
-    channel_[false] = Channel["channel0"];
-
-    size_t x = 0;
-    size_t y = 0;
+    channel_[true] = Channel["channel2"];
+    channel_[false] = Channel["channel1"];
+    normal_cell_ = Channel["channel0"];
 
     for (size_t i = 0; i < channel_count_; i++) {
-        if (x >= 5) {
-            x = 0;
-            y++;
-        }
+        int16_t x = static_cast<int16_t>(i % 5);
+        int16_t y = static_cast<int16_t>(i / 5);
+        Point<int16_t> cell(CELL_X0 + CELL_DX * x, CELL_Y0 + 20 * y);
+        Texture num = Channel["ch"][i];
 
-        ch_.emplace_back(Channel["ch"][i],
-                         Point<int16_t>(19 + 70 * x, 60 + 20 * y));
-        buttons_[Buttons::CH + i] = std::make_unique<AreaButton>(
-            Point<int16_t>(11 + 70 * x, 55 + 20 * y),
-            channel_[true].get_dimensions());
+        ch_.emplace_back(Channel["ch"][i], cell + Point<int16_t>(34 - num.width() / 2, 5));
+        cells_.push_back(cell);
+        buttons_[Buttons::CH + i] = std::make_unique<AreaButton>(cell, channel_[true].get_dimensions());
 
         if (i == selected_channel_) {
-            current_channel_x_ = 11 + 70 * x;
-            current_channel_y_ = 55 + 20 * y;
+            current_channel_x_ = cell.x();
+            current_channel_y_ = cell.y();
             selected_channel_x_ = current_channel_x_;
             selected_channel_y_ = current_channel_y_;
         }
-
-        x++;
     }
 
-    old_state_ = { current_channel_, current_channel_x_, current_channel_y_ };
-    dimension_ = bg.get_dimensions();
+    dimension_ = Point<int16_t>(top.width(), 67 + body + 36);
     drag_area_ = Point<int16_t>(dimension_.x(), 20);
+
+    old_state_ = { current_channel_, current_channel_x_, current_channel_y_ };
 }
 
 void UIChannel::draw(float inter) const {
-    UIElement::draw(inter);
+    UIElement::draw_sprites(inter);
+
+    for (const auto &cell : cells_) {
+        normal_cell_.draw(position_ + cell);
+    }
 
     if (current_channel_ == selected_channel_) {
         channel_[true].draw(DrawArgument(position_.x() + selected_channel_x_,
@@ -97,6 +98,8 @@ void UIChannel::draw(float inter) const {
     for (const auto &sprite : ch_) {
         sprite.draw(position_, inter);
     }
+
+    UIElement::draw_buttons(inter);
 }
 
 void UIChannel::update() {
@@ -296,8 +299,8 @@ void UIChannel::update_selected_channel_position() {
         }
 
         if (i == selected_channel_) {
-            selected_channel_x_ = 11 + 70 * x;
-            selected_channel_y_ = 55 + 20 * y;
+            selected_channel_x_ = CELL_X0 + CELL_DX * x;
+            selected_channel_y_ = CELL_Y0 + 20 * y;
             break;
         }
 
