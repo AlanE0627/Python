@@ -207,35 +207,8 @@ namespace ms {
                             break;
                         case KeyAction::Id::FRIENDS:
                         case KeyAction::Id::PARTY:
-                        case KeyAction::Id::BOSS_PARTY: {
-                            UIUserList::Tab tab;
-
-                            switch (action) {
-                                case KeyAction::Id::FRIENDS:
-                                    tab = UIUserList::Tab::FRIEND;
-                                    break;
-                                case KeyAction::Id::PARTY:
-                                    tab = UIUserList::Tab::PARTY;
-                                    break;
-                                case KeyAction::Id::BOSS_PARTY:
-                                    tab = UIUserList::Tab::BOSS;
-                                    break;
-                            }
-
-                            auto userlist = UI::get().get_element<UIUserList>();
-
-                            if (userlist && userlist->get().get_tab() != tab
-                                && userlist->get().is_active()) {
-                                userlist->get().change_tab(tab);
-                            } else {
-                                emplace<UIUserList>(tab);
-
-                                if (userlist && userlist->get().get_tab() != tab
-                                    && userlist->get().is_active()) {
-                                    userlist->get().change_tab(tab);
-                                }
-                            }
-                        }
+                        case KeyAction::Id::BOSS_PARTY:
+                            // maple-offline: single-player, no buddy/party list.
                             break;
                         case KeyAction::Id::WORLD_MAP:
 #ifdef MS_DESKTOP_DEBUG
@@ -243,13 +216,8 @@ namespace ms {
 #endif
                             emplace<UIWorldMap>();
                             break;
-                        case KeyAction::Id::MAPLE_CHAT: {
-                            auto chat = UI::get().get_element<UIChat>();
-
-                            if (!chat || !chat->get().is_active()) {
-                                emplace<UIChat>();
-                            }
-                        }
+                        case KeyAction::Id::MAPLE_CHAT:
+                            // maple-offline: no messenger in single-player.
                             break;
                         case KeyAction::Id::MINI_MAP:
                             if (auto minimap = UI::get().get_element<UIMiniMap>()) {
@@ -307,7 +275,7 @@ namespace ms {
 
                             break;
                         case KeyAction::Id::EVENT:
-                            emplace<UIEvent>();
+                            // maple-offline: later-version event window, not in v83.
                             break;
                         case KeyAction::Id::CHANGE_CHANNEL:
                             emplace<UIChannel>(
