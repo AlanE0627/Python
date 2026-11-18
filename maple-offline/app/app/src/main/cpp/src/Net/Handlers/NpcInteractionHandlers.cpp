@@ -104,9 +104,9 @@ void ConfirmShopTransactionHandler::handle(InPacket &recv) const {
     const char *msg = nullptr;
 
     switch (code) {
-        case 1: msg = "This item is sold out."; break;
-        case 2: msg = "You do not have enough mesos."; break;
-        case 3: msg = "Please check if your inventory is full."; break;
+        case 1: msg = "품절된 아이템입니다."; break;
+        case 2: msg = "메소가 부족합니다."; break;
+        case 3: msg = "인벤토리에 빈 칸이 있는지 확인해 주세요."; break;
         default: break;
     }
 

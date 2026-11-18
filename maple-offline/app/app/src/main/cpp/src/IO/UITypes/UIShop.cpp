@@ -683,7 +683,7 @@ void UIShop::BuyState::buy() const {
     int32_t itemid = item.get_id();
 
     if (buyable > 1) {
-        const std::string question = "How many are you willing to buy?";
+        const std::string question = "몇 개를 구입하시겠습니까?";
 
         auto onenter = [slot, itemid](int32_t qty) {
             auto shortqty = static_cast<int16_t>(qty);
@@ -693,7 +693,7 @@ void UIShop::BuyState::buy() const {
 
         UI::get().emplace<UIEnterNumber>(question, onenter, buyable, 1);
     } else if (buyable > 0) {
-        const std::string question = "Are you sure you want to buy it?";
+        const std::string question = "구입하시겠습니까?";
 
         auto ondecide = [slot, itemid](bool yes) {
             if (yes) {
@@ -795,7 +795,7 @@ void UIShop::SellState::sell(bool skip_confirmation) const {
     int16_t slot = item.get_slot();
 
     if (sellable > 1) {
-        const std::string question = "How many are you willing to sell?";
+        const std::string question = "몇 개를 판매하시겠습니까?";
 
         auto onenter = [itemid, slot](int32_t qty) {
             auto shortqty = static_cast<int16_t>(qty);
@@ -810,7 +810,7 @@ void UIShop::SellState::sell(bool skip_confirmation) const {
             return;
         }
 
-        const std::string question = "Are you sure you want to sell it?";
+        const std::string question = "판매하시겠습니까?";
 
         auto ondecide = [itemid, slot](bool yes) {
             if (yes) {

@@ -21,17 +21,16 @@
 namespace ms {
 const EnumMap<Messages::Type, const char *> Messages::messages = {
     "",
-    "You cannot use this skill with this weapon.",
-    "You do not have enough hp to use this skill.",
-    "You do not have enough mp to use this skill.",
-    "You do not have enough arrows to use this attack.",
-    "You do not have enough bullets to use this attack.",
-    "You do not have enough throwing stars to use this attack.",
-    "You cannot use this skill as it is on cooldown.",
-    "The scroll lights up and it's mysterious powers have been transferred to "
-    "the item.",
-    "The scroll lights up but the item remains as if nothing happened.",
-    "The item has been destroyed due to the overwhelming power of the scroll."
+    "이 무기로는 사용할 수 없는 스킬입니다.",
+    "HP가 부족하여 스킬을 사용할 수 없습니다.",
+    "MP가 부족하여 스킬을 사용할 수 없습니다.",
+    "화살이 부족합니다.",
+    "탄환이 부족합니다.",
+    "표창이 부족합니다.",
+    "아직 다시 사용할 수 없는 스킬입니다.",
+    "주문서의 신비한 힘이 아이템에 깃들었습니다.",
+    "주문서가 빛났지만 아이템에는 아무 변화가 없습니다.",
+    "주문서의 강한 힘을 이기지 못하고 아이템이 파괴되었습니다."
 };
 
 InChatMessage::InChatMessage(Messages::Type t) {

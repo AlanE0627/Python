@@ -938,7 +938,7 @@ namespace ms {
                 break;
             case Buttons::DEFAULT: {
                 const std::string message =
-                        "Would you like to revert to default settings?";
+                        "기본 설정으로 되돌리시겠습니까?";
 
                 auto onok = [&](bool ok) {
                     if (ok) {
@@ -963,7 +963,7 @@ namespace ms {
             }
             case Buttons::DELETE: {
                 const std::string message =
-                        "Would you like to clear all key bindings?";
+                        "모든 키 설정을 지우시겠습니까?";
 
                 auto onok = [&](bool ok) {
                     if (ok) {
@@ -1100,7 +1100,7 @@ namespace ms {
 
     void UIKeyConfig::safe_close() {
         if (dirty_) {
-            const std::string message = "Do you want to save your changes?";
+            const std::string message = "변경한 내용을 저장하시겠습니까?";
 
             auto onok = [&](bool ok) {
                 if (ok) {

@@ -339,7 +339,7 @@ Button::State UIItemInventory::button_pressed(uint16_t buttonid) {
             set_full(false);
             return Button::State::NORMAL;
         case Buttons::BT_COIN: {
-            const std::string question = "How many do you want to drop?";
+            const std::string question = "몇 개를 버리시겠습니까?";
             auto onenter = [](auto amount) { fn_drop_mesos(amount); };
 
             UI::get().emplace<UIEnterNumber>(question, onenter, 50000, 10);
@@ -701,7 +701,7 @@ bool UIItemInventory::can_wear_equip(int16_t slot) const {
 
     if (!job_ok) {
         UI::get().emplace<UIOk>(
-            "Your current job\\ncannot equip the selected item.",
+            "현재 직업으로는\\n착용할 수 없는 아이템입니다.",
             [](bool) {});
         return false;
     }
@@ -731,8 +731,7 @@ bool UIItemInventory::can_wear_equip(int16_t slot) const {
 
     if (i > 0) {
         UI::get().emplace<UIOk>(
-            "Your stats are too low to equip this item\\nor you do not meet "
-            "the job requirement.",
+            "능력치가 부족하여\\n착용할 수 없습니다.",
             [](bool) {});
         return false;
     }

@@ -33,6 +33,9 @@ namespace ms {
 // Base for characters, e.g. the player and other clients on the same map.
 class Char : public MapObject {
 public:
+    // maple-offline: debugging / combat lock checks
+    bool is_attacking() const { return attacking_; }
+
     // Player states which determine animation and state
     // Values are used in movement packets (Add one if facing left)
     enum State : int8_t {

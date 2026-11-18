@@ -418,7 +418,7 @@ namespace ms {
     }
 
     void UIStateGame::send_close() {
-        UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+        UI::get().emplace<UIYesNo>("게임을 종료하시겠습니까?",
                                        [](bool yes) {
                                            if (yes) {
                                                UIQuit::logout();

@@ -273,7 +273,7 @@ void UIEnterNumber::handlestring(const std::string &numstr) {
 
     if (!has_only_digits) {
         numfield.set_state(Textfield::State::DISABLED);
-        UI::get().emplace<UIOk>("Only numbers are allowed.", okhandler);
+        UI::get().emplace<UIOk>("숫자만 입력할 수 있습니다.", okhandler);
         return;
     }
     num = std::stoi(numstr);
@@ -281,15 +281,14 @@ void UIEnterNumber::handlestring(const std::string &numstr) {
     if (num < 1) {
         numfield.set_state(Textfield::State::DISABLED);
         UI::get().emplace<UIOk>(
-            "You may only enter a number equal to or higher than 1.",
+            "1 이상의 숫자를 입력해 주세요.",
             okhandler);
         return;
     }
     if (num > max) {
         numfield.set_state(Textfield::State::DISABLED);
         UI::get().emplace<UIOk>(
-            "You may only enter a number equal to or lower than "
-                + std::to_string(max) + ".",
+            std::to_string(max) + " 이하의 숫자를 입력해 주세요.",
             okhandler);
         return;
     }

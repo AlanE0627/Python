@@ -27,6 +27,9 @@
 namespace ms {
 class CharLook {
 public:
+        // maple-offline: current action name (debugging)
+        const std::string &get_actionstr() const { return actionstr_; }
+
     CharLook(const LookEntry &entry);
 
     CharLook();

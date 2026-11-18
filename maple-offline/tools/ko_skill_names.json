@@ -1,0 +1,422 @@
+[
+{
+"id": 8,
+"name": "팔로우 더 리드",
+"certain": false
+},
+{
+"id": 12,
+"name": "요정의 축복",
+"certain": false
+},
+{
+"id": 100,
+"name": "의자 숙련",
+"certain": false
+},
+{
+"id": 1000,
+"name": "달팽이 세마리",
+"certain": true
+},
+{
+"id": 1001,
+"name": "회복",
+"certain": true
+},
+{
+"id": 1002,
+"name": "민첩한 몸놀림",
+"certain": true
+},
+{
+"id": 1003,
+"name": "장인의 혼",
+"certain": false
+},
+{
+"id": 1004,
+"name": "몬스터 라이딩",
+"certain": true
+},
+{
+"id": 1005,
+"name": "영웅의 메아리",
+"certain": true
+},
+{
+"id": 1006,
+"name": "아래 점프",
+"certain": false
+},
+{
+"id": 1007,
+"name": "메이커",
+"certain": true
+},
+{
+"id": 1009,
+"name": "대나무비",
+"certain": false
+},
+{
+"id": 1010,
+"name": "무적",
+"certain": false
+},
+{
+"id": 1011,
+"name": "파워 폭발",
+"certain": false
+},
+{
+"id": 1013,
+"name": "우주선",
+"certain": false
+},
+{
+"id": 1014,
+"name": "스페이스 대시",
+"certain": false
+},
+{
+"id": 1015,
+"name": "스페이스 빔",
+"certain": false
+},
+{
+"id": 1017,
+"name": "예티 라이딩",
+"certain": false
+},
+{
+"id": 1018,
+"name": "예티 탑승",
+"certain": false
+},
+{
+"id": 1019,
+"name": "마녀의 빗자루",
+"certain": false
+},
+{
+"id": 1020,
+"name": "파라오의 분노",
+"certain": false
+},
+{
+"id": 1031,
+"name": "발록 탑승",
+"certain": false
+},
+{
+"id": 9000,
+"name": "돼지의 약점",
+"certain": false
+},
+{
+"id": 9001,
+"name": "스텀프의 약점",
+"certain": false
+},
+{
+"id": 9002,
+"name": "슬라임의 약점",
+"certain": false
+},
+{
+"id": 1000000,
+"name": "HP 회복 향상",
+"certain": false
+},
+{
+"id": 1000001,
+"name": "최대 HP 증가",
+"certain": false
+},
+{
+"id": 1000002,
+"name": "인듀어",
+"certain": true
+},
+{
+"id": 1001003,
+"name": "아이언 바디",
+"certain": true
+},
+{
+"id": 1001004,
+"name": "파워 스트라이크",
+"certain": true
+},
+{
+"id": 1100001,
+"name": "도끼 마스터리",
+"certain": true
+},
+{
+"id": 1100003,
+"name": "파이널 어택 : 도끼",
+"certain": true
+},
+{
+"id": 1101005,
+"name": "도끼 부스터",
+"certain": true
+},
+{
+"id": 1101007,
+"name": "파워 가드",
+"certain": true
+},
+{
+"id": 1110001,
+"name": "실드 마스터리",
+"certain": true
+},
+{
+"id": 1111002,
+"name": "콤보 어택",
+"certain": true
+},
+{
+"id": 1111004,
+"name": "패닉 : 도끼",
+"certain": true
+},
+{
+"id": 1111005,
+"name": "코마 : 검",
+"certain": true
+},
+{
+"id": 1111006,
+"name": "코마 : 도끼",
+"certain": true
+},
+{
+"id": 1111007,
+"name": "아머 크래시",
+"certain": true
+},
+{
+"id": 1120004,
+"name": "아킬레스",
+"certain": true
+},
+{
+"id": 1120005,
+"name": "가디언",
+"certain": true
+},
+{
+"id": 1121001,
+"name": "몬스터 마그넷",
+"certain": true
+},
+{
+"id": 1121002,
+"name": "스탠스",
+"certain": true
+},
+{
+"id": 1121006,
+"name": "돌진",
+"certain": true
+},
+{
+"id": 1200001,
+"name": "둔기 마스터리",
+"certain": false
+},
+{
+"id": 1200003,
+"name": "파이널 어택 : 둔기",
+"certain": false
+},
+{
+"id": 1201005,
+"name": "둔기 부스터",
+"certain": false
+},
+{
+"id": 1201006,
+"name": "위협",
+"certain": true
+},
+{
+"id": 1201007,
+"name": "파워 가드",
+"certain": true
+},
+{
+"id": 1210000,
+"name": "MP 회복 향상",
+"certain": false
+},
+{
+"id": 1211002,
+"name": "차지 블로",
+"certain": true
+},
+{
+"id": 1211003,
+"name": "파이어 차지 : 검",
+"certain": true
+},
+{
+"id": 1211004,
+"name": "플레임 차지 : 둔기",
+"certain": true
+},
+{
+"id": 1211005,
+"name": "아이스 차지 : 검",
+"certain": true
+},
+{
+"id": 1211006,
+"name": "블리자드 차지 : 둔기",
+"certain": true
+},
+{
+"id": 1211007,
+"name": "썬더 차지 : 검",
+"certain": true
+},
+{
+"id": 1211009,
+"name": "매직 크래시",
+"certain": true
+},
+{
+"id": 1220005,
+"name": "아킬레스",
+"certain": true
+},
+{
+"id": 1220006,
+"name": "가디언",
+"certain": true
+},
+{
+"id": 1221001,
+"name": "몬스터 마그넷",
+"certain": true
+},
+{
+"id": 1221002,
+"name": "스탠스",
+"certain": true
+},
+{
+"id": 1221003,
+"name": "홀리 차지 : 검",
+"certain": true
+},
+{
+"id": 1221007,
+"name": "돌진",
+"certain": true
+},
+{
+"id": 1300001,
+"name": "폴암 마스터리",
+"certain": false
+},
+{
+"id": 1300003,
+"name": "파이널 어택 : 폴암",
+"certain": false
+},
+{
+"id": 1301005,
+"name": "폴암 부스터",
+"certain": false
+},
+{
+"id": 1310000,
+"name": "엘리멘탈 레지스턴스",
+"certain": true
+},
+{
+"id": 1311001,
+"name": "스피어 크러셔",
+"certain": true
+},
+{
+"id": 1311002,
+"name": "폴암 크러셔",
+"certain": true
+},
+{
+"id": 1311003,
+"name": "드래곤 퓨리 : 창",
+"certain": true
+},
+{
+"id": 1311004,
+"name": "드래곤 퓨리 : 폴암",
+"certain": true
+},
+{
+"id": 1311005,
+"name": "새크리파이스",
+"certain": true
+},
+{
+"id": 1311006,
+"name": "드래곤 로어",
+"certain": true
+},
+{
+"id": 1311007,
+"name": "파워 크래시",
+"certain": true
+},
+{
+"id": 1311008,
+"name": "드래곤 블러드",
+"certain": true
+},
+{
+"id": 1320005,
+"name": "아킬레스",
+"certain": true
+},
+{
+"id": 1320006,
+"name": "버서크",
+"certain": true
+},
+{
+"id": 1320008,
+"name": "비홀더의 오라",
+"certain": false
+},
+{
+"id": 1320009,
+"name": "비홀더의 저주",
+"certain": false
+},
+{
+"id": 1321001,
+"name": "몬스터 마그넷",
+"certain": true
+},
+{
+"id": 1321002,
+"name": "스탠스",
+"certain": true
+},
+{
+"id": 1321003,
+"name": "돌진",
+"certain": true
+},
+{
+"id": 1321007,
+"name": "비홀더",
+"certain": true
+}
+]

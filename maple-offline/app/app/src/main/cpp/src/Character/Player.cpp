@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Player.h"
 
+#include <cstdio>
+
 #include "../Data/WeaponData.h"
 #include "../IO/UI.h"
 #include "../IO/UITypes/UIStatsInfo.h"
@@ -160,8 +162,22 @@ int8_t Player::update(const Physics &physics) {
 
         bool aniend = Char::update(physics, get_stancespeed());
 
-        if (aniend && attacking_) {
+        // maple-offline: an action whose animation never reports its end
+        // (missing or looping action, e.g. after Dash) used to leave the
+        // player unable to attack again; give up after two seconds
+        if (attacking_) {
+            attack_ticks_++;
+        } else {
+            attack_ticks_ = 0;
+        }
+
+        if (attacking_ && (aniend || attack_ticks_ > 2000 / Constants::TIMESTEP)) {
+#ifdef MS_DESKTOP_DEBUG
+            fprintf(stderr, "[dbg] attack end after %d ticks aniend %d action '%s'\n", attack_ticks_,
+                    (int) aniend, look_.get_actionstr().c_str());
+#endif
             attacking_ = false;
+            attack_ticks_ = 0;
             nullstate.update_state(*this);
         } else {
             pst->update_state(*this);

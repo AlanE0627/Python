@@ -72,6 +72,13 @@ def main():
     mobs = load(i18n, 'mob')
     npcs = load(i18n, 'npc')
     skills = load(i18n, 'skill')
+
+    # hand-made names for v83 skills that later KMS data no longer has
+    table = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ko_skill_names.json')
+
+    if os.path.exists(table):
+        for r in json.load(open(table, encoding='utf8')):
+            skills.setdefault(int(r['id']), {'name': r['name']})
     quests = load(i18n, 'quest')
 
     new_strings = []          # appended strings

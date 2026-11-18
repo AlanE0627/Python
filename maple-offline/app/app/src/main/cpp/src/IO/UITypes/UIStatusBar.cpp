@@ -248,7 +248,7 @@ void UIStatusBar::send_key(int32_t keycode, bool pressed, bool escape) {
         if (menu_active_) {
             remove_menus();
         } else {
-            UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+            UI::get().emplace<UIYesNo>("게임을 종료하시겠습니까?",
                                        [](bool yes) {
                                            if (yes) {
                                                UIQuit::logout();
@@ -322,7 +322,7 @@ Button::State UIStatusBar::button_pressed(uint16_t id) {
             break;
         case BT_GM_QUIT:
             remove_menus();
-            UI::get().emplace<UIYesNo>("Are you sure you want to quit the game?",
+            UI::get().emplace<UIYesNo>("게임을 종료하시겠습니까?",
                                        [](bool yes) {
                                            if (yes) {
                                                UIQuit::logout();

@@ -88,7 +88,9 @@ void Combat::update() {
 void Combat::use_move(int32_t move_id) {
     if (!player_.can_attack()) {
 #ifdef MS_DESKTOP_DEBUG
-        fprintf(stderr, "[dbg] use_move %d: cannot attack now\n", move_id);
+        fprintf(stderr, "[dbg] use_move %d: cannot attack now (attacking %d climb %d sit %d weapon %d)\n", move_id,
+                (int) player_.is_attacking(), (int) player_.is_climbing(), (int) player_.is_sitting(),
+                (int) player_.get_look().get_equips().has_weapon());
 #endif
         return;
     }

@@ -186,6 +186,7 @@ public:
     int32_t get_cid() const;
 
 private:
+    int32_t attack_ticks_ = 0;
     CharStats stats_;
     Inventory inventory_;
     SkillBook skill_book_;
