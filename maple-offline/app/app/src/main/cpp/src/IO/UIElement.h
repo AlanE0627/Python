@@ -71,6 +71,7 @@ public:
         GAUGE_BOSS,
         NOTIFICATION,
         TRADE,
+        TRUNK,
         NUM_TYPES
     };
 

@@ -115,6 +115,7 @@ add_executable(ms_desktop
         ${C}/src/IO/UITypes/UIQuestLog.cpp
         ${C}/src/IO/UITypes/UIQuit.cpp
         ${C}/src/IO/UITypes/UIShop.cpp
+        ${C}/src/IO/UITypes/UITrunk.cpp
         ${C}/src/IO/UITypes/UISkillBook.cpp
         ${C}/src/IO/UITypes/UIStatsInfo.cpp
         ${C}/src/IO/UITypes/UIStatusBar.cpp

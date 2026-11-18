@@ -163,6 +163,16 @@ class RemoveMistHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
 
+// maple-offline: map clock and ship state
+// Opcode: CLOCK(147), STOP_CLOCK(154), CONTI_MOVE(148), CONTI_STATE(149)
+class ClockHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class StopClockHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
 // maple-offline: summon packets about other players' summons are read and
 // dropped (single player)
 // Opcode: MOVE_SUMMON(177) .. SUMMON_SKILL(180)

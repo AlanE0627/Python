@@ -26,6 +26,13 @@ class NpcDialogueHandler : public PacketHandler {
 // Opens an NPC shop defined by the packet's contents
 // maple-offline: result of a shop buy/sell (0 ok, 1 sold out, 2 not enough
 // mesos, 3 inventory full). Without a handler failures were silent.
+// maple-offline: storage open / changes / errors
+// Opcode: STORAGE(309)
+class StorageHandler : public PacketHandler {
+public:
+    void handle(InPacket &recv) const override;
+};
+
 class ConfirmShopTransactionHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };

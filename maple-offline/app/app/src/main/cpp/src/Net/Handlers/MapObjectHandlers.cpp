@@ -630,4 +630,19 @@ void SpawnMistHandler::handle(InPacket &recv) const {
 void RemoveMistHandler::handle(InPacket &recv) const {
     Stage::get().get_field_objects().remove_mist(recv.read_int());
 }
+void ClockHandler::handle(InPacket &recv) const {
+    int8_t type = recv.read_byte();
+
+    if (type == 2 && recv.length() >= 4) {
+        Stage::get().set_clock(recv.read_int());
+    } else if (type == 3 && recv.length() >= 5) {
+        recv.read_byte();
+        Stage::get().set_clock(recv.read_int());
+    }
+    // type 1 (wall clock) is not shown
+}
+
+void StopClockHandler::handle(InPacket &) const {
+    Stage::get().set_clock(0);
+}
 }  // namespace ms

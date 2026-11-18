@@ -14,6 +14,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Stage.h"
+#include <cstdio>
 
 #include <nlnx/nx.hpp>
 #include <utility>
@@ -171,6 +172,24 @@ void Stage::draw(float alpha) const {
     portals_.draw(viewpos, alpha);
     backgrounds_.drawforegrounds(viewx, viewy, alpha);
     effect_.draw();
+
+    if (clock_active_) {
+        auto left = std::chrono::duration_cast<std::chrono::seconds>(
+                clock_end_ - std::chrono::steady_clock::now()).count();
+
+        if (left < 0) {
+            left = 0;
+        }
+
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "%02d:%02d", static_cast<int>(left / 60), static_cast<int>(left % 60));
+        // the text object is mutable state only for display
+        const_cast<Text &>(clock_text_).change_text(buf);
+
+        int16_t x = static_cast<int16_t>(Constants::Constants::get().get_viewwidth() / 2);
+        clock_bg_.draw(DrawArgument(Point<int16_t>(static_cast<int16_t>(x - 129), 30)));
+        clock_text_.draw(Point<int16_t>(x, 44));
+    }
 }
 
 void Stage::update() {
@@ -359,6 +378,16 @@ Player &Stage::get_player() {
 
 FieldObjects &Stage::get_field_objects() {
     return field_objects_;
+}
+
+void Stage::set_clock(int32_t seconds) {
+    clock_active_ = seconds > 0;
+
+    if (clock_active_) {
+        clock_end_ = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+        clock_bg_ = nl::nx::map["Obj"]["etc.img"]["timer"]["backgrnd"];
+        clock_text_ = Text(Text::Font::A18M, Text::Alignment::CENTER, Color::Name::WHITE);
+    }
 }
 
 Point<int16_t> Stage::get_town_door_position() const {

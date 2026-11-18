@@ -90,6 +90,16 @@ public:
     int16_t inspect_short();
     // Inspect an int. Does not advance the buffer position.
     int32_t inspect_int();
+
+    // maple-offline: peek an int `offset` bytes ahead without moving
+    int32_t inspect_int_at(size_t offset) {
+        size_t before = pos_;
+        pos_ += offset;
+        int32_t value = read<int32_t>();
+        pos_ = before;
+
+        return value;
+    }
     // Inspect a long. Does not advance the buffer position.
     int64_t inspect_long();
 

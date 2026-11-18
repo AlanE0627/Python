@@ -14,6 +14,9 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "NpcInteractionHandlers.h"
+#include <vector>
+#include "Helpers/ItemParser.h"
+#include "../../IO/UITypes/UITrunk.h"
 
 #include "../../IO/UITypes/UINotice.h"
 
@@ -112,6 +115,100 @@ void ConfirmShopTransactionHandler::handle(InPacket &recv) const {
 
     if (msg) {
         UI::get().emplace<UIOk>(msg, [](bool) {});
+    }
+
+    UI::get().enable();
+}
+namespace {
+std::vector<UITrunk::Entry> read_storage_items(InPacket &recv) {
+    std::vector<UITrunk::Entry> items;
+    uint8_t count = static_cast<uint8_t>(recv.read_byte());
+    Inventory scratch;
+    int16_t next[InventoryType::Id::LENGTH] = {};
+
+    for (uint8_t i = 0; i < count; i++) {
+        // peek the item id (after the 1-byte kind) to know its tab
+        int8_t kind = recv.inspect_byte();
+        (void) kind;
+        size_t id_pos = 1;
+        int32_t itemid = recv.inspect_int_at(id_pos);
+        InventoryType::Id type = InventoryType::by_item_id(itemid);
+        int16_t slot = ++next[type];
+
+        ItemParser::parse_item(recv, type, slot, scratch);
+        items.push_back({itemid, scratch.get_item_count(type, slot), type});
+    }
+
+    return items;
+}
+}  // namespace
+
+void StorageHandler::handle(InPacket &recv) const {
+    int8_t mode = recv.read_byte();
+
+    switch (mode) {
+        case 0x16: {  // open
+            int32_t npcid = recv.read_int();
+            uint8_t slots = static_cast<uint8_t>(recv.read_byte());
+            recv.read_short();
+            recv.read_short();
+            recv.read_int();
+            int32_t meso = recv.read_int();
+            recv.read_short();
+            std::vector<UITrunk::Entry> items = read_storage_items(recv);
+
+            UI::get().emplace<UITrunk>(npcid, slots, meso, std::move(items));
+            break;
+        }
+        case 0x09:    // taken out
+        case 0x0D:    // stored
+        case 0x0F: {  // arranged
+            uint8_t slots = static_cast<uint8_t>(recv.read_byte());
+            InventoryType::Id type = InventoryType::Id::NONE;
+
+            if (mode == 0x0F) {
+                recv.read_byte();
+                recv.skip(10);
+            } else {
+                // tab as a bit field: 2 << type
+                int16_t bits = recv.read_short();
+
+                for (int t = 1; t <= 5; t++) {
+                    if (bits == (2 << t)) {
+                        type = static_cast<InventoryType::Id>(t);
+                    }
+                }
+
+                recv.read_short();
+                recv.read_int();
+            }
+
+            std::vector<UITrunk::Entry> items = read_storage_items(recv);
+
+            if (auto trunk = UI::get().get_element<UITrunk>()) {
+                trunk->get().set_items(slots, type, std::move(items));
+            }
+
+            break;
+        }
+        case 0x13: {  // mesos
+            recv.read_byte();
+            recv.read_short();
+            recv.read_short();
+            recv.read_int();
+            int32_t meso = recv.read_int();
+
+            if (auto trunk = UI::get().get_element<UITrunk>()) {
+                trunk->get().set_meso(meso);
+            }
+
+            break;
+        }
+        case 0x0A: UI::get().emplace<UIOk>("인벤토리가 가득 찼습니다.", [](bool) {}); break;
+        case 0x0B: UI::get().emplace<UIOk>("메소가 부족합니다.", [](bool) {}); break;
+        case 0x0C: UI::get().emplace<UIOk>("이미 가지고 있는 고유 아이템입니다.", [](bool) {}); break;
+        case 0x11: UI::get().emplace<UIOk>("창고가 가득 찼습니다.", [](bool) {}); break;
+        default: break;
     }
 
     UI::get().enable();

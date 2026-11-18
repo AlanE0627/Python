@@ -424,6 +424,11 @@ enum Opcode : uint16_t {
     CANCEL_MONSTER_STATUS = 243,
     SHOW_MOB_HP = 250,
     SPAWN_PORTAL = 67,
+    STORAGE = 309,
+    CLOCK = 147,
+    CONTI_MOVE = 148,
+    CONTI_STATE = 149,
+    STOP_CLOCK = 154,
     SPAWN_MIST = 273,
     REMOVE_MIST = 274,
     SPAWN_DOOR = 275,
@@ -549,6 +554,12 @@ PacketSwitch::PacketSwitch() {
     emplace<NPC_DIALOGUE, NpcDialogueHandler>();
     emplace<OPEN_NPC_SHOP, OpenNpcShopHandler>();
     emplace<CONFIRM_SHOP_TRANSACTION, ConfirmShopTransactionHandler>();
+    emplace<STORAGE, StorageHandler>();
+    emplace<CLOCK, ClockHandler>();
+    emplace<STOP_CLOCK, StopClockHandler>();
+    // ship arrival/departure: the ship itself is part of the map objects
+    emplace<CONTI_MOVE, IgnoreHandler>();
+    emplace<CONTI_STATE, IgnoreHandler>();
 
     // Player Interaction
     emplace<CHAR_INFO, CharInfoHandler>();

@@ -104,6 +104,9 @@ public:
     // maple-offline: where this town shows the player's Mystic Door
     Point<int16_t> get_town_door_position() const;
 
+    // maple-offline: map countdown clock (ships, events); seconds <= 0 hides
+    void set_clock(int32_t seconds);
+
     // maple-offline: next map spawn at this position instead of a portal
     void set_spawn_position(Point<int16_t> pos) { spawn_override_ = pos; has_spawn_override_ = true; }
 
@@ -169,6 +172,10 @@ private:
     Summons summons_;
     FieldObjects field_objects_;
     Point<int16_t> spawn_override_;
+    std::chrono::steady_clock::time_point clock_end_;
+    bool clock_active_ = false;
+    Texture clock_bg_;
+    Text clock_text_;
     bool has_spawn_override_ = false;
     MobCombat mob_combat_;
 

@@ -112,6 +112,7 @@ add_library(OpenMapleClient SHARED
         src/IO/UITypes/UIQuestLog.cpp
         src/IO/UITypes/UIQuit.cpp
         src/IO/UITypes/UIShop.cpp
+        src/IO/UITypes/UITrunk.cpp
         src/IO/UITypes/UISkillBook.cpp
         src/IO/UITypes/UIStatsInfo.cpp
         src/IO/UITypes/UIStatusBar.cpp
