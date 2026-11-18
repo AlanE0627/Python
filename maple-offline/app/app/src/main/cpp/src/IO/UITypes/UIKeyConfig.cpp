@@ -1463,8 +1463,8 @@ namespace ms {
             case KeyAction::Id::SIT:
             case KeyAction::Id::ATTACK:
             case KeyAction::Id::JUMP:
+            case KeyAction::Id::INTERACT_HARVEST:  // v83 "NPC chat" is a type-5 action
                 return KeyType::Id::ACTION;
-            case KeyAction::Id::INTERACT_HARVEST:
             case KeyAction::Id::MAPLE_STORAGE:
             case KeyAction::Id::SAFE_MODE:
             case KeyAction::Id::MUTE:
