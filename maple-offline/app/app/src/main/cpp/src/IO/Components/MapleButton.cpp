@@ -19,15 +19,27 @@ namespace ms {
     MapleButton::MapleButton(const nl::node &src, Point<int16_t> pos) {
     nl::node normal = src["normal"];
 
-    if (normal.size() > 1) {
+    // maple-offline: a bitmap node with origin/z children is a single texture, not frames.
+    if (normal.size() > 1 && normal.data_type() != nl::node::type::bitmap) {
         animations_[Button::State::NORMAL] = normal;
     } else {
         textures_[Button::State::NORMAL] = normal["0"];
+        // maple-offline: some v83 buttons store the bitmap directly in "normal".
+        if (!textures_[Button::State::NORMAL].is_valid())
+            textures_[Button::State::NORMAL] = normal;
     }
 
     textures_[Button::State::PRESSED] = src["pressed"]["0"];
     textures_[Button::State::MOUSEOVER] = src["mouseOver"]["0"];
     textures_[Button::State::DISABLED] = src["disabled"]["0"];
+    if (!textures_[Button::State::DISABLED].is_valid())
+        textures_[Button::State::DISABLED] = src["disabled"];
+
+    // maple-offline: v83 buttons such as channel/<n> only ship normal/disabled.
+    if (!textures_[Button::State::PRESSED].is_valid())
+        textures_[Button::State::PRESSED] = textures_[Button::State::NORMAL];
+    if (!textures_[Button::State::MOUSEOVER].is_valid())
+        textures_[Button::State::MOUSEOVER] = textures_[Button::State::NORMAL];
 
     active_ = true;
     position_ = pos;

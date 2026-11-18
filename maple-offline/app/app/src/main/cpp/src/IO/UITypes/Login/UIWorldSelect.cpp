@@ -15,6 +15,9 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIWorldSelect.h"
 
+#include "../../LoginScene.h"
+#include "../../../Graphics/Geometry.h"
+
 #include <nlnx/nx.hpp>
 
 #include "../../Audio/Audio.h"
@@ -62,95 +65,67 @@ UIWorldSelect::UIWorldSelect() :
                                 true,
                                 5);
 
-    Point<int16_t> background_pos = Point<int16_t>(400, 301);
-    channel_src_pos_ = Point<int16_t>(203, 164);
+    // maple-offline: v83 world select. Scene (city, signboards) comes from MapLogin.img.
+    LoginScene::get().set_step(LoginScene::WORLD_SELECT);
+    position_ = LoginScene::get().frame_origin();
+    channel_src_pos_ = Point<int16_t>(430, 318);
 
     worldid_ = Setting<DefaultWorld>::get().load();
     channelid_ = Setting<DefaultChannel>::get().load();
     uint8_t regionid = Setting<DefaultRegion>::get().load();
 
-    nl::node obj = nl::nx::mapLatest["Obj"]["login.img"];
     nl::node login = nl::nx::ui["Login.img"];
     world_select_ = login["WorldSelect"];
-    world_src_ = world_select_["BtWorld"]["release"];
-    channel_src_ = world_select_["BtChannel"];
+    world_src_ = world_select_["BtWorld"];
+    channel_src_ = world_select_["channel"];
     nl::node common = login["Common"];
 
     set_region(regionid);
-
-    sprites_.emplace_back(obj["WorldSelect"]["default"][0], background_pos);
-
-    std::vector<std::string> backgrounds = { "cernium" };
-    auto backgrounds_size = backgrounds.size();
-
-    if (backgrounds_size > 0) {
-        if (backgrounds_size > 1) {
-            auto randomizer = Randomizer();
-            int32_t index = randomizer.next_int(backgrounds_size);
-
-            sprites_.emplace_back(obj["WorldSelect"][backgrounds[index]][0],
-                                  background_pos);
-        } else {
-            sprites_.emplace_back(obj["WorldSelect"][backgrounds[0]][0],
-                                  background_pos);
-        }
-    }
 
     sprites_.emplace_back(common["frame"], Point<int16_t>(400, 300));
     sprites_.emplace_back(common["step"]["1"], Point<int16_t>(40, 0));
 
     buttons_[Buttons::BT_VIEW_ALL] =
-        std::make_unique<MapleButton>(world_select_["BtViewAll"],
-                                      Point<int16_t>(0, 53));
+        std::make_unique<MapleButton>(world_select_["BtViewAll"], Point<int16_t>(0, 53));
     buttons_[Buttons::BT_VIEW_RECOMMENDED] =
-        std::make_unique<MapleButton>(world_select_["BtViewChoice"],
-                                      Point<int16_t>(0, 53));
+        std::make_unique<MapleButton>(world_select_["BtViewChoice"], Point<int16_t>(0, 53));
     buttons_[Buttons::BT_VIEW_RECOMMENDED_SELECT] =
-        std::make_unique<MapleButton>(world_select_["alert"]["BtChoice"],
-                                      Point<int16_t>(349, 327));
+        std::make_unique<MapleButton>(world_select_["alert"]["BtChoice"], Point<int16_t>(349, 327));
     buttons_[Buttons::BT_VIEW_RECOMMENDED_CANCEL] =
-        std::make_unique<MapleButton>(world_select_["alert"]["BtClose"],
-                                      Point<int16_t>(407, 327));
+        std::make_unique<MapleButton>(world_select_["alert"]["BtClose"], Point<int16_t>(407, 327));
     buttons_[Buttons::BT_VIEW_RECOMMENDED_PREV] =
-        std::make_unique<MapleButton>(world_select_["alert"]["BtArrowL"],
-                                      Point<int16_t>(338, 244));
+        std::make_unique<MapleButton>(world_select_["alert"]["BtArrowL"], Point<int16_t>(338, 244));
     buttons_[Buttons::BT_VIEW_RECOMMENDED_NEXT] =
-        std::make_unique<MapleButton>(world_select_["alert"]["BtArrowR"],
-                                      Point<int16_t>(439, 244));
-
+        std::make_unique<MapleButton>(world_select_["alert"]["BtArrowR"], Point<int16_t>(439, 244));
     buttons_[Buttons::BT_VIEW_ALL]->set_active(false);
-    buttons_[Buttons::BT_VIEW_RECOMMENDED]->set_active(use_recommended_);
+    buttons_[Buttons::BT_VIEW_RECOMMENDED]->set_active(false);
     buttons_[Buttons::BT_VIEW_RECOMMENDED_SELECT]->set_active(false);
     buttons_[Buttons::BT_VIEW_RECOMMENDED_CANCEL]->set_active(false);
     buttons_[Buttons::BT_VIEW_RECOMMENDED_PREV]->set_active(false);
     buttons_[Buttons::BT_VIEW_RECOMMENDED_NEXT]->set_active(false);
-
-    buttons_[Buttons::BT_VIEW_RECOMMENDED]->set_state(Button::State::DISABLED);
-
     recommended_textures_.emplace_back(world_select_["alert"]["backgrd"]);
 
+    // Region switching does not exist in v83; keep the slot inactive.
     buttons_[Buttons::BT_CHANGE_REGION] =
-        std::make_unique<MapleButton>(world_select_["BtRegion"],
-                                      Point<int16_t>(3, 127));
+        std::make_unique<MapleButton>(world_select_["BtRegion"], Point<int16_t>(3, 127));
+    buttons_[Buttons::BT_CHANGE_REGION]->set_active(false);
     buttons_[Buttons::BT_QUIT_GAME] =
         std::make_unique<MapleButton>(common["BtExit"], Point<int16_t>(0, 515));
 
-    for (size_t i = 0; i < Buttons::BT_ENTER_WORLD - Buttons::BT_CHANNEL0;
-         i++) {
-        std::string ch = std::to_string(i);
-
-        buttons_[Buttons::BT_CHANNEL0 + i] = std::make_unique<TwoSpriteButton>(
-            channel_src_["button:" + ch]["normal"]["0"],
-            channel_src_["button:" + ch]["keyFocused"]["0"],
-            channel_src_pos_);
+    // Channel panel: chBackgrn is centred (origin 224,116) on channel_src_pos_.
+    const Point<int16_t> panel_tl = channel_src_pos_ - Point<int16_t>(224, 116);
+    for (size_t i = 0; i < Buttons::BT_ENTER_WORLD - Buttons::BT_CHANNEL0; i++) {
+        int16_t col = static_cast<int16_t>(i % 4), row = static_cast<int16_t>(i / 4);
+        buttons_[Buttons::BT_CHANNEL0 + i] = std::make_unique<MapleButton>(
+            channel_src_[std::to_string(i)],
+            panel_tl + Point<int16_t>(static_cast<int16_t>(20 + col * 104), static_cast<int16_t>(66 + row * 34)));
         buttons_[Buttons::BT_CHANNEL0 + i]->set_active(false);
     }
 
-    channels_background_ = channel_src_["layer:bg"];
+    channels_background_ = world_select_["chBackgrn"];
 
-    buttons_[Buttons::BT_ENTER_WORLD] =
-        std::make_unique<MapleButton>(channel_src_["button:GoWorld"],
-                                      channel_src_pos_);
+    buttons_[Buttons::BT_ENTER_WORLD] = std::make_unique<MapleButton>(
+        world_select_["BtGoworld"], panel_tl + Point<int16_t>(326, 10));
     buttons_[Buttons::BT_ENTER_WORLD]->set_active(false);
 
     chatballoon_.change_text(
@@ -186,10 +161,18 @@ void UIWorldSelect::draw(float alpha) const {
 
     if (world_selected_) {
         channels_background_.draw(position_ + channel_src_pos_);
-        world_textures_[worldid_].draw(position_ + channel_src_pos_);
+        world_textures_[worldid_].draw(position_ + channel_src_pos_ - Point<int16_t>(224, 116) + Point<int16_t>(20, 12));
     }
 
     UIElement::draw_buttons(alpha);
+
+    if (world_selected_) {
+        // maple-offline: v83 has no "selected" channel art; mark it with a light box.
+        const Point<int16_t> panel_tl = channel_src_pos_ - Point<int16_t>(224, 116);
+        int16_t col = static_cast<int16_t>(channelid_ % 4), row = static_cast<int16_t>(channelid_ / 4);
+        ColorBox(92, 30, Color::Name::WHITE, 0.35f)
+            .draw(DrawArgument(position_ + panel_tl + Point<int16_t>(static_cast<int16_t>(20 + col * 104), static_cast<int16_t>(66 + row * 34))));
+    }
 
     version_.draw(position_ + Point<int16_t>(707, 1));
 
@@ -200,9 +183,10 @@ void UIWorldSelect::draw(float alpha) const {
 
 Cursor::State UIWorldSelect::send_cursor(bool clicked,
                                          Point<int16_t> cursorpos) {
+    // maple-offline: v83 chBackgrn is centred on channel_src_pos_ (origin 224,116).
+    const Point<int16_t> panel_tl = position_ + channel_src_pos_ - channels_background_.get_origin();
     Rectangle<int16_t> channels_bounds = Rectangle<int16_t>(
-        position_ + channel_src_pos_,
-        position_ + channel_src_pos_ + channels_background_.get_dimensions());
+        panel_tl, panel_tl + channels_background_.get_dimensions());
 
     Rectangle<int16_t> worlds_bounds = Rectangle<int16_t>(
         position_ + world_src_pos_,
@@ -469,31 +453,24 @@ void UIWorldSelect::remove_selected() {
     draw_chatballoon_ = false;
 }
 
-void UIWorldSelect::set_region(uint8_t regionid) {
-    world_map_[Buttons::BT_WORLD0] =
-        regionid == 5 ? Worlds::SCANIA : Worlds::LUNA;
+void UIWorldSelect::set_region(uint8_t /*regionid*/) {
+    // maple-offline: v83 world buttons are hanging ribbons BtWorld/<worldid>.
+    world_map_[Buttons::BT_WORLD0] = Worlds::SCANIA;
     world_map_[Buttons::BT_WORLD1] = Worlds::BERA;
     world_map_[Buttons::BT_WORLD2] = Worlds::AURORA;
     world_map_[Buttons::BT_WORLD3] = Worlds::ELYSIUM1;
     world_map_[Buttons::BT_WORLD4] = Worlds::REBOOT1;
 
-    nl::node region = world_src_["index"][regionid];
-
-    worlds_background_ = region["layer:bg"];
-
-    world_src_pos_ = region["pos"];
+    worlds_background_ = nl::node();
+    world_src_pos_ = Point<int16_t>(0, 0);
 
     for (size_t i = Buttons::BT_WORLD0; i <= Buttons::BT_WORLD4; i++) {
         std::string world = std::to_string(world_map_[i]);
-        world_textures_.emplace_back(channel_src_["release"]["layer:" + world]);
+        world_textures_.emplace_back(world_select_["world"][world]);
         recommended_world_textures_.emplace_back(world_select_["world"][world]);
-
-        nl::node worldbtn = world_src_["button:" + world];
-
-        buttons_[Buttons::BT_WORLD0 + i] = std::make_unique<TwoSpriteButton>(
-            worldbtn["normal"]["0"],
-            worldbtn["keyFocused"]["0"],
-            world_src_pos_ + Point<int16_t>(region["origin"][i + 1]));
+        buttons_[Buttons::BT_WORLD0 + i] = std::make_unique<MapleButton>(
+            world_src_[world],
+            Point<int16_t>(static_cast<int16_t>(200 + 30 * i), 120));
         buttons_[Buttons::BT_WORLD0 + i]->set_active(false);
     }
 }
