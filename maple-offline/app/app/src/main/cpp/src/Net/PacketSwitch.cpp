@@ -423,6 +423,11 @@ enum Opcode : uint16_t {
     APPLY_MONSTER_STATUS = 242,
     CANCEL_MONSTER_STATUS = 243,
     SHOW_MOB_HP = 250,
+    SPAWN_PORTAL = 67,
+    SPAWN_MIST = 273,
+    REMOVE_MIST = 274,
+    SPAWN_DOOR = 275,
+    REMOVE_DOOR = 276,
     SPAWN_SPECIAL_MAPOBJECT = 175,
     REMOVE_SPECIAL_MAPOBJECT = 176,
     MOVE_SUMMON = 177,
@@ -481,6 +486,11 @@ PacketSwitch::PacketSwitch() {
     emplace<SPAWN_PET, SpawnPetHandler>();
     emplace<SPAWN_NPC, SpawnNpcHandler>();
     emplace<SPAWN_SPECIAL_MAPOBJECT, SpawnSummonHandler>();
+    emplace<SPAWN_PORTAL, SpawnPortalHandler>();
+    emplace<SPAWN_MIST, SpawnMistHandler>();
+    emplace<REMOVE_MIST, RemoveMistHandler>();
+    emplace<SPAWN_DOOR, SpawnDoorHandler>();
+    emplace<REMOVE_DOOR, RemoveDoorHandler>();
     emplace<REMOVE_SPECIAL_MAPOBJECT, RemoveSummonHandler>();
     emplace<MOVE_SUMMON, IgnoreHandler>();
     emplace<SUMMON_ATTACK, IgnoreHandler>();

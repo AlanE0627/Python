@@ -171,6 +171,9 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
                             std::string("+ ") + Lang::BONUS_EXP + " (+" + std::to_string(bonus1) + ")");
             }
         }
+    } else if (mode == 9) {
+        // plain info text from the server (yellow line)
+        show_status(Color::Name::YELLOW, recv.read_string());
     } else if (mode == 4) {
         int32_t gain = recv.read_int();
         std::string sign = (gain < 0) ? "-" : "+";

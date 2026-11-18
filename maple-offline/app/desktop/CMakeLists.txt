@@ -218,6 +218,7 @@ add_executable(ms_desktop
         ${C}/src/Util/QuestCheck.cpp
         ${C}/src/Gameplay/QuestTalk.cpp
         ${C}/src/Gameplay/Summons.cpp
+        ${C}/src/Gameplay/FieldObjects.cpp
         ${C}/thirdparty/stb/deprecated/stb_image.c
         ${CMAKE_CURRENT_SOURCE_DIR}/glfm_desktop.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/bass_stub.cpp)

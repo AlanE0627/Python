@@ -21,6 +21,7 @@
 #include "../IO/KeyType.h"
 #include "Combat/Combat.h"
 #include "Summons.h"
+#include "FieldObjects.h"
 #include "Combat/MobCombat.h"
 #include "MapleMap/MapBackgrounds.h"
 #include "MapleMap/MapChars.h"
@@ -97,6 +98,15 @@ public:
     // maple-offline: summons on the map
     Summons &get_summons();
 
+    // maple-offline: Mystic Door and mists
+    FieldObjects &get_field_objects();
+
+    // maple-offline: where this town shows the player's Mystic Door
+    Point<int16_t> get_town_door_position() const;
+
+    // maple-offline: next map spawn at this position instead of a portal
+    void set_spawn_position(Point<int16_t> pos) { spawn_override_ = pos; has_spawn_override_ = true; }
+
     // Return a reference to the mob attack and buff component.
     MobCombat &get_mob_combat();
 
@@ -157,6 +167,9 @@ private:
 
     Combat combat_;
     Summons summons_;
+    FieldObjects field_objects_;
+    Point<int16_t> spawn_override_;
+    bool has_spawn_override_ = false;
     MobCombat mob_combat_;
 
     std::chrono::time_point<std::chrono::steady_clock> start_;

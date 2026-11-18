@@ -98,6 +98,7 @@ void Stage::clear() {
     drops_.clear();
     reactors_.clear();
     summons_.clear();
+    field_objects_.clear();
 }
 
 void Stage::load_map(int32_t mapid) {
@@ -123,6 +124,13 @@ void Stage::respawn(int8_t portalid) {
     Music(map_info_.get_bgm()).play();
 
     Point<int16_t> spawnpoint = portals_.get_portal_by_id(portalid);
+
+    field_objects_.place_town_door(get_town_door_position());
+
+    if (has_spawn_override_) {
+        spawnpoint = spawn_override_ - Point<int16_t>(0, 30);
+        has_spawn_override_ = false;
+    }
     Point<int16_t> startpos = physics_.get_y_below(spawnpoint);
     player_.respawn(startpos, map_info_.is_underwater());
     camera_.set_position(startpos);
@@ -143,6 +151,12 @@ void Stage::draw(float alpha) const {
 
     for (auto id : Layer::IDs) {
         tiles_objs_.draw(id, viewpos, alpha);
+
+        // maple-offline: doors and mists in the player's layer, above the
+        // map tiles there and behind characters
+        if (id == player_.get_layer()) {
+            field_objects_.draw(viewx, viewy, alpha);
+        }
         reactors_.draw(id, viewx, viewy, alpha);
         npcs_.draw(id, viewx, viewy, alpha);
         mobs_.draw(id, viewx, viewy, alpha);
@@ -167,6 +181,7 @@ void Stage::update() {
     combat_.update();
     mob_combat_.update();
     summons_.update();
+    field_objects_.update();
     backgrounds_.update();
     effect_.update();
     tiles_objs_.update();
@@ -205,6 +220,12 @@ void Stage::check_portals() {
     }
 
     Point<int16_t> playerpos = player_.get_position();
+
+    // maple-offline: Mystic Door before the map's own portals
+    if (field_objects_.try_enter(playerpos, map_id_)) {
+        return;
+    }
+
     Portal::WarpInfo warpinfo = portals_.find_warp_at(playerpos);
 
     if (warpinfo.intramap) {
@@ -334,6 +355,14 @@ MapDrops &Stage::get_drops() {
 
 Player &Stage::get_player() {
     return player_;
+}
+
+FieldObjects &Stage::get_field_objects() {
+    return field_objects_;
+}
+
+Point<int16_t> Stage::get_town_door_position() const {
+    return portals_.get_portal_by_id(0x80) + Point<int16_t>(0, 30);
 }
 
 Summons &Stage::get_summons() {

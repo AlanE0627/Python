@@ -85,6 +85,22 @@ void MapPortals::draw(Point<int16_t> viewpos, float inter) const {
 Point<int16_t> MapPortals::get_portal_by_id(uint8_t portal_id) const {
     auto iter = portals_by_id_.find(portal_id);
 
+    // maple-offline: the server numbers town door portals ("tp", type 6)
+    // 0x80, 0x81 ... in map order
+    if (iter == portals_by_id_.end() && portal_id >= 0x80) {
+        int32_t wanted = portal_id - 0x80;
+        int32_t n = 0;
+
+        for (auto it = portals_by_id_.begin(); it != portals_by_id_.end(); ++it) {
+            if (it->second.get_type() == Portal::Type::WARP /* pt 6 = town door portal */) {
+                if (n++ == wanted) {
+                    iter = it;
+                    break;
+                }
+            }
+        }
+    }
+
     if (iter != portals_by_id_.end()) {
         constexpr Point<int16_t> ABOVE(0, 30);
 

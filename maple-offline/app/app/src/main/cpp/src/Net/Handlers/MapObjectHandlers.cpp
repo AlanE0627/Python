@@ -584,4 +584,50 @@ void RemoveSummonHandler::handle(InPacket &recv) const {
 
     Stage::get().get_summons().remove(oid);
 }
+void SpawnDoorHandler::handle(InPacket &recv) const {
+    recv.read_bool();  // already launched
+    int32_t owner = recv.read_int();
+    Point<int16_t> pos = recv.read_point();
+
+    Stage::get().get_field_objects().add_door(owner, pos);
+}
+
+void RemoveDoorHandler::handle(InPacket &recv) const {
+    recv.read_byte();
+    int32_t owner = recv.read_int();
+
+    Stage::get().get_field_objects().remove_door(owner);
+}
+
+void SpawnPortalHandler::handle(InPacket &recv) const {
+    int32_t townid = recv.read_int();
+    int32_t targetid = recv.read_int();
+    // the packet's position is the far end (the field door); the town side
+    // stands on the town's first door portal
+    // (placed on the town's door portal once that map is loaded; if the
+    // packet comes while already in town, place it now)
+    Stage::get().get_field_objects().set_town_door(Stage::get().get_player().get_oid(), townid,
+                                                    targetid, Stage::get().get_town_door_position());
+}
+
+void SpawnMistHandler::handle(InPacket &recv) const {
+    int32_t oid = recv.read_int();
+    recv.read_int();  // kind
+    recv.read_int();  // owner
+    int32_t skill = recv.read_int();
+    recv.read_byte();   // level
+    recv.read_short();  // delay
+    int32_t x1 = recv.read_int();
+    int32_t y1 = recv.read_int();
+    int32_t x2 = recv.read_int();
+    int32_t y2 = recv.read_int();
+
+    Rectangle<int16_t> box(static_cast<int16_t>(x1), static_cast<int16_t>(x2),
+                           static_cast<int16_t>(y1), static_cast<int16_t>(y2));
+    Stage::get().get_field_objects().add_mist(oid, skill, box);
+}
+
+void RemoveMistHandler::handle(InPacket &recv) const {
+    Stage::get().get_field_objects().remove_mist(recv.read_int());
+}
 }  // namespace ms

@@ -73,6 +73,19 @@ void SetFieldHandler::change_map(InPacket &recv, int32_t) const {
     int32_t mapid = recv.read_int();
     int8_t portalid = recv.read_byte();
 
+    // maple-offline: HP, then an optional exact spawn position (Mystic
+    // Door, scripted warps)
+    if (recv.length() >= 3) {
+        recv.read_short();
+
+        if (recv.read_bool() && recv.length() >= 8) {
+            int32_t x = recv.read_int();
+            int32_t y = recv.read_int();
+            Stage::get().set_spawn_position(Point<int16_t>(static_cast<int16_t>(x),
+                                                           static_cast<int16_t>(y)));
+        }
+    }
+
     transition(mapid, portalid);
 }
 

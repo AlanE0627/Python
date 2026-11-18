@@ -140,6 +140,29 @@ class RemoveSummonHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
 
+// maple-offline: Mystic Door / town door / mists
+// Opcode: SPAWN_DOOR(275), REMOVE_DOOR(276), SPAWN_PORTAL(67),
+// SPAWN_MIST(273), REMOVE_MIST(274)
+class SpawnDoorHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class RemoveDoorHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class SpawnPortalHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class SpawnMistHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class RemoveMistHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
 // maple-offline: summon packets about other players' summons are read and
 // dropped (single player)
 // Opcode: MOVE_SUMMON(177) .. SUMMON_SKILL(180)
