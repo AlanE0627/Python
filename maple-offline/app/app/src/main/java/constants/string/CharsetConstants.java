@@ -37,7 +37,9 @@ public class CharsetConstants {
         LANGUAGE_US("US-ASCII"),
         LANGUAGE_PT_BR("ISO-8859-1"),
         LANGUAGE_THAI("TIS620"),
-        LANGUAGE_KOREAN("MS949");
+        LANGUAGE_KOREAN("MS949"),
+        // maple-offline: the bundled client speaks UTF-8 both ways
+        LANGUAGE_UTF8("UTF-8");
 
         private final String charset;
 

@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <unordered_map>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "GLES3/gl32.h"
@@ -266,6 +268,10 @@ namespace ms {
             GLshort width;
             GLshort height;
             Char chars[256];
+            // maple-offline: glyphs above U+00FF (Hangul etc.) are rendered
+            // on first use into the font region of the atlas
+            Text::Font id = Text::Font::A11M;
+            mutable std::unordered_map<uint32_t, Char> extra;
 
             Font(GLshort w, GLshort h) : width(w), height(h) {}
 
@@ -355,6 +361,22 @@ namespace ms {
 
         FT_Library ft_library_;
         Font fonts_[Text::Font::NUM_FONTS];
+
+        // maple-offline: dynamic glyph cache
+        FT_Face faces_[Text::Font::NUM_FONTS] = {};
+        FT_Face fallback_faces_[Text::Font::NUM_FONTS] = {};
+        static const GLshort FONT_REGION = 1536;
+        GLshort dyn_y0_ = 0;
+        GLshort dyn_x_ = 0;
+        GLshort dyn_y_ = 0;
+        GLshort dyn_row_h_ = 0;
+
+    public:
+        // Returns the glyph for a code point, rendering it if needed.
+        const Font::Char &glyph(const Font &font, uint32_t c);
+
+    private:
+        FT_Face load_face(AAssetManager *assetManager, const char *name, FT_UInt pixelh);
         Point<GLshort> font_border;
         GLshort font_ymax;
     };

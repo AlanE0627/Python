@@ -14,6 +14,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Window.h"
+
+#include "../Util/StringHandling.h"
 #include "../Configuration.h"
 #include "../Constants.h"
 #include "../Graphics/GraphicsGL.h"
@@ -59,29 +61,11 @@ namespace ms {
     }
 
     void char_callback(GLFMDisplay *display, const char *string, int modifiers) {
-        std::cout << "char_callback" << string << std::endl;
-        // Determine the length of the wide string (Unicode) to allocate memory
-        size_t length = mbstowcs(nullptr, string, 0);
-        if (length == (size_t) -1) {
-            // Error handling for invalid input string
-            return;
-        }
-
-        // Allocate memory for the wide string
-        wchar_t *wide_string = new wchar_t[length + 1]; // +1 for null terminator
-
-        // Convert the input string to wide string (Unicode)
-        mbstowcs(wide_string, string, length);
-        wide_string[length] = L'\0'; // Null-terminate the wide string
-
-        // Convert each wide character to uint32_t and use it as needed
-        for (size_t i = 0; i < length; ++i) {
-            uint32_t unicode_value = static_cast<uint32_t>(wide_string[i]);
-            // Now you have the uint32_t representation of the Unicode character
-            // You can use it as needed
+        // maple-offline: decode UTF-8 ourselves; mbstowcs depends on the C
+        // locale and drops Hangul from the Android keyboard
+        for (uint32_t unicode_value: string_conversion::to_utf8_vector(string)) {
             UI::get().send_key(unicode_value);
         }
-        delete[] wide_string;
     }
 
     std::chrono::time_point<std::chrono::steady_clock> start =

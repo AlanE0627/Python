@@ -898,7 +898,12 @@ public class Character extends AbstractCharacterObject {
                 return false;
             }
         }
-        return getIdByName(name) < 0 && Pattern.compile("[a-zA-Z0-9]{3,12}").matcher(name).matches();
+        // maple-offline: Hangul names are allowed; the name field is 12 bytes of
+        // UTF-8, so 2-4 Hangul syllables or 3-12 Latin letters/digits
+        boolean legal = Pattern.compile("[a-zA-Z0-9]{3,12}").matcher(name).matches()
+                || (Pattern.compile("[a-zA-Z0-9\uAC00-\uD7A3]{2,12}").matcher(name).matches()
+                    && name.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 12);
+        return getIdByName(name) < 0 && legal;
     }
 
     public boolean canDoor() {

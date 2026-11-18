@@ -215,6 +215,27 @@ namespace ms {
 
         font_ymax += font_border.y();
 
+        // maple-offline: Hangul fallback faces (NanumGothic, SIL OFL 1.1)
+        const Text::Font bold_fonts[] = {Text::Font::A11B, Text::Font::A12B, Text::Font::A13B,
+                                         Text::Font::A15B};
+        const FT_UInt sizes[Text::Font::NUM_FONTS] = {11, 11, 12, 12, 13, 13, 15, 18};
+
+        for (int f = 0; f < Text::Font::NUM_FONTS; f++) {
+            bool bold = std::find(std::begin(bold_fonts), std::end(bold_fonts),
+                                  static_cast<Text::Font>(f)) != std::end(bold_fonts);
+            fallback_faces_[f] = load_face(assetManager,
+                                           bold ? "NanumGothic-Bold.ttf" : "NanumGothic-Regular.ttf",
+                                           sizes[f]);
+        }
+
+        // the rest of the font region holds glyphs rendered on demand;
+        // sprites start below it
+        dyn_y0_ = static_cast<GLshort>(font_ymax + 1);
+        dyn_x_ = 0;
+        dyn_y_ = dyn_y0_;
+        dyn_row_h_ = 0;
+        font_ymax = FONT_REGION;
+
         leftovers_ = QuadTree<size_t, Leftover>(
                 [](const Leftover &first, const Leftover &second) {
                     bool width_comparison = first.width() >= second.width();
@@ -259,6 +280,8 @@ namespace ms {
             return false;
         }
 
+        faces_[id] = face;
+
         FT_GlyphSlot g = face->glyph;
 
         GLshort width = 0;
@@ -298,6 +321,7 @@ namespace ms {
         }
 
         fonts_[id] = Font(width, height);
+        fonts_[id].id = id;
 
         GLshort ox = x;
         GLshort oy = y;
@@ -353,6 +377,113 @@ namespace ms {
         }
 
         return true;
+    }
+
+    FT_Face GraphicsGL::load_face(AAssetManager *assetManager, const char *name, FT_UInt pixelh) {
+        AAsset *file = AAssetManager_open(assetManager, name, AASSET_MODE_BUFFER);
+
+        if (!file) {
+            std::cerr << "Error: missing font " << name << std::endl;
+            return nullptr;
+        }
+
+        off_t size = AAsset_getLength(file);
+        // kept for the lifetime of the face
+        auto *data = new FT_Byte[size];
+        AAsset_read(file, data, static_cast<size_t>(size));
+        AAsset_close(file);
+
+        FT_Face face = nullptr;
+
+        if (FT_New_Memory_Face(ft_library_, data, static_cast<FT_Long>(size), 0, &face)
+            || FT_Set_Pixel_Sizes(face, 0, pixelh)) {
+            std::cerr << "Error: failed to load font " << name << std::endl;
+            return nullptr;
+        }
+
+        return face;
+    }
+
+    const GraphicsGL::Font::Char &GraphicsGL::glyph(const Font &font, uint32_t c) {
+        if (c < 256) {
+            return font.chars[c];
+        }
+
+        auto found = font.extra.find(c);
+
+        if (found != font.extra.end()) {
+            return found->second;
+        }
+
+        bool hangul = (c >= 0x1100 && c <= 0x11FF) || (c >= 0x3130 && c <= 0x318F)
+                      || (c >= 0xAC00 && c <= 0xD7AF);
+        FT_Face face = faces_[font.id];
+
+        if (hangul || !face || FT_Get_Char_Index(face, c) == 0) {
+            face = fallback_faces_[font.id];
+        }
+
+        if (!face || FT_Get_Char_Index(face, c) == 0 || FT_Load_Char(face, c, FT_LOAD_RENDER)) {
+            return font.extra.emplace(c, font.chars['?']).first->second;
+        }
+
+        FT_GlyphSlot g = face->glyph;
+        auto w = static_cast<GLshort>(g->bitmap.width);
+        auto h = static_cast<GLshort>(g->bitmap.rows);
+
+        if (dyn_x_ + w + 1 > ATLASW) {
+            dyn_x_ = 0;
+            dyn_y_ = static_cast<GLshort>(dyn_y_ + dyn_row_h_ + 1);
+            dyn_row_h_ = 0;
+        }
+
+        if (dyn_y_ + h + 1 > FONT_REGION) {
+            // region full: start over (glyphs are re-rendered on next use)
+            for (auto &f: fonts_) {
+                f.extra.clear();
+            }
+
+            dyn_x_ = 0;
+            dyn_y_ = dyn_y0_;
+            dyn_row_h_ = 0;
+        }
+
+        GLshort ox = dyn_x_;
+        GLshort oy = dyn_y_;
+
+        if (w > 0 && h > 0) {
+            std::vector<FT_Byte> rgba(static_cast<size_t>(w) * h * 4);
+
+            for (int row = 0; row < h; row++) {
+                for (int col = 0; col < w; col++) {
+                    FT_Byte v = g->bitmap.buffer[row * g->bitmap.pitch + col];
+                    size_t i = (static_cast<size_t>(row) * w + col) * 4;
+                    rgba[i] = v;
+                    rgba[i + 1] = v;
+                    rgba[i + 2] = v;
+                    rgba[i + 3] = 255;
+                }
+            }
+
+            glBindTexture(GL_TEXTURE_2D, atlas_);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, ox, oy, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+        }
+
+        dyn_x_ = static_cast<GLshort>(dyn_x_ + w + 1);
+
+        if (h > dyn_row_h_) {
+            dyn_row_h_ = h;
+        }
+
+        Font::Char ch = {static_cast<GLshort>(g->advance.x >> 6),
+                         static_cast<GLshort>(g->advance.y >> 6),
+                         w,
+                         h,
+                         static_cast<GLshort>(g->bitmap_left),
+                         static_cast<GLshort>(g->bitmap_top),
+                         Offset(ox, oy, w, h)};
+
+        return font.extra.emplace(c, ch).first->second;
     }
 
     void GraphicsGL::reinit() {
@@ -736,7 +867,7 @@ namespace ms {
                     continue;
                 }
 
-                wordwidth += font_.chars[c < 256 ? c : '?'].ax;
+                wordwidth += GraphicsGL::get().glyph(font_, c).ax;
 
                 if (wordwidth > max_width_) {
                     if (last - first == 1) {
@@ -770,7 +901,7 @@ namespace ms {
 
         for (size_t pos = first; pos < last; pos++) {
             auto c = text[pos];
-            const Font::Char &ch = font_.chars[c < 256 ? c : '?'];
+            const Font::Char &ch = GraphicsGL::get().glyph(font_, c);
 
             advances_.push_back(ax_);
 
@@ -1171,7 +1302,7 @@ namespace ms {
 
                 for (size_t pos = word.first; pos < word.last; ++pos) {
                     auto c = text[pos];
-                    const Font::Char &ch = font.chars[c < 256 ? c : '?'];
+                    const Font::Char &ch = glyph(font, c);
 
                     GLshort char_x = x + ax + ch.bl;
                     GLshort char_y = y + ay - ch.bt;
