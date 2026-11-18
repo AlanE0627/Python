@@ -10,17 +10,17 @@ MapleStory GMS v83 오프라인 싱글플레이 Android 단일 APK 프로젝트 
 
 | 폴더 | 내용 | 출처 |
 |---|---|---|
-| `server/` | Android 서버 (Cosmic 포팅, Rhino 스크립트, SQLite) | speedyHKjournalist/MapleServerAndroid @ a118987 |
-| `client/` | Android 클라이언트 (HeavenClient 파생) | speedyHKjournalist/OpenMapleClient @ 7dd2f8f |
+| `app/` | 단일 APK 프로젝트: 서버(Java, `app/src/main/java`) + 클라이언트(C++, `app/src/main/cpp`) + 실행 화면(`GameLauncherActivity`) | MapleServerAndroid @ a118987 + OpenMapleClient @ 7dd2f8f 통합 |
+| `app/desktop/` | 클라이언트 Linux 테스트 빌드 | — |
 | `tools/` | WZ→NX 변환기 Linux판(UTF-16 변환·패딩 이미지 수정), NX 경로 점검 스크립트 | ryantpayton/NoLifeWzToNx @ 73bddde |
 | `docs/` | 분석 결과, 작업 로그 | — |
 
-참고 upstream: P0nk/Cosmic @ fec53bc, ryantpayton/MapleStory-Client @ cbb0fe2, brackeen/glfm @ 607fc6f (빌드 시 자동 fetch)
+참고 upstream: P0nk/Cosmic @ fec53bc, ryantpayton/MapleStory-Client @ cbb0fe2, brackeen/glfm @ 607fc6f (저장소에 포함, 컨트롤러 입력 패치)
 
 ## 에셋 정책
 
 - 게임 에셋(WZ, NX, 설치 파일, exe)은 저장소에 커밋하지 않음 — `.gitignore`로 차단
-- 서버용 WZ XML(`server/app/src/main/assets/wz/`)은 upstream MapleServerAndroid에서 빌드 전 복사
+- 서버용 WZ XML은 upstream MapleServerAndroid에서 빌드 전 복사 (`app/app/src/main/assets/wz/`)
 - 클라이언트용 NX는 v83 설치 파일 + Cosmic custom WZ로 로컬 생성 (`tools/wztonx_linux.cpp`)
 
 ## 빌드 환경
@@ -35,7 +35,6 @@ MapleStory GMS v83 오프라인 싱글플레이 Android 단일 APK 프로젝트 
 
 ## 데스크톱 테스트 빌드 (Linux)
 
-- `client/desktop/`: Android 클라이언트 소스를 그대로 Linux에서 실행하는 테스트용 빌드
+- `app/desktop/`: Android 클라이언트 소스를 그대로 Linux에서 실행하는 테스트용 빌드
 - 의존: clang, libc++, GLFW3, Mesa(GLES 3.2/EGL), FreeType, Xvfb
-- 선행: Android 빌드 1회 실행으로 `thirdparty/glfm` 내려받기(FetchContent)
 - 실행: `MS_DATA_DIR`(NX 파일·hostip.txt 폴더), `MS_ASSET_DIR`(폰트 폴더) 환경변수 지정
