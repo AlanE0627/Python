@@ -14,6 +14,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Player.h"
+#include "../Net/Packets/InventoryPackets.h"
+#include <cstdio>
 #include <nlnx/nx.hpp>
 #include <algorithm>
 #include <cmath>
@@ -152,6 +154,17 @@ void Player::draw(Layer::Id layer,
                   double viewy,
                   float alpha) const {
     if (layer == get_layer()) {
+        if (chair_id_ != 0) {
+            Point<int16_t> p = get_position() + Point<int16_t>(static_cast<int16_t>(std::round(viewx)),
+                                                               static_cast<int16_t>(std::round(viewy)));
+            // the chair image hangs below its origin; lift it so its bottom
+            // sits on the ground under the player
+            Point<int16_t> dim = chair_anim_.get_dimensions();
+            Point<int16_t> origin = chair_anim_.get_origin();
+            p.shift_y(static_cast<int16_t>(origin.y() - dim.y()));
+            chair_anim_.draw(DrawArgument(p, getflip()), alpha);
+        }
+
         Char::draw(viewx, viewy, alpha);
 
         // maple-offline: Combo Attack orbs circle the player (buff value =
@@ -181,6 +194,16 @@ int8_t Player::update(const Physics &physics) {
 
     if (combo_phase_ > 6.2831853) {
         combo_phase_ -= 6.2831853;
+    }
+
+    // getting up from a chair tells the server
+    if (chair_id_ != 0) {
+        chair_anim_.update();
+
+        if (state_ != Char::State::SIT) {
+            chair_id_ = 0;
+            CancelChairPacket().dispatch();
+        }
     }
 
     const PlayerState *pst = get_state(state_);
@@ -459,6 +482,18 @@ uint8_t Player::get_channel_id() const {
 void Player::change_job(uint16_t jobid) {
     show_effect_id(CharEffect::Id::JOB_CHANGE);
     stats_.change_job(jobid);
+}
+
+void Player::sit_on_chair(int32_t itemid) {
+    if (is_attacking() || is_climbing()) {
+        return;
+    }
+
+    char sid[16];
+    std::snprintf(sid, sizeof(sid), "%08d", itemid);
+    chair_anim_ = Animation(nl::nx::item["Install"]["0301.img"][std::string(sid)]["effect"]);
+    chair_id_ = itemid;
+    set_state(Char::State::SIT);
 }
 
 void Player::set_seat(std::optional<std::reference_wrapper<const Seat>> seat) {

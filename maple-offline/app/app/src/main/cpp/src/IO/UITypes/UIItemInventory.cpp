@@ -378,10 +378,6 @@ Button::State UIItemInventory::button_pressed(uint16_t buttonid) {
 
 void UIItemInventory::doubleclick(Point<int16_t> cursorpos) {
     int16_t slot = slot_by_position(cursorpos - position_);
-#ifdef MS_DESKTOP_DEBUG
-    fprintf(stderr, "[dbg] inv doubleclick slot %d icon %d wear %d\n", slot, (int) icons_.count(slot),
-            icons_.count(slot) ? (int) can_wear_equip(slot) : -1);
-#endif
 
     if (icons_.count(slot) && is_visible(slot)) {
         if (int32_t item_id = inventory_.get_item_id(tab_, slot)) {
@@ -392,6 +388,18 @@ void UIItemInventory::doubleclick(Point<int16_t> cursorpos) {
                     }
                     break;
                 case InventoryType::Id::USE: fn_use_item(slot, item_id); break;
+                // maple-offline: chairs and pets
+                case InventoryType::Id::SETUP:
+                    if (item_id / 10000 == 301) {
+                        UseChairPacket(item_id).dispatch();
+                        Stage::get().get_player().sit_on_chair(item_id);
+                    }
+                    break;
+                case InventoryType::Id::CASH:
+                    if (item_id / 10000 == 500) {
+                        SpawnPetPacket(slot).dispatch();
+                    }
+                    break;
             }
         }
     }

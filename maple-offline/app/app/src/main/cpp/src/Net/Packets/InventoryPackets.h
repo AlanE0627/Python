@@ -77,6 +77,30 @@ public:
 
 // A packet which requests that an 'USE' item is used
 // Opcode: USE_ITEM(72)
+// maple-offline: summon / dismiss a pet from the cash tab
+// Opcode: SPAWN_PET(98): time, slot, 0, lead
+class SpawnPetPacket : public OutPacket {
+public:
+    SpawnPetPacket(int16_t slot) : OutPacket(98) {
+        write_time();
+        write_byte(static_cast<int8_t>(slot));
+        write_byte(0);
+        write_byte(1);
+    }
+};
+
+// maple-offline: sit on a chair item / stand up
+// Opcode: USE_CHAIR(43) item id, CANCEL_CHAIR(42) -1
+class UseChairPacket : public OutPacket {
+public:
+    UseChairPacket(int32_t itemid) : OutPacket(43) { write_int(itemid); }
+};
+
+class CancelChairPacket : public OutPacket {
+public:
+    CancelChairPacket() : OutPacket(42) { write_short(-1); }
+};
+
 class UseItemPacket : public OutPacket {
 public:
     UseItemPacket(int16_t slot, int32_t itemid) :

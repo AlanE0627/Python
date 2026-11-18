@@ -153,6 +153,9 @@ public:
     // Char::State::SIT
     void set_seat(std::optional<std::reference_wrapper<const Seat>> seat);
 
+    // maple-offline: sit on a chair item (Install/0301.img)
+    void sit_on_chair(int32_t itemid);
+
     // Change players x-pos to the ladder x and change stance to Char::LADDER or
     // Char::ROPE.
     void set_ladder(std::optional<std::reference_wrapper<const Ladder>> ladder);
@@ -188,6 +191,8 @@ public:
 private:
     int32_t attack_ticks_ = 0;
     double combo_phase_ = 0.0;
+    int32_t chair_id_ = 0;
+    Animation chair_anim_;
     CharStats stats_;
     Inventory inventory_;
     SkillBook skill_book_;
