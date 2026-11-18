@@ -151,6 +151,10 @@ void Skill::apply_stats(const Char &user, Attack &attack) const {
     } else if (stats.matk) {
         attack.matk += stats.matk;
         attack.damagetype = Attack::DMG_MAGIC;
+        // maple-offline: spells are magic attacks whatever weapon is held
+        // (a magician holding a sword still casts); sending them as close
+        // range attacks makes the server compute them as melee hits
+        attack.type = Attack::Type::MAGIC;
     } else {
         attack.mindamage *= stats.damage;
         attack.maxdamage *= stats.damage;

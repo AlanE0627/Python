@@ -113,6 +113,11 @@ private:
     Tooltip::Parent tooltip_parent_;
 
     std::optional<std::reference_wrapper<Icon>> dragged_icon_;
+    // maple-offline: an icon picked up by a held press is dropped where the
+    // press is released; a quick tap keeps it attached for a second tap
+    bool drag_held_ = false;
+    Point<int16_t> grab_pos_;
+    Point<int16_t> last_cursor_;
     std::chrono::time_point<std::chrono::steady_clock> time_rel_grabbed =
         std::chrono::steady_clock::now();
     static constexpr std::chrono::microseconds MIN_DELAY_NEXT_GRAB_ { 10 };

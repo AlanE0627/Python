@@ -467,18 +467,17 @@ Cursor::State UISkillBook::send_cursor(bool clicked, Point<int16_t> cursorpos) {
         }
     }
 
-    Point<int16_t> skill_position_l =
-        position_ + SKILL_OFFSET_ + Point<int16_t>(-1, 0);
-    Point<int16_t> skill_position_r =
-        position_ + SKILL_OFFSET_ + Point<int16_t>(-1 + ROW_WIDTH_, 0);
-
     if (!grabbing_) {
-        for (size_t i = 0; i < skills_.size(); i++) {
-            Point<int16_t> skill_position = skill_position_l;
+        // maple-offline: v83 single column; rows follow the scroll offset
+        for (int16_t r = 0; r < ROWS_; r++) {
+            size_t i = offset_ + r;
 
-            if (i % 2) {
-                skill_position = skill_position_r;
+            if (i >= skills_.size()) {
+                break;
             }
+
+            Point<int16_t> skill_position =
+                position_ + SKILL_OFFSET_ + Point<int16_t>(-1, r * ROW_HEIGHT_);
 
             constexpr Rectangle<int16_t> bounds =
                 Rectangle<int16_t>(0, 32, 0, 32);
@@ -507,11 +506,6 @@ Cursor::State UISkillBook::send_cursor(bool clicked, Point<int16_t> cursorpos) {
                 show_skill(skills_[i].get_id());
 
                 return Cursor::State::IDLE;
-            }
-
-            if (i % 2) {
-                skill_position_l.shift_y(ROW_HEIGHT_);
-                skill_position_r.shift_y(ROW_HEIGHT_);
             }
         }
 
@@ -564,7 +558,18 @@ void UISkillBook::update_stat(MapleStat::Id stat, int16_t value) {
 }
 
 void UISkillBook::update_skills(int32_t skill_id) {
+    // maple-offline: keep the scroll position when a skill level changes,
+    // so repeated SP clicks stay on the same row
+    uint16_t keep = offset_;
     change_tab(tab_);
+
+    if (skill_count_ > ROWS_) {
+        uint16_t max_offset = static_cast<uint16_t>(skill_count_ - ROWS_);
+        uint16_t restored = keep > max_offset ? max_offset : keep;
+
+        slider_.setrows(static_cast<int16_t>(restored), ROWS_, skill_count_);
+        change_offset(restored);
+    }
 }
 
 void UISkillBook::change_job(uint16_t id) {

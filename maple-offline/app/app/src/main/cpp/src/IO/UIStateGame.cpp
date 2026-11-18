@@ -16,6 +16,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIStateGame.h"
 
+#include <cstdlib>
+
 #include <functional>
 #include <optional>
 
@@ -120,6 +122,10 @@ namespace ms {
     }
 
     bool UIStateGame::drop_icon(const Icon &icon, Point<int16_t> pos) {
+#ifdef MS_DESKTOP_DEBUG
+        fprintf(stderr, "[dbg] drop_icon %d,%d front %d\n", pos.x(), pos.y(),
+                get_front(pos) ? (int) get_front(pos)->get_type() : -1);
+#endif
         if (UIElement *front = get_front(pos)) {
             return front->send_icon(icon, pos);
         }
@@ -131,6 +137,7 @@ namespace ms {
     void UIStateGame::remove_icon() {
         dragged_icon_->get().reset();
         dragged_icon_ = {};
+        drag_held_ = false;
     }
 
     void UIStateGame::remove_cursors() {
@@ -301,7 +308,31 @@ namespace ms {
 
     Cursor::State UIStateGame::send_cursor(Cursor::State cursorstate,
                                            Point<int16_t> cursorpos) {
+        last_cursor_ = cursorpos;
+
         if (dragged_icon_) {
+            if (drag_held_) {
+                // only a real release (IDLE) ends a held drag; the UI also
+                // re-sends the current cursor state (GRABBING) on updates
+                if (cursorstate != Cursor::State::IDLE) {
+                    return Cursor::State::GRABBING;
+                }
+
+                drag_held_ = false;
+                Point<int16_t> moved = cursorpos - grab_pos_;
+
+                if (std::abs(moved.x()) + std::abs(moved.y()) > 8) {
+                    if (drop_icon(*dragged_icon_, cursorpos)) {
+                        remove_icon();
+                        time_rel_grabbed = std::chrono::steady_clock::now();
+                    }
+
+                    return Cursor::State::IDLE;
+                }
+
+                return Cursor::State::GRABBING;
+            }
+
             if (cursorstate == Cursor::State::CLICKING) {
                 if (drop_icon(*dragged_icon_, cursorpos)) {
                     remove_icon();
@@ -397,6 +428,8 @@ namespace ms {
 
     void UIStateGame::drag_icon(Icon *drgic) {
         dragged_icon_ = create_optional<Icon>(drgic);
+        drag_held_ = true;
+        grab_pos_ = last_cursor_;
     }
 
     void UIStateGame::clear_tooltip(Tooltip::Parent parent) {

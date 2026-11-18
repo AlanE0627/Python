@@ -23,6 +23,21 @@ inline constexpr const char *NOT_ENOUGH_MESOS = "메소가 부족합니다.";
 inline constexpr const char *UNEQUIP_FIRST = "착용 중인 아이템을 먼저 벗어 주세요.";
 inline constexpr const char *INVENTORY_FULL = "인벤토리 공간이 부족합니다.";
 
+// status messages (bottom right)
+inline constexpr const char *CANT_GET_ITEMS = "더 이상 아이템을 얻을 수 없습니다.";
+inline constexpr const char *ITEM_GAINED = "아이템을 얻었습니다";
+inline constexpr const char *ITEM_LOST = "아이템을 잃었습니다";
+inline constexpr const char *MESOS_GAINED = "메소를 얻었습니다";
+inline constexpr const char *EXP_GAINED = "경험치를 얻었습니다";
+inline constexpr const char *BONUS_EXP = "보너스 경험치";
+inline constexpr const char *FAME_GAINED = "인기도가 올랐습니다";
+inline constexpr const char *COUNT_UNIT = "개";
+inline constexpr const char *TAB_EQUIP = "장비";
+inline constexpr const char *TAB_USE = "소비";
+inline constexpr const char *TAB_SETUP = "설치";
+inline constexpr const char *TAB_ETC = "기타";
+inline constexpr const char *TAB_CASH = "캐시";
+
 // item / equip tooltip
 inline constexpr const char *REQ_LEV = "요구 레벨";
 inline constexpr const char *REQ_STR = "요구 STR";
@@ -37,6 +52,11 @@ inline constexpr const char *FEMALE_ONLY = "(여)";
 inline constexpr const char *UNTRADABLE = "교환 불가";
 inline constexpr const char *ONE_OF_A_KIND = "고유 아이템";
 inline constexpr const char *CASH_ITEM = "캐시 아이템";
+
+// skill tooltip
+inline constexpr const char *MASTER_LEVEL = "마스터 레벨";
+inline constexpr const char *CURRENT_LEVEL = "현재 레벨";
+inline constexpr const char *NEXT_LEVEL = "다음 레벨";
 
 inline constexpr const char *JOBS[6] = {"초보자", "전사", "마법사", "궁수", "도적", "해적"};
 

@@ -15,6 +15,10 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Combat.h"
 
+#include "../../Data/SkillData.h"
+
+#include <cstdio>
+
 #include "../../Character/SkillId.h"
 #include "../../IO/Messages.h"
 #include "../../Net/Packets/AttackAndSkillPackets.h"
@@ -83,12 +87,18 @@ void Combat::update() {
 
 void Combat::use_move(int32_t move_id) {
     if (!player_.can_attack()) {
+#ifdef MS_DESKTOP_DEBUG
+        fprintf(stderr, "[dbg] use_move %d: cannot attack now\n", move_id);
+#endif
         return;
     }
 
     const SpecialMove &move = get_move(move_id);
     SpecialMove::ForbidReason reason = player_.can_use(move);
     Weapon::Type weapontype = player_.get_stats().get_weapontype();
+#ifdef MS_DESKTOP_DEBUG
+    fprintf(stderr, "[dbg] use_move %d reason %d\n", move_id, (int) reason);
+#endif
 
     if (reason == SpecialMove::ForbidReason::FBR_NONE) {
         apply_move(move);
@@ -100,6 +110,16 @@ void Combat::use_move(int32_t move_id) {
 void Combat::apply_move(const SpecialMove &move) {
     if (move.is_attack()) {
         Attack attack = player_.prepare_attack(move.is_skill());
+
+        // maple-offline: spells are magic attacks with any weapon; decide it
+        // before the action is chosen so the cast animation is used
+        if (move.is_skill()) {
+            int32_t level = player_.get_skilllevel(move.get_id());
+
+            if (level > 0 && SkillData::get(move.get_id()).get_stats(level).matk > 0) {
+                attack.type = Attack::Type::MAGIC;
+            }
+        }
 
         move.apply_useeffects(player_);
         move.apply_actions(player_, attack.type);

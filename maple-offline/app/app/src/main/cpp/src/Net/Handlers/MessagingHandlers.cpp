@@ -40,7 +40,7 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
         int8_t mode2 = recv.read_byte();
 
         if (mode2 == -1) {
-            show_status(Color::Name::WHITE, "You can't get anymore items.");
+            show_status(Color::Name::WHITE, Lang::CANT_GET_ITEMS);
         } else if (mode2 == 0) {
             int32_t itemid = recv.read_int();
             int32_t qty = recv.read_int();
@@ -53,21 +53,17 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
 
             std::string name = idata.get_name();
 
-            if (name.length() > 21) {
-                name.substr(0, 21);
-                name += "..";
-            }
 
             InventoryType::Id type = InventoryType::by_item_id(itemid);
 
             std::string tab = "";
 
             switch (type) {
-                case InventoryType::Id::EQUIP: tab = "Eqp"; break;
-                case InventoryType::Id::USE: tab = "Use"; break;
-                case InventoryType::Id::SETUP: tab = "Setup"; break;
-                case InventoryType::Id::ETC: tab = "Etc"; break;
-                case InventoryType::Id::CASH: tab = "Cash"; break;
+                case InventoryType::Id::EQUIP: tab = Lang::TAB_EQUIP; break;
+                case InventoryType::Id::USE: tab = Lang::TAB_USE; break;
+                case InventoryType::Id::SETUP: tab = Lang::TAB_SETUP; break;
+                case InventoryType::Id::ETC: tab = Lang::TAB_ETC; break;
+                case InventoryType::Id::CASH: tab = Lang::TAB_CASH; break;
                 default: tab = "UNKNOWN"; break;
             }
 
@@ -76,16 +72,14 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
 
             if (qty < 0) {
                 show_status(Color::Name::WHITE,
-                            "You have lost an item in the " + tab + " tab ("
-                                + name + ")");
+                            std::string(Lang::ITEM_LOST) + " (" + tab + " : " + name + ")");
             } else if (qty == 1) {
                 show_status(Color::Name::WHITE,
-                            "You have gained an item in the " + tab + " tab ("
-                                + name + ")");
+                            std::string(Lang::ITEM_GAINED) + " (" + tab + " : " + name + ")");
             } else {
                 show_status(Color::Name::WHITE,
-                            "You have gained items in the " + tab + " tab ("
-                                + name + " " + std::to_string(qty) + ")");
+                            std::string(Lang::ITEM_GAINED) + " (" + tab + " : " + name + " "
+                                + std::to_string(qty) + Lang::COUNT_UNIT + ")");
             }
         } else if (mode2 == 1) {
             recv.skip(1);
@@ -95,7 +89,7 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
 
             show_status(
                 Color::Name::WHITE,
-                "You have gained mesos (" + sign + std::to_string(gain) + ")");
+                std::string(Lang::MESOS_GAINED) + " (" + sign + std::to_string(gain) + ")");
         } else {
             show_status(Color::Name::RED,
                         "Mode: 0, Mode 2: " + std::to_string(mode2)
@@ -161,17 +155,20 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
         recv.read_int();   // bonus 5
 
         std::string message =
-            "You have gained experience (+" + std::to_string(gain) + ")";
+            std::string(Lang::EXP_GAINED) + " (+" + std::to_string(gain) + ")";
 
         if (inchat) {
-            show_status(Color::Name::RED, "Mode: 3, inchat is not handled.");
+            // quest rewards report EXP in the chat log
+            if (auto chatbar = UI::get().get_element<UIChatBar>()) {
+                chatbar->get().send_chatline(message, UIChatBar::LineType::YELLOW);
+            }
         } else {
             show_status(white ? Color::Name::WHITE : Color::Name::YELLOW,
                         message);
 
             if (bonus1 > 0) {
                 show_status(Color::Name::YELLOW,
-                            "+ Bonus EXP (+" + std::to_string(bonus1) + ")");
+                            std::string("+ ") + Lang::BONUS_EXP + " (+" + std::to_string(bonus1) + ")");
             }
         }
     } else if (mode == 4) {
@@ -181,7 +178,7 @@ void ShowStatusInfoHandler::handle(InPacket &recv) const {
         // TODO: Lose fame?
         show_status(
             Color::Name::WHITE,
-            "You have gained fame. (" + sign + std::to_string(gain) + ")");
+            std::string(Lang::FAME_GAINED) + " (" + sign + std::to_string(gain) + ")");
     } else {
         show_status(Color::Name::RED,
                     "Mode: " + std::to_string(mode) + " is not handled.");

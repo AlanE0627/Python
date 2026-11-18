@@ -18,6 +18,7 @@
 #include <nlnx/nx.hpp>
 
 #include "../Data/SkillData.h"
+#include "../Util/Lang.h"
 
 namespace ms {
 SkillTooltip::SkillTooltip() {
@@ -55,32 +56,29 @@ void SkillTooltip::set_skill(int32_t id,
 
     std::string descstr = data.get_desc();
 
-    if (masterlevel > 0) {
-        const std::string mltag = "Master Level";
-        const std::string mlstr = std::to_string(masterlevel);
-        size_t mlstart = descstr.find(mltag);
-        size_t mlpos = descstr.find(':', mlstart) + 2;
-        size_t mlend = descstr.find("]", mlstart);
+    // maple-offline: drop the master level tag written in the data (English
+    // or Korean wording) and put our own in front
+    for (const char *tag : {"[Master Level", "[마스터 레벨"}) {
+        size_t start = descstr.find(tag);
 
-        if (mlpos < mlend && mlend != std::string::npos) {
-            size_t mlsize = mlend - mlpos;
-            descstr.erase(mlpos, mlsize);
-            descstr.insert(mlpos, mlstr);
+        if (start != std::string::npos) {
+            size_t end = descstr.find(']', start);
 
-            // Fixing errors in the files...
-            if (mlstart == 0) {
-                descstr.insert(0, "[");
-                mlend++;
+            if (end != std::string::npos) {
+                size_t cut = end + 1;
+
+                if (descstr.compare(cut, 2, "\\n") == 0) {
+                    cut += 2;
+                }
+
+                descstr.erase(start, cut - start);
             }
-
-            size_t linebreak = descstr.find("]\\n", mlstart);
-
-            if (linebreak != mlend) {
-                descstr.insert(mlend + 1, "\\n");
-            }
-        } else {
-            descstr.insert(0, "[" + mltag + ": " + mlstr + "]\\n");
         }
+    }
+
+    if (masterlevel > 0) {
+        descstr.insert(0, std::string("[") + Lang::MASTER_LEVEL + " : "
+                              + std::to_string(masterlevel) + "]\\n");
     }
 
     const std::string exptag = "#cAvailable until";
@@ -102,7 +100,7 @@ void SkillTooltip::set_skill(int32_t id,
     bool next = level < masterlevel;
 
     if (current) {
-        levelstr += "[Current Level: " + std::to_string(level) + "]\\n"
+        levelstr += std::string("[") + Lang::CURRENT_LEVEL + " : " + std::to_string(level) + "]\\n"
                     + data.get_level_desc(level);
     }
 
@@ -111,7 +109,7 @@ void SkillTooltip::set_skill(int32_t id,
     }
 
     if (next) {
-        levelstr += "[Next Level: " + std::to_string(level + 1) + "]\\n"
+        levelstr += std::string("[") + Lang::NEXT_LEVEL + " : " + std::to_string(level + 1) + "]\\n"
                     + data.get_level_desc(level + 1);
     }
 
@@ -166,9 +164,12 @@ void SkillTooltip::draw(Point<int16_t> pos) const {
         pos.shift_y(adj_y * -1);
     }
 
-    frame_.draw(pos + Point<int16_t>(176, height_ + 11), width_, height_ - 1);
+    // maple-offline: v83 tooltip box (the later frame graphics are absent)
+    ColorBox(width_ + 34, height_ + 30, Color::Name::LIGHTGREY, 0.6f)
+        .draw(DrawArgument(pos + Point<int16_t>(9, -5)));
+    ColorBox(width_ + 32, height_ + 28, Color::Name::BLACK, 0.82f)
+        .draw(DrawArgument(pos + Point<int16_t>(10, -4)));
     name_.draw(pos + Point<int16_t>(33, 3));
-    cover_.draw(pos + Point<int16_t>(16, -1));
 
     pos.shift_y(icon_offset_);
 

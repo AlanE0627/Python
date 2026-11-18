@@ -74,6 +74,8 @@ namespace ms {
     std::chrono::time_point<std::chrono::steady_clock> click_start_time;
 
     bool sent = false;
+    double touch_start_x = 0;
+    double touch_start_y = 0;
 
     bool mousekey_callback(GLFMDisplay *display, int touch, GLFMTouchPhase phase,
                            double x, double y) {
@@ -86,27 +88,38 @@ namespace ms {
                 case GLFMTouchPhaseHover:
                     break;
                 case GLFMTouchPhaseBegan: {
+                    // maple-offline: a touch becomes a press either when it
+                    // ends (tap) or once it moves / is held; the press is
+                    // sent at the touch-down point so drags start on the
+                    // icon that was touched
                     click_start_time = std::chrono::steady_clock::now();
+                    touch_start_x = x;
+                    touch_start_y = y;
+                    sent = false;
                     UI::get().send_cursor(false);
                     break;
                 }
                 case GLFMTouchPhaseMoved: {
                     auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::steady_clock::now() - click_start_time).count();
-                    if (diff_ms > 500) {
-                        if (!sent)
-                            UI::get().send_cursor(true);
-                    } else {
-                        UI::get().send_cursor(false);
+                    double dist = std::abs(x - touch_start_x) + std::abs(y - touch_start_y);
+
+                    if (!sent && (dist > 12.0 || diff_ms > 300)) {
+                        Window::get().move_cursor(touch_start_x, touch_start_y);
+                        UI::get().send_cursor(true);
+                        Window::get().move_cursor(x, y);
+                        sent = true;
                     }
+
+                    UI::get().send_cursor(sent);
                     break;
                 }
                 case GLFMTouchPhaseEnded: {
-                    if (sent)
-                        sent = false;
-                    else {
+                    if (!sent) {
                         UI::get().send_cursor(true);
                     }
+
+                    sent = false;
                     auto diff_ms = ContinuousTimer::get().stop(start) / 1000;
                     start = ContinuousTimer::get().start();
 

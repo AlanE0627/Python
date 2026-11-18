@@ -1077,6 +1077,9 @@ namespace ms {
         }
 
         KeyConfig::Key fkey = key_by_position(cursorpos);
+#ifdef MS_DESKTOP_DEBUG
+        fprintf(stderr, "[dbg] keyconfig icon drop %d,%d key %d\n", cursorpos.x(), cursorpos.y(), (int) fkey);
+#endif
 
         if (fkey != KeyConfig::Key::LENGTH) {
             icon.drop_on_bindings(cursorpos, false);
