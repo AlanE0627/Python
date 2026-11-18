@@ -249,6 +249,6 @@ target_include_directories(ms_desktop PRIVATE
         ${C}/thirdparty/stb
         ${C}/thirdparty/glfm/include
         ${FT_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS})
-target_compile_options(ms_desktop PRIVATE -w -Wno-c++11-narrowing $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>)
+target_compile_options(ms_desktop PRIVATE -DMS_DESKTOP_DEBUG -w -Wno-c++11-narrowing $<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>)
 target_link_options(ms_desktop PRIVATE -stdlib=libc++)
 target_link_libraries(ms_desktop NoLifeNx ${GLFW_LIBRARIES} GLESv2 EGL ${FT_LIBRARIES} pthread)

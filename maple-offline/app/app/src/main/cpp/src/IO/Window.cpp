@@ -188,6 +188,19 @@ namespace ms {
             glfmGetDisplaySize(display, &width, &height);
             Window::get().set_ratio(width / (double) Constants::Constants::get().get_viewwidth(), height / 600.0);
         }
+        // maple-offline: viewport must always match the real drawable, not the 1366x768 default.
+        {
+            int dw, dh;
+            glfmGetDisplaySize(display, &dw, &dh);
+            static int last_w = -1, last_h = -1;
+            if (dw != last_w || dh != last_h) {
+                last_w = dw;
+                last_h = dh;
+                Window::get().set_ratio(dw / (double) Constants::Constants::get().get_viewwidth(),
+                                        dh / (double) Constants::Constants::get().get_viewheight());
+            }
+            glViewport(0, 0, dw, dh);
+        }
         const int64_t timestep = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;
         if (game.is_running()) {

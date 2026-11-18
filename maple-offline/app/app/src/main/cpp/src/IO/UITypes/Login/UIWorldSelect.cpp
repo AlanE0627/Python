@@ -14,6 +14,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIWorldSelect.h"
+#include <cstdio>
 
 #include "../../LoginScene.h"
 #include "../../../Graphics/Geometry.h"
@@ -201,6 +202,13 @@ Cursor::State UIWorldSelect::send_cursor(bool clicked,
     }
 
     Cursor::State ret = clicked ? Cursor::State::CLICKING : Cursor::State::IDLE;
+#ifdef MS_DESKTOP_DEBUG
+    if (clicked) {
+        auto b = buttons_[Buttons::BT_ENTER_WORLD]->bounds(position_);
+        std::fprintf(stderr, "[dbg] click %d,%d enter lt %d,%d rb %d,%d active %d sel %d\n", cursorpos.x(), cursorpos.y(),
+            b.left(), b.top(), b.right(), b.bottom(), buttons_[Buttons::BT_ENTER_WORLD]->is_active(), world_selected_);
+    }
+#endif
 
     for (auto &[btnid, button] : buttons_) {
         if (button->is_active()
