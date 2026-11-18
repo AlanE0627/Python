@@ -47,7 +47,7 @@ UICharInfo::UICharInfo(int32_t cid) :
     collect_enabled_(false),
     damage_enabled_(false),
     item_enabled_(false) {
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
+    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
     nl::node UserInfo = nl::nx::ui["UIWindow2.img"]["UserInfo"];
     nl::node character = UserInfo["character"];
     nl::node backgrnd = character["backgrnd"];
@@ -204,6 +204,28 @@ UICharInfo::UICharInfo(int32_t cid) :
     dimension_ = backgrnd_dim;
     drag_area_ = Point<int16_t>(dimension_.x(), 20);
 
+    // maple-offline: v83 UIWindow.img/UserInfo (275x199). Later-version
+    // panels (farm, personality, medals, damage, item) do not exist; only the
+    // main card is shown.
+    nl::node v83 = nl::nx::ui["UIWindow.img"]["UserInfo"];
+    Texture v83_bg = v83["backgrnd"];
+
+    sprites_.clear();
+    sprites_.emplace_back(v83["backgrnd"]);
+
+    for (auto &[id, button] : buttons_) {
+        if (button) {
+            button->set_active(false);
+        }
+    }
+
+    buttons_[Buttons::BT_CLOSE] = std::make_unique<MapleButton>(
+        close, Point<int16_t>(v83_bg.width() - 18, 6));
+
+    farm_adj_ = Point<int16_t>(-10000, 0);
+    dimension_ = v83_bg.get_dimensions();
+    drag_area_ = Point<int16_t>(dimension_.x(), 20);
+
     target_character_ = &Stage::get().get_character(cid)->get();
 
     fn_char_info_request(cid);
@@ -220,11 +242,11 @@ void UICharInfo::draw(float inter) const {
 
     /// Main Window
     int16_t row_height = 18;
-    Point<int16_t> text_pos = position_ + Point<int16_t>(153, 65);
+    Point<int16_t> text_pos = position_ + Point<int16_t>(160, 77);
 
-    target_character_->draw_preview(position_ + Point<int16_t>(63, 129), inter);
+    target_character_->draw_preview(position_ + Point<int16_t>(52, 132), inter);
 
-    name_.draw(position_ + Point<int16_t>(59, 131));
+    name_.draw(position_ + Point<int16_t>(52, 145));
     level_.draw(text_pos + Point<int16_t>(0, row_height * 0));
     job_.draw(text_pos + Point<int16_t>(0, row_height * 1));
     fame_.draw(text_pos + Point<int16_t>(0, row_height * 2));
@@ -235,7 +257,7 @@ void UICharInfo::draw(float inter) const {
     /// Farm
     Point<int16_t> farm_pos = position_ + farm_adj_;
 
-    if (is_loading_) {
+    if (false && is_loading_) {
         loading_.draw(farm_pos, inter);
     }
 
