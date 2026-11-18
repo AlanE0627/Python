@@ -138,12 +138,17 @@ namespace ms {
         Cursor::State cursorstate =
                 (pressed && enabled_) ? Cursor::State::CLICKING : Cursor::State::IDLE;
         Point<int16_t> cursorpos = cursor_.get_position();
+        // maple-offline: a field focused by this very click (a dialog opened
+        // by a button) must not lose focus to the same click.
+        Textfield *before = focused_text_field_ ? &focused_text_field_->get() : nullptr;
 #ifdef MS_DESKTOP_DEBUG
         std::fprintf(stderr, "[dbg] ui click pressed %d enabled %d pos %d,%d tf %d\n", pressed, enabled_, cursorpos.x(), cursorpos.y(), (bool) focused_text_field_);
 #endif
         send_cursor(cursorpos, cursorstate);
 
-        if (focused_text_field_ && pressed) {
+        Textfield *after = focused_text_field_ ? &focused_text_field_->get() : nullptr;
+
+        if (focused_text_field_ && pressed && after == before) {
             Cursor::State tstate =
                     focused_text_field_->get().send_cursor(cursorpos, pressed);
 

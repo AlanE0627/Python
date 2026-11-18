@@ -1196,7 +1196,10 @@ namespace ms {
                         continue;
                     }
 
-                    if (ax == 0 && c == ' ') {
+                    // maple-offline: skip only a space at the very start of a
+                    // line. Comparing with 0 also dropped a space that happened
+                    // to fall on the anchor of centred text ("haveenough").
+                    if (ax == position.x() && c == ' ') {
                         continue;
                     }
 
