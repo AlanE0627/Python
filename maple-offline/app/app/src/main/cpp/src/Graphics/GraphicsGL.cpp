@@ -42,8 +42,8 @@ namespace ms {
 
                 "void main(void)"
                 "{"
-                "	float x = (-1.0 + coord.x * (screensize.y / 384.0) / screensize.x);"
-                "	float y = 1.0 - (coord.y + float(yoffset)) / 384.0;"
+                "	float x = (-1.0 + coord.x * (screensize.y / 300.0) / screensize.x);"
+                "	float y = 1.0 - (coord.y + float(yoffset)) / 300.0;"
                 "   gl_Position = vec4(x, y, 0.0, 1.0);"
                 "	texpos = coord.zw;"
                 "	colormod = color;"
@@ -1286,7 +1286,7 @@ namespace ms {
             circles_.emplace_back(1, 1, 1, color);
         }
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         std::vector<Quad::Vertex> triangles;

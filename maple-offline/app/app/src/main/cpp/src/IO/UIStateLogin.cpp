@@ -14,6 +14,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIStateLogin.h"
+#include "LoginScene.h"
 
 #include "../Configuration.h"
 #include "UITypes/Login/UICharSelect.h"
@@ -36,6 +37,7 @@ UIStateLogin::UIStateLogin() {
 }
 
 void UIStateLogin::draw(float inter, Point<int16_t> cursor) const {
+    LoginScene::get().draw(inter);
     for (auto iter : elements_) {
         UIElement *element = iter.second.get();
 
@@ -50,6 +52,7 @@ void UIStateLogin::draw(float inter, Point<int16_t> cursor) const {
 }
 
 void UIStateLogin::update() {
+    LoginScene::get().update();
     for (auto &elem : uis_to_remove_) {
         elem.reset(nullptr);
     }

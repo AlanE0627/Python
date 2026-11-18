@@ -167,6 +167,16 @@ namespace ms {
                           << gerr.get_details() << std::endl;
             }
             GraphicsGL::get().reinit();
+            // maple-offline: v83 native logical height is 600; width follows the screen aspect.
+            {
+                int sw, sh;
+                glfmGetDisplaySize(display, &sw, &sh);
+                int16_t vw = static_cast<int16_t>(600.0 * sw / (sh > 0 ? sh : 1));
+                Constants::Constants::get().set_viewwidth(vw);
+                Constants::Constants::get().set_viewheight(600);
+                Setting<Width>::get().save(vw);
+                Setting<Height>::get().save(600);
+            }
             Char::init();
             DamageNumber::init();
             MapPortals::init();
@@ -176,7 +186,7 @@ namespace ms {
 
             int width, height;
             glfmGetDisplaySize(display, &width, &height);
-            Window::get().set_ratio(width / 1366.0, height / 768.0);
+            Window::get().set_ratio(width / (double) Constants::Constants::get().get_viewwidth(), height / 600.0);
         }
         const int64_t timestep = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;

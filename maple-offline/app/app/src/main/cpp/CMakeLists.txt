@@ -90,6 +90,7 @@ add_library(OpenMapleClient SHARED
         src/IO/UIStateCashShop.cpp
         src/IO/UIStateGame.cpp
         src/IO/UIStateLogin.cpp
+        src/IO/LoginScene.cpp
         src/IO/UITypes/UIBuffList.cpp
         src/IO/UITypes/UICashShop.cpp
         src/IO/UITypes/UIChannel.cpp

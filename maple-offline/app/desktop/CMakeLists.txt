@@ -93,6 +93,7 @@ add_executable(ms_desktop
         ${C}/src/IO/UIStateCashShop.cpp
         ${C}/src/IO/UIStateGame.cpp
         ${C}/src/IO/UIStateLogin.cpp
+        ${C}/src/IO/LoginScene.cpp
         ${C}/src/IO/UITypes/UIBuffList.cpp
         ${C}/src/IO/UITypes/UICashShop.cpp
         ${C}/src/IO/UITypes/UIChannel.cpp
