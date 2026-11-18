@@ -1,0 +1,13 @@
+# Game assets are never committed (regenerated locally)
+*.wz
+*.nx
+*.exe
+*.cab
+server/app/src/main/assets/wz/
+assets/
+# Build outputs
+build/
+.gradle/
+.cxx/
+*.apk
+local.properties
