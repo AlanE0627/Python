@@ -67,6 +67,11 @@ void PetLook::draw(double viewx, double viewy, float alpha) const {
     Point<int16_t> absp = phobj_.get_absolute(viewx, viewy, alpha);
 
     animations_[stance_].draw(DrawArgument(absp, flip_), alpha);
+
+    if (equip_id_) {
+        equip_anims_[stance_].draw(DrawArgument(absp, flip_), alpha);
+    }
+
     name_label_.draw(absp);
     chat_balloon_.draw(absp - Point<int16_t>(0, 45));
 
@@ -142,6 +147,11 @@ void PetLook::update(const Physics &physics, Point<int16_t> charpos) {
     physics.move_object(phobj_);
 
     animations_[stance_].update();
+
+    if (equip_id_) {
+        equip_anims_[stance_].update();
+    }
+
     chat_balloon_.update();
 
     if (levelup_active_ && levelup_.update()) {
@@ -154,10 +164,38 @@ void PetLook::set_position(int16_t x, int16_t y) {
     phobj_.set_y(y);
 }
 
+void PetLook::set_equip(int32_t equip_id) {
+    if (equip_id == equip_id_) {
+        return;
+    }
+
+    equip_id_ = equip_id;
+
+    for (auto a : equip_anims_) {
+        a.set(Animation());
+    }
+
+    if (!equip_id) {
+        return;
+    }
+
+    nl::node src = nl::nx::character["PetEquip"]["0" + std::to_string(equip_id) + ".img"]
+                                    [std::to_string(item_id_)];
+
+    equip_anims_[Stance::MOVE] = src["move"];
+    equip_anims_[Stance::STAND] = src["stand0"];
+    equip_anims_[Stance::JUMP] = src["jump"];
+    equip_anims_[Stance::ALERT] = src["alert"];
+    equip_anims_[Stance::PRONE] = src["prone"];
+    equip_anims_[Stance::FLY] = src["fly"];
+    equip_anims_[Stance::HANG] = src["hang"];
+}
+
 void PetLook::set_stance(Stance st) {
     if (stance_ != st) {
         stance_ = st;
         animations_[stance_].reset();
+        equip_anims_[stance_].reset();
     }
 }
 

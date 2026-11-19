@@ -91,10 +91,24 @@ class GameLauncherActivity : Activity() {
             android.content.Context.RECEIVER_NOT_EXPORTED)
         // Client reads the server address from hostip.txt; always local.
         File(dataDir, "hostip.txt").writeText("127.0.0.1")
+        installServerConfig()
         installKoreanData(dataDir)
         status.text = "서버 시작 중…"
         startServer()
         waitForServer()
+    }
+
+    // maple-offline: the server reads files/config.yaml (the old server-only
+    // MainActivity copied it); refresh it from the APK on every start so rate
+    // and option changes in new builds take effect.
+    private fun installServerConfig() {
+        try {
+            val dst = File(filesDir, "config.yaml")
+            val bundled = assets.open("config.yaml").use { it.readBytes() }
+            if (!dst.exists() || !dst.readBytes().contentEquals(bundled)) dst.writeBytes(bundled)
+        } catch (e: Exception) {
+            android.util.Log.w("maple-offline", "config.yaml copy failed", e)
+        }
     }
 
     // maple-offline: Korean strings / quest text ship inside the APK

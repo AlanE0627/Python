@@ -192,6 +192,11 @@ void Player::draw(Layer::Id layer,
 int8_t Player::update(const Physics &physics) {
     combo_phase_ += 0.03;
 
+    // maple-offline: first pet wears the item in equip slot -114
+    if (PetLook *pet = get_pet(0)) {
+        pet->set_equip(inventory_.get_item_id(InventoryType::Id::EQUIPPED, 114));
+    }
+
     if (combo_phase_ > 6.2831853) {
         combo_phase_ -= 6.2831853;
     }

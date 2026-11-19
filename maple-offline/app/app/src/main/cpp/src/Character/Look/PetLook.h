@@ -76,6 +76,11 @@ public:
     // Play Effect/PetEff.img/Basic/LevelUp over the pet
     void show_levelup();
 
+    // maple-offline: pet equipment (Character/PetEquip/<eq>.img/<pet>/<stance>)
+    // drawn over the pet; 0 removes it
+    void set_equip(int32_t equip_id);
+    int32_t get_equip() const { return equip_id_; }
+
 private:
     int32_t item_id_;
     std::string name_;
@@ -84,6 +89,8 @@ private:
     bool flip_;
 
     EnumMap<Stance, Animation> animations_;
+    EnumMap<Stance, Animation> equip_anims_;
+    int32_t equip_id_ = 0;
     PhysicsObject phobj_;
     Text name_label_;
     ChatBalloon chat_balloon_;
