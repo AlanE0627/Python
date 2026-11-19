@@ -15,6 +15,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Window.h"
+#include "ImeBridge.h"
 
 #include "../Util/StringHandling.h"
 #include "../Configuration.h"
@@ -281,6 +282,7 @@ namespace ms {
         const int64_t timestep = Constants::TIMESTEP * 1000;
         int64_t accumulator = timestep;
         if (game.is_running()) {
+            ImeBridge::poll();
             int64_t elapsed = Timer::get().stop();
 
             // Update game with constant timestep as many times as possible.

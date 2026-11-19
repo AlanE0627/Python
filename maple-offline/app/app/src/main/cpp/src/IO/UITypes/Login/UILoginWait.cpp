@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UILoginWait.h"
 
+#include "../../../Constants.h"
+
 #include <nlnx/nx.hpp>
 #include <utility>
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
@@ -36,8 +38,12 @@ UILoginWait::UILoginWait(std::function<void()> okhandler) :
         std::make_unique<MapleButton>(Loading["BtCancel"],
                                       Point<int16_t>(101, 106));
 
-    position_ = Point<int16_t>(276, 229);
     dimension_ = Texture(backgrnd).get_dimensions();
+    // maple-offline: centred on the screen (the original 800x600 client
+    // showed it in the middle; the wide view moved it to the left)
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 UIElement::Type UILoginWait::get_type() const {

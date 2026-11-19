@@ -101,7 +101,15 @@ UINewChar::UINewChar(Race race) :
     sprites_.emplace_back(Common["step"]["3"], Point<int16_t>(40, 0));
 
     board_pos_ = BOARD_POS;
-    nameboard_pos_ = NAMEBOARD_POS;
+    // maple-offline: the name board hangs from the same arm as the settings
+    // board; line its gold bar up with the settings board's bar (Explorer:
+    // bar at y 24 on both, right ends 206/197; Cygnus: y 34/19, right ends
+    // 222/199) so the arm's end piece in the scene meets it.
+    switch (race_) {
+        case CYGNUS: nameboard_pos_ = BOARD_POS + Point<int16_t>(23, 15); break;
+        case EXPLORER: nameboard_pos_ = BOARD_POS + Point<int16_t>(9, 0); break;
+        default: nameboard_pos_ = NAMEBOARD_POS; break;
+    }
     charset_ = board["charSet"];
     charname_ = board["charName"];
 

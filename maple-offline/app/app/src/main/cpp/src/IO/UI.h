@@ -109,6 +109,11 @@ namespace ms {
 
         Keyboard &get_keyboard();
 
+        // maple-offline: soft keyboard bridge
+        Textfield *get_focused_textfield() {
+            return focused_text_field_ ? &focused_text_field_->get() : nullptr;
+        }
+
         int64_t get_uptime();
 
         uint16_t get_uplevel();

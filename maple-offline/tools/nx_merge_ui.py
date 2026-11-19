@@ -52,6 +52,79 @@ def from_base(b, i):
     n[1] = [from_base(b, c) for c in range(first, first + cnt)]
     return n
 
+def swap_same(vn, kn, data, path=(), free=(), skip=()):
+    """swap KMS canvases into the base tree vn where path and size match
+    (or the path is listed in free, then the origin comes along)"""
+    kids = {c[0]: c for c in vn[1]}
+    n = 0
+    for k, v in kn.items():
+        c = kids.get(k)
+        if c is None or k in skip:
+            continue
+        p = path + (k,)
+        isfree = any('/'.join(p).startswith(f) for f in free)
+        if v.type == 'canvas' and c[2] == 5 and (isfree or (c[3][2], c[3][3]) == tuple(v.value[:2])):
+            try:
+                w, h, px = wzimg.canvas_pixels(data, v, KEY)
+            except Exception:
+                continue
+            comp = lz4.block.compress(px, store_size=False)
+            c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
+            n += 1
+            if isfree and 'origin' in v:
+                for oc in c[1]:
+                    if oc[0] == 'origin' and oc[2] == 4:
+                        oc[3] = struct.pack('<ii', *v['origin'].value)
+        if len(v):
+            n += swap_same(c, v, data, p, free, skip)
+    return n
+
+def _canvas_img(c):
+    from PIL import Image
+    _, blob, w, h = c[3]
+    ln = struct.unpack_from('<I', blob)[0]
+    return Image.frombytes('RGBA', (w, h), lz4.block.decompress(blob[4:4 + ln], uncompressed_size=w * h * 4), 'raw', 'BGRA')
+
+def relabel_row(vrow, krow, data, clean):
+    """v83 creation row (200 px, label cell up to the divider at x=57) with
+    the KMS label (cell up to its divider at x=30) centred in it. clean maps
+    state -> the v83 FACE row image, whose label cell is blank from x=24."""
+    from PIL import Image
+    n = 0
+    for c in vrow[1]:
+        if c[2] != 5 or c[0] not in krow or c[0] not in clean:
+            continue
+        v = _canvas_img(c)
+        w, h = v.size
+        kw, kh, kpx = wzimg.canvas_pixels(data, krow[c[0]], KEY)
+        k = Image.frombytes('RGBA', (kw, kh), kpx, 'raw', 'BGRA')
+        vp, kp, cp = v.load(), k.load(), clean[c[0]].load()
+        def divider(img, px):
+            for x in range(2, img.width):
+                if sum(px[x, 1][:3]) < 200:
+                    return x
+            return None
+        vd, kd = divider(v, vp), divider(k, kp)
+        if not vd or not kd:
+            continue
+        # blank label cell: dither repeats every 6 px; FACE row is clean from x=24
+        for x in range(1, vd):
+            sx = x if x >= 24 else 24 + ((x - 24) % 6)
+            for y in range(h):
+                vp[x, y] = cp[sx, y]
+        # Korean label: columns 1..kd-1 of the KMS cell, centred in 1..vd-1
+        cw = kd - 1
+        ox = 1 + ((vd - 1) - cw) // 2
+        for x in range(cw):
+            for y in range(min(h, kh)):
+                if kp[1 + x, y][3] > 0:
+                    vp[ox + x, y] = kp[1 + x, y]
+        px = v.tobytes('raw', 'BGRA')
+        comp = lz4.block.compress(px, store_size=False)
+        c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
+        n += 1
+    return n
+
 def from_aria(data, name, node, root, path):
     t = node.type
     n = [name, [], 0, None]
@@ -282,6 +355,22 @@ def main():
         if old is not None:
             deep_merge(new, old)
             old = None
+        # kept base sections still take same-size KMS pictures (labels, buttons)
+        for sec in drops.get(img, ()):
+            node = next((c for c in new[1] if c[0] == sec), None)
+            if node is not None and sec in tree:
+                print('  swapped into kept', sec, swap_same(node, tree[sec], data, skip=('avatarSel',)))
+                # creation rows: v83 has 9 (face, hair, hair colour, skin, top,
+                # bottom, shoes, weapon, gender), KMS 6 (face, hair, top, bottom,
+                # shoes, weapon); move each KMS label onto its v83 row
+                av = next((c for c in node[1] if c[0] == 'avatarSel'), None)
+                if av is not None and 'avatarSel' in tree[sec]:
+                    rows = {c[0]: c for c in av[1]}
+                    clean = {c[0]: _canvas_img(c) for c in rows['0'][1] if c[2] == 5} if '0' in rows else {}
+                    for v83, kms in (('0', '0'), ('1', '1'), ('4', '2'), ('5', '3'), ('6', '4'), ('7', '5')):
+                        if v83 in rows and kms in tree[sec]['avatarSel']:
+                            print('  avatarSel', v83, '<-', kms,
+                                  relabel_row(rows[v83], tree[sec]['avatarSel'][kms], data, clean))
         if old is not None:
             have = {c[0] for c in new[1]}
             # keep base-only sections (e.g. v83 buttons the KMS img lacks)

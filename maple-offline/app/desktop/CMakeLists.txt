@@ -137,6 +137,7 @@ add_executable(ms_desktop
         ${C}/src/IO/UITypes/Login/UITermsOfService.cpp
         ${C}/src/IO/UITypes/Login/UIWorldSelect.cpp
         ${C}/src/IO/Window.cpp
+        ${C}/src/IO/ImeBridge.cpp
         ${C}/src/Gameplay/Camera.cpp
         ${C}/src/Gameplay/Spawn.cpp
         ${C}/src/Gameplay/Stage.cpp

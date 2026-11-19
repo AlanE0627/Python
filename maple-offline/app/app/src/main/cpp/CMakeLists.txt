@@ -134,6 +134,7 @@ add_library(OpenMapleClient SHARED
         src/IO/UITypes/Login/UITermsOfService.cpp
         src/IO/UITypes/Login/UIWorldSelect.cpp
         src/IO/Window.cpp
+        src/IO/ImeBridge.cpp
         src/Gameplay/Camera.cpp
         src/Gameplay/Spawn.cpp
         src/Gameplay/Stage.cpp

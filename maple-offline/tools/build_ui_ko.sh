@@ -8,5 +8,5 @@ rm -f out/UI_ko.nx
 python3 /home/claude/tools/nx_merge_ui.py --overlay=/home/claude/dl/wz-merged/UI.nx out/UI_ko.nx UI.wz \
   'Login.img!NewChar,NewCharKnight,NewCharAran' MapLogin.img \
   Back/login.img=Map.wz Obj/login.img=Map.wz \
-  -MapLogin.img/0/obj/1 'UIWindow.img~' 'StatusBar.img~' 'Basic.img~' "$@"
+  -MapLogin.img/0/obj/1 -MapLogin.img/0/obj/2 'UIWindow.img~' 'StatusBar.img~' 'Basic.img~' "$@"
 cp out/UI_ko.nx /home/claude/repos/maple-offline-app/app/src/main/assets/ko/
