@@ -26,8 +26,8 @@ UIEvent::UIEvent() : UIDragElement<PosEVENT>() {
     offset_ = 0;
     event_count_ = 16;
 
-    nl::node main = nl::nx::ui["UIWindow2.img"]["EventList"]["main"];
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose3"];
+    nl::node main = nl::nx::ui_img("UIWindow2.img")["EventList"]["main"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose3"];
 
     nl::node backgrnd = main["backgrnd"];
     Point<int16_t> bg_dimensions = Texture(backgrnd).get_dimensions();

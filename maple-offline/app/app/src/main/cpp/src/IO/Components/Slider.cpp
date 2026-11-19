@@ -36,7 +36,7 @@ Slider::Slider(int32_t t,
     std::string base_str = "base";
 
     if (type_ == Type::CHAT_BAR) {
-        src = nl::nx::ui["StatusBar3.img"]["chat"]["common"]["scroll"];
+        src = nl::nx::ui_img("StatusBar3.img")["chat"]["common"]["scroll"];
         base_str += "_c";
     } else {
         std::string VScr = "VScr";
@@ -45,11 +45,11 @@ Slider::Slider(int32_t t,
             VScr += std::to_string(type_);
         }
 
-        src = nl::nx::ui["Basic.img"][VScr];
+        src = nl::nx::ui_img("Basic.img")[VScr];
 
         // maple-offline: v83 Basic.img only has VScr..VScr8
         if (src.size() == 0) {
-            src = nl::nx::ui["Basic.img"]["VScr"];
+            src = nl::nx::ui_img("Basic.img")["VScr"];
         }
     }
 

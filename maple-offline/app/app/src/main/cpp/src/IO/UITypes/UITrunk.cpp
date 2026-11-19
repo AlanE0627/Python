@@ -61,7 +61,7 @@ UITrunk::UITrunk(int32_t npcid, uint8_t slots, int32_t meso, std::vector<Entry> 
     meso_(meso),
     stored_(std::move(items)),
     tab_(InventoryType::Id::EQUIP) {
-    nl::node src = nl::nx::ui["UIWindow.img"]["Trunk"];
+    nl::node src = nl::nx::ui_img("UIWindow.img")["Trunk"];
     Texture bg = src["backgrnd"];
     sprites_.emplace_back(src["backgrnd"]);
 

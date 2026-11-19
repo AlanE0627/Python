@@ -34,7 +34,7 @@ UIChannel::UIChannel(uint8_t wid, uint8_t ch, uint8_t ch_count) :
     // maple-offline: v83 UIWindow.img/Channel — t (67) + c rows + s (36),
     // five channels per row, channel0 = normal, channel1 = current,
     // channel2 = selected.
-    nl::node Channel = nl::nx::ui["UIWindow.img"]["Channel"];
+    nl::node Channel = nl::nx::ui_img("UIWindow.img")["Channel"];
 
     int16_t rows = static_cast<int16_t>((channel_count_ + 4) / 5);
     int16_t body = rows * 20 + 6;

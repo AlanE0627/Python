@@ -79,7 +79,7 @@ Npc::Npc(int32_t id,
                        Text::Background::NAMETAG,
                        func_);
 
-    nl::node qicon = nl::nx::ui["UIWindow.img"]["QuestIcon"];
+    nl::node qicon = nl::nx::ui_img("UIWindow.img")["QuestIcon"];
 
     for (int i = 0; i < 3; i++) {
         quest_icons_[i] = qicon[std::to_string(i)];

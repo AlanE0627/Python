@@ -28,7 +28,7 @@ auto fn_player_interaction = [](auto&&... args) {
 }  // namespace
 
 UITrade::UITrade() {
-    nl::node src = nl::nx::ui["UIWindow2.img"]["TradingRoom"];
+    nl::node src = nl::nx::ui_img("UIWindow2.img")["TradingRoom"];
 
     sprites_.emplace_back(src["backgrnd"], position_);
     sprites_.emplace_back(src["backgrnd2"], position_);

@@ -27,11 +27,11 @@
 
 namespace ms {
 UIWorldMap::UIWorldMap() : UIDragElement<PosMAP>() {
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
-    nl::node WorldMap = nl::nx::ui["UIWindow2.img"]["WorldMap"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose"];
+    nl::node WorldMap = nl::nx::ui_img("UIWindow2.img")["WorldMap"];
 
     for (size_t i = 0; i < border_.size(); i++) {
-        border_[i] = nl::nx::ui["UIWindow.img"]["WorldMap"]["Border"][std::to_string(i)];
+        border_[i] = nl::nx::ui_img("UIWindow.img")["WorldMap"]["Border"][std::to_string(i)];
     }
     nl::node WorldMapSearch = WorldMap["WorldMapSearch"];
     nl::node Border = WorldMap["Border"]["0"];
@@ -125,7 +125,7 @@ void UIWorldMap::draw(float alpha) const {
         border_[5].draw(position_ + Point<int16_t>(0, h - 18));
         border_[6].draw(DrawArgument(position_ + Point<int16_t>(7, h - 18), Point<int16_t>(iw, 0)));
         border_[7].draw(position_ + Point<int16_t>(w - 7, h - 18));
-        static const Texture title = nl::nx::ui["UIWindow.img"]["WorldMap"]["title"];
+        static const Texture title = nl::nx::ui_img("UIWindow.img")["WorldMap"]["title"];
         title.draw(position_ + Point<int16_t>(10, 8));
     }
 

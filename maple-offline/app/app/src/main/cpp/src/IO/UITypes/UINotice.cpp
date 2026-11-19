@@ -33,7 +33,7 @@ UINotice::UINotice(const std::string &message,
     alignment_(a) {
     // maple-offline: v83 notice frame (Basic.img/Notice3: blue body, grey
     // button panel at the bottom).
-    nl::node src = nl::nx::ui["Basic.img"]["Notice3"];
+    nl::node src = nl::nx::ui_img("Basic.img")["Notice3"];
 
     top_ = src["t"];
     center_ = src["c"];
@@ -134,7 +134,7 @@ UIYesNo::UIYesNo(std::string message,
 
     int16_t belowtext = box2offset(false);
 
-    nl::node src = nl::nx::ui["Basic.img"];
+    nl::node src = nl::nx::ui_img("Basic.img");
 
     buttons_[Buttons::YES] =
         std::make_unique<MapleButton>(src["BtYes"],
@@ -191,7 +191,7 @@ UIEnterNumber::UIEnterNumber(std::string message,
     int16_t belowtext = field_y();
     int16_t pos_y = box2offset(true);
 
-    nl::node src = nl::nx::ui["Basic.img"];
+    nl::node src = nl::nx::ui_img("Basic.img");
 
     buttons_[Buttons::OK] =
         std::make_unique<MapleButton>(src["BtOK"], 60, pos_y);
@@ -302,7 +302,7 @@ UIOk::UIOk(std::string message, std::function<void(bool ok)> oh) :
     UINotice(std::move(message), NoticeType::OK) {
     okhandler_ = std::move(oh);
 
-    nl::node src = nl::nx::ui["Basic.img"];
+    nl::node src = nl::nx::ui_img("Basic.img");
 
     buttons_[Buttons::OK] =
         std::make_unique<MapleButton>(src["BtOK"], 100, box2offset(false));

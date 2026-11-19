@@ -26,8 +26,8 @@ MapTooltip::MapTooltip() :
     description_(""),
     fill_width_(MIN_WIDTH),
     fill_height_(0) {
-    nl::node Frame = nl::nx::ui["UIToolTip.img"]["Item"]["Frame2"];
-    nl::node WorldMap = nl::nx::ui["UIWindow2.img"]["ToolTip"]["WorldMap"];
+    nl::node Frame = nl::nx::ui_img("UIToolTip.img")["Item"]["Frame2"];
+    nl::node WorldMap = nl::nx::ui_img("UIWindow2.img")["ToolTip"]["WorldMap"];
 
     frame_ = Frame;
     cover_ = Frame["cover"];

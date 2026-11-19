@@ -176,6 +176,9 @@ def main():
             a = img
         args.append(a)
     sys.argv[4:] = args
+    # Img.img~ : v83 img with every KMS canvas of the same path and size swapped in
+    swaps = [a[:-1] for a in sys.argv[4:] if a.endswith('~')]
+    sys.argv[4:] = [a for a in sys.argv[4:] if not a.endswith('~')]
     imgs = [a for a in sys.argv[4:] if '=' not in a and ':' not in a]
     extras = [a for a in sys.argv[4:] if '=' in a]   # Back/login.img=<path>
     if base.startswith('--overlay'):
@@ -201,6 +204,44 @@ def main():
             print('extra', rel)
         res[1] = list(groups.values())
         root[1] = [c for c in root[1] if c[0] != 'MapRes.img'] + [res]
+    for img in swaps:
+        data, tree = read_img(uidir, img)
+        base_img = None
+        for i0 in range(b.node(0)[2]):
+            ci = b.node(0)[1] + i0
+            if b.string(b.node(ci)[0]) == img:
+                base_img = from_base(b, ci)
+        if base_img is None:
+            print('no base for', img); continue
+        count = [0]
+        def size_ok(path, old_wh, new_wh):
+            if old_wh == new_wh:
+                return True
+            # tab and button labels: small images placed by their top-left
+            # corner; a few pixels of difference does not move anything
+            label = any(seg.startswith(('Tab', 'Bt')) for seg in path)
+            return (label and abs(old_wh[0] - new_wh[0]) <= 16
+                    and abs(old_wh[1] - new_wh[1]) <= 6)
+
+        def swap(vn, kn, path=()):
+            kids = {c[0]: c for c in vn[1]}
+            for k, v in kn.items():
+                c = kids.get(k)
+                if c is None:
+                    continue
+                if v.type == 'canvas' and c[2] == 5 and size_ok(path + (k,), (c[3][2], c[3][3]), tuple(v.value[:2])):
+                    try:
+                        w, h, px = wzimg.canvas_pixels(data, v, KEY)
+                    except Exception:
+                        continue
+                    comp = lz4.block.compress(px, store_size=False)
+                    c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
+                    count[0] += 1
+                if len(v):
+                    swap(c, v, path + (k,))
+        swap(base_img, tree)
+        root[1] = [c for c in root[1] if c[0] != img] + [base_img]
+        print('swapped', img, count[0], 'canvases')
     for sub in subs:
         img, sect = sub.split(':', 1)
         data, tree = read_img(uidir, img)

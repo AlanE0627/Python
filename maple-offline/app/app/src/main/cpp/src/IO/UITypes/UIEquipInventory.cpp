@@ -70,8 +70,8 @@ UIEquipInventory::UIEquipInventory(const Inventory &invent) :
     icon_positions_[EquipSlot::Id::TAMEDMOB] = cell(0, 6);
     icon_positions_[EquipSlot::Id::SADDLE] = cell(1, 6);
 
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
-    nl::node Equip = nl::nx::ui["UIWindow.img"]["Equip"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose"];
+    nl::node Equip = nl::nx::ui_img("UIWindow.img")["Equip"];
 
     background_[Buttons::BT_TAB0] = Equip["backgrnd"];
     Point<int16_t> bg_dimensions = background_[Buttons::BT_TAB0].get_dimensions();

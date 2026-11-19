@@ -112,7 +112,7 @@ void Stage::load_map(int32_t mapid) {
     std::string prefix = std::to_string(mapid / 100000000);
 
     nl::node src = mapid == -1
-                       ? nl::nx::ui["CashShopPreview.img"]
+                       ? nl::nx::ui_img("CashShopPreview.img")
                        : nl::nx::map["Map"]["Map" + prefix][strid + ".img"];
 
     tiles_objs_ = MapTilesObjs(src);

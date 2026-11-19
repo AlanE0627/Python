@@ -29,7 +29,7 @@ auto fn_player_interaction = []<typename... T>(T && ...args) {
 
 UINotification::UINotification(std::string message) :
     UIElement({ 500, 400 }, { 200, 100 }) {
-    nl::node src = nl::nx::ui["UIWindow2.img"]["FadeYesNo"];
+    nl::node src = nl::nx::ui_img("UIWindow2.img")["FadeYesNo"];
 
     sprites_.emplace_back(src["backgrnd"],
                           Point<int16_t>(500, 400) - position_);

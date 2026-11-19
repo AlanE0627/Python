@@ -39,7 +39,7 @@ UIShop::UIShop(const CharLook &in_charlook, const Inventory &in_inventory) :
     charlook_(in_charlook),
     inventory_(in_inventory) {
     // maple-offline: v83 UIWindow.img/Shop (463x339, 5 rows per side).
-    nl::node src = nl::nx::ui["UIWindow.img"]["Shop"];
+    nl::node src = nl::nx::ui_img("UIWindow.img")["Shop"];
 
     nl::node background = src["backgrnd"];
     Texture bg = background;
@@ -607,7 +607,7 @@ void UIShop::SellItem::draw(Point<int16_t> pos) const {
 
     if (show_count_) {
         static const Charset countset =
-            Charset(nl::nx::ui["Basic.img"]["ItemNo"],
+            Charset(nl::nx::ui_img("Basic.img")["ItemNo"],
                     Charset::Alignment::LEFT);
         countset.draw(std::to_string(sellable_), pos + Point<int16_t>(1, 22));
     }

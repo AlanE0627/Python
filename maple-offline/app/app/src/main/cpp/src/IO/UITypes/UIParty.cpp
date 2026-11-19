@@ -12,7 +12,7 @@
 
 namespace ms {
 UIParty::UIParty() : UIDragElement<PosUSERLIST>(Point<int16_t>(312, 20)) {
-    nl::node src = nl::nx::ui["UIWindow.img"]["UserList"];
+    nl::node src = nl::nx::ui_img("UIWindow.img")["UserList"];
     nl::node party = src["Party"];
 
     sprites_.emplace_back(src["backgrnd"]);
@@ -26,7 +26,7 @@ UIParty::UIParty() : UIDragElement<PosUSERLIST>(Point<int16_t>(312, 20)) {
     columns_ = party["party5"];
     row_ = party["party1"];
 
-    buttons_[CLOSE] = std::make_unique<MapleButton>(nl::nx::ui["Basic.img"]["BtClose"],
+    buttons_[CLOSE] = std::make_unique<MapleButton>(nl::nx::ui_img("Basic.img")["BtClose"],
                                                     Point<int16_t>(290, 6));
     buttons_[CREATE] = std::make_unique<MapleButton>(party["BtCreate"], Point<int16_t>(16, 345));
     buttons_[LEAVE] = std::make_unique<MapleButton>(party["BtWithdraw"], Point<int16_t>(66, 345));

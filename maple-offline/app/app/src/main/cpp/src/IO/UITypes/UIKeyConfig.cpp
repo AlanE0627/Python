@@ -43,7 +43,7 @@ namespace ms {
         keyboard_ = &UI::get().get_keyboard();
         staged_mappings_ = keyboard_->get_maplekeys();
 
-        nl::node KeyConfig = nl::nx::ui["UIWindow.img"]["KeyConfig"];
+        nl::node KeyConfig = nl::nx::ui_img("UIWindow.img")["KeyConfig"];
 
         icon_ = KeyConfig["icon"];
         key_ = KeyConfig["key"];

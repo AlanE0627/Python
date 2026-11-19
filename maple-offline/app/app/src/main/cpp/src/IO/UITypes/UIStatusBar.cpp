@@ -57,7 +57,7 @@ UIStatusBar::UIStatusBar(const CharStats &st, uint8_t channel_count) :
     VWIDTH_ = Constants::Constants::get().get_viewwidth();
     VHEIGHT_ = Constants::Constants::get().get_viewheight();
 
-    nl::node bar = nl::nx::ui["StatusBar.img"];
+    nl::node bar = nl::nx::ui_img("StatusBar.img");
 
     backgrnd_ = bar["base"]["backgrnd"];
     backgrnd2_ = bar["base"]["backgrnd2"];
@@ -96,7 +96,7 @@ UIStatusBar::UIStatusBar(const CharStats &st, uint8_t channel_count) :
     buttons_[BT_QUICKSLOT_DOWN]->set_active(false);
 
     // Game menu popup above the MENU button.
-    nl::node gm = nl::nx::ui["UIWindow.img"]["GameMenu"];
+    nl::node gm = nl::nx::ui_img("UIWindow.img")["GameMenu"];
     menu_backgrnd_ = gm["backgrnd"];
     menu_pos_ = Point<int16_t>(rx + 54 + 27 - 46, -142);
 

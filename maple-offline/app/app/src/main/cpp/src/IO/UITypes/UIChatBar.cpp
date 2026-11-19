@@ -80,7 +80,7 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
     int16_t vh = Constants::Constants::get().get_viewheight();
     position_ = Point<int16_t>(0, vh - 71);
 
-    nl::node base = nl::nx::ui["StatusBar.img"]["base"];
+    nl::node base = nl::nx::ui_img("StatusBar.img")["base"];
     log_edge_ = base["chat"];
     target_box_ = base["chatTarget"];
     target_label_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::WHITE, "All");

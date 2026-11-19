@@ -257,7 +257,7 @@ Button::State UIClassConfirm::button_pressed(uint16_t buttonid) {
 UIKeySelect::UIKeySelect(std::function<void(bool)> oh, bool l) :
     okhandler_(std::move(oh)),
     login_(l) {
-    nl::node KeyType = nl::nx::ui["UIWindow2.img"]["KeyConfig"]["KeyType"];
+    nl::node KeyType = nl::nx::ui_img("UIWindow2.img")["KeyConfig"]["KeyType"];
     nl::node backgrnd = KeyType["backgrnd"];
 
     sprites_.emplace_back(backgrnd);
@@ -320,7 +320,7 @@ UIKeyConfirm::UIKeyConfirm(bool alternate, std::function<void()> oh, bool l) :
     okhandler_(std::move(oh)),
     login_(l) {
     nl::node alert =
-        nl::nx::ui["UIWindow2.img"]["KeyConfig"]["KeyType"]["alert"];
+        nl::nx::ui_img("UIWindow2.img")["KeyConfig"]["KeyType"]["alert"];
     nl::node background = alternate ? alert["alternate"] : alert["default"];
 
     sprites_.emplace_back(background);

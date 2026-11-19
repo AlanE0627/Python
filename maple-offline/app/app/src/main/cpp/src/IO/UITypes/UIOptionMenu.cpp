@@ -41,7 +41,7 @@ UIOptionMenu::UIOptionMenu(bool game_option) :
     game_option_(game_option),
     dragging_bgm_(false),
     dragging_sfx_(false) {
-    nl::node win = nl::nx::ui["UIWindow.img"][game_option_ ? "GameOpt" : "SysOpt"];
+    nl::node win = nl::nx::ui_img("UIWindow.img")[game_option_ ? "GameOpt" : "SysOpt"];
     backgrnd_ = win["backgrnd"];
 
     bgm_ = bgm_old_ = Setting<BGMVolume>::get().load();
@@ -55,7 +55,7 @@ UIOptionMenu::UIOptionMenu(bool game_option) :
     if (sfx_mute_) sfx_ = 50;
 
     Point<int16_t> dim = backgrnd_.get_dimensions();
-    nl::node basic = nl::nx::ui["Basic.img"];
+    nl::node basic = nl::nx::ui_img("Basic.img");
 
     buttons_[OK] = std::make_unique<MapleButton>(basic["BtOK2"], Point<int16_t>(dim.x() - 104, dim.y() - 23));
     buttons_[CANCEL] = std::make_unique<MapleButton>(basic["BtCancel2"], Point<int16_t>(dim.x() - 54, dim.y() - 23));

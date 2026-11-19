@@ -25,7 +25,7 @@ UIGaugeBoss::UIGaugeBoss(int16_t screen_width,
                          float percent) :
     screen_width_(screen_width),
     percentage_(percent) {
-    nl::node boss_gauge = nl::nx::ui["UIWindow.img"]["MobGage"];
+    nl::node boss_gauge = nl::nx::ui_img("UIWindow.img")["MobGage"];
 
     tag_front_ = boss_gauge["Gage"][tag_color][1];
     should_use_tag_bg_ = (tag_bg_color != 5);

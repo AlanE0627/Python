@@ -40,7 +40,7 @@ UIMiniMap::UIMiniMap(const CharStats &stats) :
     // Min / MinMap / MaxMap frames and the world-map button).
     simple_mode_ = false;
 
-    mini_map_ = nl::nx::ui["UIWindow.img"]["MiniMap"];
+    mini_map_ = nl::nx::ui_img("UIWindow.img")["MiniMap"];
     list_npc_ = nl::node();
 
     buttons_[Buttons::BT_MIN] =

@@ -24,7 +24,7 @@ namespace ms {
 UIChat::UIChat() : UIDragElement<PosMAPLECHAT>() {
     show_weekly_ = Configuration::get().get_show_weekly();
 
-    nl::node socialChatEnter = nl::nx::ui["UIWindow2.img"]["socialChatEnter"];
+    nl::node socialChatEnter = nl::nx::ui_img("UIWindow2.img")["socialChatEnter"];
 
     nl::node backgrnd = socialChatEnter["backgrnd"];
     nl::node backgrnd4 = socialChatEnter["backgrnd4"];
@@ -110,7 +110,7 @@ void UIChat::close() {
 UIRank::UIRank() : UIDragElement<PosMAPLECHAT>() {
     Configuration::get().set_show_weekly(false);
 
-    nl::node socialRank = nl::nx::ui["UIWindow2.img"]["socialRank"];
+    nl::node socialRank = nl::nx::ui_img("UIWindow2.img")["socialRank"];
 
     nl::node backgrnd = socialRank["backgrnd"];
     nl::node backgrnd4 = socialRank["backgrnd4"];

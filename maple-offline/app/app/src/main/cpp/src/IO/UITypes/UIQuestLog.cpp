@@ -38,7 +38,7 @@ UIQuestLog::UIQuestLog(const QuestLog &ql) :
     selected_(-1),
     has_reward_(false),
     desc_scroll_(0) {
-    nl::node quest = nl::nx::ui["UIWindow.img"]["Quest"];
+    nl::node quest = nl::nx::ui_img("UIWindow.img")["Quest"];
     nl::node backgrnd = quest["backgrnd"];
 
     sprites_.emplace_back(backgrnd);
@@ -56,7 +56,7 @@ UIQuestLog::UIQuestLog(const QuestLog &ql) :
             Point<int16_t>(center - en.width() / 2, 28));
     }
 
-    buttons_[CLOSE] = std::make_unique<MapleButton>(nl::nx::ui["Basic.img"]["BtClose"],
+    buttons_[CLOSE] = std::make_unique<MapleButton>(nl::nx::ui_img("Basic.img")["BtClose"],
                                                     Point<int16_t>(226, 6));
 
     // give-up sits on the detail panel's bottom bar

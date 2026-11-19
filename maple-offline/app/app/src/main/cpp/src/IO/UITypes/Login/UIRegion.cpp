@@ -25,7 +25,7 @@ namespace ms {
 UIRegion::UIRegion() :
     UIElement(Point<int16_t>(0, 0), Point<int16_t>(800, 600)) {
     nl::node Common = nl::nx::ui_img("Login.img")["Common"];
-    nl::node Gateway = nl::nx::ui["Gateway.img"]["WorldSelect"];
+    nl::node Gateway = nl::nx::ui_img("Gateway.img")["WorldSelect"];
     nl::node na = Gateway["BtButton0"];
     nl::node eu = Gateway["BtButton1"];
 

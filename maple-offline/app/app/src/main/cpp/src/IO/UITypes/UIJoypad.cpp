@@ -20,12 +20,12 @@
 #include "../Components/MapleButton.h"
 
 namespace ms {
-// TODO: Add combo boxes nl::nx::ui["Basic.img"]["ComboBox"] / ["ComboBox5"];
+// TODO: Add combo boxes nl::nx::ui_img("Basic.img")["ComboBox"] / ["ComboBox5"];
 UIJoypad::UIJoypad() : UIDragElement<PosJOYPAD>() {
     alternative_settings_ = false;  // TODO: Get user's key settings type
 
-    nl::node JoyPad = nl::nx::ui["UIWindow.img"]["JoyPad"];
-    nl::node Basic = nl::nx::ui["Basic.img"];
+    nl::node JoyPad = nl::nx::ui_img("UIWindow.img")["JoyPad"];
+    nl::node Basic = nl::nx::ui_img("Basic.img");
 
     backgrnd_[true] = JoyPad["backgrnd_alternative"];
     backgrnd_[false] = JoyPad["backgrnd_classic"];

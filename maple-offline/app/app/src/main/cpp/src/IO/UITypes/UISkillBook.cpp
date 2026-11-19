@@ -114,7 +114,7 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
     macro_enabled_(false),
     sp_enabled_(false) {
     // maple-offline: v83 UIWindow.img/Skill (one column, 4 rows, scroll).
-    nl::node Skill = nl::nx::ui["UIWindow.img"]["Skill"];
+    nl::node Skill = nl::nx::ui_img("UIWindow.img")["Skill"];
     nl::node main = Skill;
     nl::node ui_backgrnd = main["backgrnd"];
 
@@ -184,7 +184,7 @@ UISkillBook::UISkillBook(const CharStats &in_stats,
 
     buttons_[Buttons::BT_MACRO_OK]->set_state(Button::State::DISABLED);
 
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose"];
 
     buttons_[Buttons::BT_CLOSE] = std::make_unique<MapleButton>(
         close,

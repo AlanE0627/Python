@@ -26,7 +26,7 @@ Cursor::Cursor() {
 }
 
 void Cursor::init() {
-    nl::node src = nl::nx::ui["Basic.img"]["Cursor"];
+    nl::node src = nl::nx::ui_img("Basic.img")["Cursor"];
 
     for (auto iter : animations_) {
         iter.second = src[iter.first];

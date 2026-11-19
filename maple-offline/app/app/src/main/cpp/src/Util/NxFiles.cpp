@@ -29,7 +29,7 @@ Error init(GLFMDisplay *pApp) {
     }
 
     // maple-offline targets the original GMS v83 UI.wz (UIWindow.img / StatusBar.img layout).
-    if (nl::nx::ui["UIWindow.img"].size() == 0 || nl::nx::ui["StatusBar.img"].size() == 0) {
+    if (nl::nx::ui_img("UIWindow.img").size() == 0 || nl::nx::ui_img("StatusBar.img").size() == 0) {
         return Error::Code::WRONG_UI_FILE;
     }
 

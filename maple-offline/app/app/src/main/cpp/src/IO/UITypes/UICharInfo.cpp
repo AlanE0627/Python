@@ -47,8 +47,8 @@ UICharInfo::UICharInfo(int32_t cid) :
     collect_enabled_(false),
     damage_enabled_(false),
     item_enabled_(false) {
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
-    nl::node UserInfo = nl::nx::ui["UIWindow2.img"]["UserInfo"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose"];
+    nl::node UserInfo = nl::nx::ui_img("UIWindow2.img")["UserInfo"];
     nl::node character = UserInfo["character"];
     nl::node backgrnd = character["backgrnd"];
 
@@ -207,7 +207,7 @@ UICharInfo::UICharInfo(int32_t cid) :
     // maple-offline: v83 UIWindow.img/UserInfo (275x199). Later-version
     // panels (farm, personality, medals, damage, item) do not exist; only the
     // main card is shown.
-    nl::node v83 = nl::nx::ui["UIWindow.img"]["UserInfo"];
+    nl::node v83 = nl::nx::ui_img("UIWindow.img")["UserInfo"];
     Texture v83_bg = v83["backgrnd"];
 
     sprites_.clear();

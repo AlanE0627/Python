@@ -60,7 +60,7 @@ UIItemInventory::UIItemInventory(const Inventory &invent) :
     ignore_tooltip_(false),
     sort_enabled_(false) {
     // maple-offline: v83 UIWindow.img/Item
-    nl::node Item = nl::nx::ui["UIWindow.img"]["Item"];
+    nl::node Item = nl::nx::ui_img("UIWindow.img")["Item"];
 
     // TODO: Change these to production
     backgrnd_ = Item["backgrnd"];
@@ -85,7 +85,7 @@ UIItemInventory::UIItemInventory(const Inventory &invent) :
     nl::node taben = Tab["enabled"];
     nl::node tabdis = Tab["disabled"];
 
-    nl::node close = nl::nx::ui["Basic.img"]["BtClose"];
+    nl::node close = nl::nx::ui_img("Basic.img")["BtClose"];
     buttons_[Buttons::BT_CLOSE] = std::make_unique<MapleButton>(close);
 
     // v83 tab labels: 0 EQUIP, 1 USE, 2 SET-UP, 3 ETC, 4 CASH, each centred

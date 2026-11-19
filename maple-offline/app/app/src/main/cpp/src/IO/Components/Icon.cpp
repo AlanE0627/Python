@@ -39,7 +39,7 @@ void Icon::draw(Point<int16_t> position) const {
 
     if (show_count_) {
         static const Charset countset =
-            Charset(nl::nx::ui["Basic.img"]["ItemNo"],
+            Charset(nl::nx::ui_img("Basic.img")["ItemNo"],
                     Charset::Alignment::LEFT);
         countset.draw(std::to_string(count_), position + Point<int16_t>(0, 20));
     }

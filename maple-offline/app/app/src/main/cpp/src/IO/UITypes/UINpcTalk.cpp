@@ -46,7 +46,7 @@ namespace ms {
             formatted_text_pos_(0),
             timestep_(0) {
         // maple-offline: v83 dialog parts live in UIWindow.img/UtilDlgEx.
-        nl::node UIWindow2 = nl::nx::ui["UIWindow.img"];
+        nl::node UIWindow2 = nl::nx::ui_img("UIWindow.img");
         nl::node UtilDlgEx = UIWindow2["UtilDlgEx"];
 
         top_ = UtilDlgEx["t"];

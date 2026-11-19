@@ -39,12 +39,12 @@ constexpr int16_t DETAIL_X = 176;
 UIStatsInfo::UIStatsInfo(const CharStats &st) :
     UIDragElement<PosSTATS>(Point<int16_t>(175, 20)),
     stats_(st) {
-    nl::node Stat = nl::nx::ui["UIWindow.img"]["Stat"];
+    nl::node Stat = nl::nx::ui_img("UIWindow.img")["Stat"];
 
     backgrnd_ = Stat["backgrnd"];
     backgrnd2_ = Stat["backgrnd2"];
 
-    buttons_[BT_CLOSE] = std::make_unique<MapleButton>(nl::nx::ui["Basic.img"]["BtClose"],
+    buttons_[BT_CLOSE] = std::make_unique<MapleButton>(nl::nx::ui_img("Basic.img")["BtClose"],
                                                        Point<int16_t>(157, 6));
 
     const std::pair<Buttons, int16_t> apups[] = { { BT_HP, 117 }, { BT_MP, 135 },

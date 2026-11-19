@@ -31,7 +31,7 @@ ChatBalloon::ChatBalloon(int8_t type) {
         typestr = std::to_string(type);
     }
 
-    nl::node src = nl::nx::ui["ChatBalloon.img"][typestr];
+    nl::node src = nl::nx::ui_img("ChatBalloon.img")[typestr];
 
     arrow_ = src["arrow"];
     frame_ = src;
@@ -79,7 +79,7 @@ void ChatBalloon::expire() {
 }
 
 ChatBalloonHorizontal::ChatBalloonHorizontal() {
-    nl::node Balloon = nl::nx::ui["Login.img"]["WorldNotice"]["Balloon"];
+    nl::node Balloon = nl::nx::ui_img("Login.img")["WorldNotice"]["Balloon"];
 
     arrow_ = Balloon["arrow"];
     center_ = Balloon["c"];

@@ -38,7 +38,7 @@ MapleComboBox::MapleComboBox(Type type,
         combobox += std::to_string(type);
     }
 
-    nl::node src = nl::nx::ui["Basic.img"][combobox];
+    nl::node src = nl::nx::ui_img("Basic.img")[combobox];
 
     textures_[Button::State::PRESSED][0] = src["pressed"][0];
     textures_[Button::State::PRESSED][1] = src["pressed"][1];

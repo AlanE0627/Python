@@ -43,7 +43,7 @@ UICashShop::UICashShop() :
     mvp_grade_(1),
     mvp_exp_(0.07f),
     list_offset_(0) {
-    nl::node CashShop = nl::nx::ui["CashShop.img"];
+    nl::node CashShop = nl::nx::ui_img("CashShop.img");
     nl::node Base = CashShop["Base"];
     nl::node backgrnd = Base["backgrnd"];
     nl::node BestNew = Base["BestNew"];
