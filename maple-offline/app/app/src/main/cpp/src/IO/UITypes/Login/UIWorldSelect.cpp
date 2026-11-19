@@ -86,11 +86,12 @@ UIWorldSelect::UIWorldSelect() :
     kms_ = static_cast<bool>(login["Title"]["signboard"]);
     if (kms_) {
         panel_tl_ = Point<int16_t>(218, 198);
-        ch_off_ = Point<int16_t>(22, 60);
+        // board: brown frame up to x 8 / y 38, ivory inside; the world name
+        // sits on the ivory with a margin, the channel grid below it
+        ch_off_ = Point<int16_t>(22, 76);
         ch_step_ = Point<int16_t>(66, 28);
         ch_cols_ = 5;
-        // maple-offline: inset from the board edge (8,8 touched the frame)
-        wname_off_ = Point<int16_t>(30, 16);
+        wname_off_ = Point<int16_t>(22, 46);
         go_off_ = Point<int16_t>(229, 15);
         ch_box_ = Point<int16_t>(60, 21);
         channel_src_pos_ = panel_tl_;   // chBackgrn origin is (0,0)

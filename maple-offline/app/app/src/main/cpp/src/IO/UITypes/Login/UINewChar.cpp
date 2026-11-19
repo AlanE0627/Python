@@ -55,7 +55,7 @@ UINewChar::UINewChar(Race race) :
             // images: set box x 9-221 y 325-375, name box x 17-189 y 173-224)
             ok_off_ = Point<int16_t>(43, 331);
             cancel_off_ = Point<int16_t>(120, 331);
-            name_rect = Rectangle<int16_t>(Point<int16_t>(25, 106), Point<int16_t>(166, 124));
+            name_rect = Rectangle<int16_t>(Point<int16_t>(34, 106), Point<int16_t>(172, 124));
             name_ok_off_ = Point<int16_t>(31, 180);
             name_cancel_off_ = Point<int16_t>(108, 180);
             preview_pos_ = Point<int16_t>(390, 352);
@@ -70,7 +70,7 @@ UINewChar::UINewChar(Race race) :
             // KMS fish buttons are 70 px wide (v83 75): keep the fish centres
             ok_off_ = Point<int16_t>(52, 278);
             cancel_off_ = Point<int16_t>(142, 278);
-            name_rect = Rectangle<int16_t>(Point<int16_t>(36, 93), Point<int16_t>(176, 114));
+            name_rect = Rectangle<int16_t>(Point<int16_t>(40, 93), Point<int16_t>(180, 114));
             name_ok_off_ = Point<int16_t>(24, 148);
             name_cancel_off_ = Point<int16_t>(110, 148);
             name_color = Color::Name::BLACK;
@@ -86,7 +86,7 @@ UINewChar::UINewChar(Race race) :
             rows_off_ = Point<int16_t>(12, 102);
             ok_off_ = Point<int16_t>(29, 329);
             cancel_off_ = Point<int16_t>(116, 329);
-            name_rect = Rectangle<int16_t>(Point<int16_t>(24, 106), Point<int16_t>(165, 124));
+            name_rect = Rectangle<int16_t>(Point<int16_t>(34, 106), Point<int16_t>(168, 124));
             name_ok_off_ = Point<int16_t>(20, 176);
             name_cancel_off_ = Point<int16_t>(107, 176);
             preview_pos_ = Point<int16_t>(400, 332);

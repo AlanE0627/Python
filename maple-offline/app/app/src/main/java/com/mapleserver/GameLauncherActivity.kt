@@ -25,6 +25,11 @@ class GameLauncherActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // the game screen already ran in this process: start over clean
+        if (GameState.nativeUsed) {
+            GameState.restartApp(this)
+            return
+        }
         status = TextView(this).apply {
             setTextColor(Color.WHITE)
             setBackgroundColor(Color.BLACK)
@@ -53,6 +58,29 @@ class GameLauncherActivity : Activity() {
                 begin(dataDir)
             }
             return
+        }
+        // Server warnings/errors from the previous run (no logcat on the
+        // phone): show them once so they can be captured, start on tap.
+        val log = File(filesDir, "server.log")
+        if (log.exists()) {
+            val lines = try {
+                log.readLines().filter { it.contains(" WARN ") || it.contains(" ERROR ") ||
+                        it.contains("Exception") }.takeLast(25)
+            } catch (e: Exception) { emptyList() }
+            log.renameTo(File(filesDir, "server_prev.log"))
+            if (lines.isNotEmpty()) {
+                status.gravity = Gravity.START or Gravity.TOP
+                status.textSize = 10f
+                status.text = "지난 실행 서버 경고 (화면을 캡처해 보내 주세요, 화면을 누르면 계속)\n\n" +
+                        lines.joinToString("\n")
+                status.setOnClickListener {
+                    status.setOnClickListener(null)
+                    status.gravity = Gravity.CENTER
+                    status.textSize = 18f
+                    begin(dataDir)
+                }
+                return
+            }
         }
         begin(dataDir)
     }
@@ -153,6 +181,7 @@ class GameLauncherActivity : Activity() {
             val start = System.currentTimeMillis()
             while (!cancelled) {
                 if (portOpen()) {
+                    GameState.serverStarted = true
                     main.post {
                         startActivity(Intent(this, MapleActivity::class.java))
                         finish()

@@ -105,7 +105,7 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
         Text::Font::A13M,
         Text::Alignment::LEFT,
         kms_ ? Color::Name::BLACK : Color::Name::WHITE,
-        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 278), Point<int16_t>(446, 296))
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(297, 278), Point<int16_t>(446, 296))
              : Rectangle<int16_t>(Point<int16_t>(468, 225), Point<int16_t>(614, 245)),
         12);
 
@@ -123,7 +123,7 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
         Text::Font::A13M,
         Text::Alignment::LEFT,
         kms_ ? Color::Name::BLACK : Color::Name::WHITE,
-        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 305), Point<int16_t>(446, 323))
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(297, 305), Point<int16_t>(446, 323))
              : Rectangle<int16_t>(Point<int16_t>(468, 258), Point<int16_t>(614, 278)),
         12);
 
@@ -167,12 +167,12 @@ void UILogin::draw(float alpha) const {
     password_.draw(position_);
 
     if (account_.get_state() == Textfield::State::NORMAL && account_.empty()) {
-        accountbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(288, 279) : Point<int16_t>(466, 225))));
+        accountbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(295, 279) : Point<int16_t>(466, 225))));
     }
 
     if (password_.get_state() == Textfield::State::NORMAL
         && password_.empty()) {
-        passwordbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(288, 306) : Point<int16_t>(466, 258))));
+        passwordbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(295, 306) : Point<int16_t>(466, 258))));
     }
 
     checkbox_[saveid_].draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(289, 333) : Point<int16_t>(404, 296))));

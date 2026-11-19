@@ -25,6 +25,15 @@ class MapleActivity : NativeActivity() {
     private external fun nativeReturn()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // maple-offline: restored straight into the game screen after the
+        // process was killed (no server running), or opened a second time in
+        // one process (stale native state): restart through the launcher.
+        if (!com.mapleserver.GameState.serverStarted || com.mapleserver.GameState.nativeUsed) {
+            super.onCreate(null)
+            com.mapleserver.GameState.restartApp(this)
+            return
+        }
+        com.mapleserver.GameState.nativeUsed = true
         super.onCreate(savedInstanceState)
 
         val edit = EditText(this).apply {
@@ -69,6 +78,19 @@ class MapleActivity : NativeActivity() {
             edit.requestFocus()
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(edit, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    // Called from native code when the game field changed on its own side.
+    @Suppress("unused")
+    fun syncTextInput(current: String) {
+        runOnUiThread {
+            val edit = input ?: return@runOnUiThread
+            if (edit.text.toString() == current) return@runOnUiThread
+            mirroring = true
+            edit.setText(current)
+            edit.setSelection(edit.text.length)
+            mirroring = false
         }
     }
 

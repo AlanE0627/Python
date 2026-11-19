@@ -19,6 +19,7 @@ std::mutex lock_;
 std::optional<std::string> pending_text_;
 bool pending_return_ = false;
 bool shown_ = false;
+std::string synced_;   // text the Java EditText holds, as far as we know
 
 #ifdef __ANDROID__
 void call_activity(const char *method, const char *sig, const std::string *arg) {
@@ -54,6 +55,7 @@ void call_activity(const char *method, const char *sig, const std::string *arg) 
 
 void show(const std::string &current_text) {
     shown_ = true;
+    synced_ = current_text;
 #ifdef __ANDROID__
     call_activity("showTextInput", "(Ljava/lang/String;)V", &current_text);
 #endif
@@ -84,8 +86,19 @@ void poll() {
         return;
     }
 
-    if (text && *text != tf->get_text()) {
-        tf->change_text(*text);
+    if (text) {
+        synced_ = *text;
+        if (*text != tf->get_text()) {
+            tf->change_text(*text);
+        }
+    } else if (shown_ && tf->get_text() != synced_) {
+        // the field changed on the game side (hardware Backspace, a cleared
+        // field, a different field focused): put the same text in the
+        // EditText, or the next keyboard input brings the old text back
+        synced_ = tf->get_text();
+#ifdef __ANDROID__
+        call_activity("syncTextInput", "(Ljava/lang/String;)V", &synced_);
+#endif
     }
 
     if (ret) {

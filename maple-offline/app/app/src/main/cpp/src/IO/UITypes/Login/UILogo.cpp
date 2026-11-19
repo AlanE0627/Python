@@ -14,6 +14,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UILogo.h"
+#include "../../../Graphics/Geometry.h"
+#include "../../../Constants.h"
 
 #include <nlnx/nx.hpp>
 
@@ -39,18 +41,29 @@ UILogo::UILogo() :
 void UILogo::draw(float inter) const {
     UIElement::draw(inter);
 
+    // maple-offline: every logo frame has its origin at its centre, so the
+    // frames go to the centre of the (wide) screen on a white page
+    int16_t vw = Constants::Constants::get().get_viewwidth();
+    int16_t vh = Constants::Constants::get().get_viewheight();
+    ColorBox(vw, vh, Color::Name::WHITE, 1.0f).draw(DrawArgument(Point<int16_t>(0, 0)));
+    Point<int16_t> centre(vw / 2, vh / 2);
+    // the drawings sit off-centre inside their frames (measured from the
+    // last frames: Nexon +56,+7, Wizet +120,+103 from the frame origin)
+    Point<int16_t> nexon_at = centre - Point<int16_t>(56, 7);
+    Point<int16_t> wizet_at = centre - Point<int16_t>(120, 103);
+
     if (!user_clicked_) {
         if (!nexon_ended_) {
-            nexon_.draw(position_ + Point<int16_t>(440, 360), inter);
+            nexon_.draw(nexon_at, inter);
         } else {
             if (!wizet_ended_) {
-                wizet_.draw(position_ + Point<int16_t>(263, 195), inter);
+                wizet_.draw(wizet_at, inter);
             } else {
-                wizet_end_.draw(position_ + Point<int16_t>(263, 195));
+                wizet_end_.draw(wizet_at);
             }
         }
     } else {
-        wizet_end_.draw(position_ + Point<int16_t>(263, 195));
+        wizet_end_.draw(wizet_at);
     }
 }
 

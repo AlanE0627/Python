@@ -40,6 +40,20 @@ class ServerService : Service() {
         stopMapleService()
     }
 
+    // maple-offline: app swiped away from recents: save and end the process,
+    // so the next start is a clean one (server + client together)
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        try {
+            Server.getInstance().saveAllCharacters()
+        } catch (e: Exception) {
+            android.util.Log.w("maple-offline", "save on task removal failed", e)
+        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+        Runtime.getRuntime().exit(0)
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startMapleService(intent, startId)
         return START_NOT_STICKY
