@@ -16,9 +16,10 @@
 
 namespace ms {
 namespace {
-const char *const HAIR_COLORS[8] = { "Black", "Red",    "Orange", "Blonde",
-                                     "Green", "Blue",   "Purple", "Brown" };
-const char *const SKINS[4] = { "Light", "Tan", "Dark", "Pale" };
+// maple-offline: Korean names for the creation choices
+const char *const HAIR_COLORS[8] = { "검은색", "빨간색", "주황색", "금색",
+                                     "초록색", "파란색", "보라색", "갈색" };
+const char *const SKINS[4] = { "밝은 피부", "구릿빛 피부", "어두운 피부", "창백한 피부" };
 
 // Board placement inside the 800x600 frame (right side of each scene).
 const Point<int16_t> BOARD_POS = Point<int16_t>(515, 55);
@@ -50,11 +51,13 @@ UINewChar::UINewChar(Race race) :
             step = LoginScene::NEW_KNIGHT;
             job_ = 0;
             rows_off_ = Point<int16_t>(13, 102);
-            ok_off_ = Point<int16_t>(30, 320);
-            cancel_off_ = Point<int16_t>(115, 320);
+            // buttons centred in each board's bottom box (measured from the
+            // images: set box x 9-221 y 325-375, name box x 17-189 y 173-224)
+            ok_off_ = Point<int16_t>(43, 331);
+            cancel_off_ = Point<int16_t>(120, 331);
             name_rect = Rectangle<int16_t>(Point<int16_t>(25, 106), Point<int16_t>(166, 124));
-            name_ok_off_ = Point<int16_t>(15, 177);
-            name_cancel_off_ = Point<int16_t>(101, 177);
+            name_ok_off_ = Point<int16_t>(31, 180);
+            name_cancel_off_ = Point<int16_t>(108, 180);
             preview_pos_ = Point<int16_t>(390, 352);
             break;
         case ARAN:
@@ -64,11 +67,12 @@ UINewChar::UINewChar(Race race) :
             step = LoginScene::NEW_ARAN;
             job_ = 2;
             rows_off_ = Point<int16_t>(35, 88);
-            ok_off_ = Point<int16_t>(50, 278);
-            cancel_off_ = Point<int16_t>(140, 278);
+            // KMS fish buttons are 70 px wide (v83 75): keep the fish centres
+            ok_off_ = Point<int16_t>(52, 278);
+            cancel_off_ = Point<int16_t>(142, 278);
             name_rect = Rectangle<int16_t>(Point<int16_t>(36, 93), Point<int16_t>(176, 114));
-            name_ok_off_ = Point<int16_t>(22, 148);
-            name_cancel_off_ = Point<int16_t>(108, 148);
+            name_ok_off_ = Point<int16_t>(24, 148);
+            name_cancel_off_ = Point<int16_t>(110, 148);
             name_color = Color::Name::BLACK;
             preview_pos_ = Point<int16_t>(390, 352);
             break;
@@ -80,11 +84,11 @@ UINewChar::UINewChar(Race race) :
             step = LoginScene::NEW_EXPLORER;
             job_ = 1;
             rows_off_ = Point<int16_t>(12, 102);
-            ok_off_ = Point<int16_t>(29, 320);
-            cancel_off_ = Point<int16_t>(114, 320);
+            ok_off_ = Point<int16_t>(29, 329);
+            cancel_off_ = Point<int16_t>(116, 329);
             name_rect = Rectangle<int16_t>(Point<int16_t>(24, 106), Point<int16_t>(165, 124));
-            name_ok_off_ = Point<int16_t>(14, 177);
-            name_cancel_off_ = Point<int16_t>(100, 177);
+            name_ok_off_ = Point<int16_t>(20, 176);
+            name_cancel_off_ = Point<int16_t>(107, 176);
             preview_pos_ = Point<int16_t>(400, 332);
             break;
     }
@@ -245,7 +249,7 @@ std::string UINewChar::row_value(Row row) const {
         case BOTTOM: return ItemData::get(bots_[g][sel_[BOTTOM]]).get_name();
         case SHOES: return ItemData::get(shoes_[g][sel_[SHOES]]).get_name();
         case WEAPON: return ItemData::get(weapons_[g][sel_[WEAPON]]).get_name();
-        case GENDER: return g == 0 ? "Male" : "Female";
+        case GENDER: return g == 0 ? "남자" : "여자";
         default: return "";
     }
 }
@@ -298,7 +302,8 @@ void UINewChar::draw(float inter) const {
             Point<int16_t> row = position_ + board_pos_ + rows_off_ + Point<int16_t>(0, r * 18);
 
             row_tex_[r].draw(row);
-            row_text_[r].draw(row + Point<int16_t>(129, 1));
+            // maple-offline: value text vertically centred in the 17 px row
+            row_text_[r].draw(row + Point<int16_t>(129, -2));
         }
 
         // Controller cursor: highlight the active row.

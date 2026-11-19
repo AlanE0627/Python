@@ -105,7 +105,7 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
         Text::Font::A13M,
         Text::Alignment::LEFT,
         kms_ ? Color::Name::BLACK : Color::Name::WHITE,
-        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 282), Point<int16_t>(446, 300))
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 278), Point<int16_t>(446, 296))
              : Rectangle<int16_t>(Point<int16_t>(468, 225), Point<int16_t>(614, 245)),
         12);
 
@@ -123,7 +123,7 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
         Text::Font::A13M,
         Text::Alignment::LEFT,
         kms_ ? Color::Name::BLACK : Color::Name::WHITE,
-        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 309), Point<int16_t>(446, 327))
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 305), Point<int16_t>(446, 323))
              : Rectangle<int16_t>(Point<int16_t>(468, 258), Point<int16_t>(614, 278)),
         12);
 

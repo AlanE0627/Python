@@ -6,6 +6,7 @@ usage: nx_merge_ui.py <base UI.nx | --overlay> <out UI_ko.nx> <Data/UI dir> <Img
 Output is for the user's own device; never commit it."""
 import os, sys, struct, mmap
 import lz4.block
+from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import wzimg
 
@@ -79,6 +80,22 @@ def swap_same(vn, kn, data, path=(), free=(), skip=()):
             n += swap_same(c, v, data, p, free, skip)
     return n
 
+def clean_start(img):
+    """first column of the FACE row's label cell with no glyph pixels left of
+    the divider (the dither repeats every 6 px, so start on a period)"""
+    px = img.load()
+    w, h = img.size
+    vd = next((x for x in range(2, w) if sum(px[x, 1][:3]) < 200), w // 3)
+    ref = px[vd - 2, h // 2]
+    last = 1
+    for x in range(1, vd - 1):
+        for y in range(2, h - 2):
+            if sum(abs(px[x, y][i] - ref[i]) for i in range(3)) > 120:
+                last = x
+                break
+    start = last + 2
+    return start + ((24 - start) % 6)
+
 def _canvas_img(c):
     from PIL import Image
     _, blob, w, h = c[3]
@@ -108,8 +125,9 @@ def relabel_row(vrow, krow, data, clean):
         if not vd or not kd:
             continue
         # blank label cell: dither repeats every 6 px; FACE row is clean from x=24
+        cs0 = clean_start(clean[c[0]])
         for x in range(1, vd):
-            sx = x if x >= 24 else 24 + ((x - 24) % 6)
+            sx = x if x >= cs0 else cs0 + ((x - cs0) % 6)
             for y in range(h):
                 vp[x, y] = cp[sx, y]
         # Korean label: columns 1..kd-1 of the KMS cell, centred in 1..vd-1
@@ -124,6 +142,59 @@ def relabel_row(vrow, krow, data, clean):
         c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
         n += 1
     return n
+
+FONT = '/home/claude/repos/maple-offline-app/app/src/main/assets/NanumGothic-Bold.ttf'
+
+def text_row(vrow, label, clean, color):
+    """v83 creation row whose label has no KMS picture: blank the label cell
+    and write the Korean label in the colour of the KMS labels"""
+    from PIL import ImageDraw, ImageFont
+    font = ImageFont.truetype(FONT, 11)
+    n = 0
+    for c in vrow[1]:
+        if c[2] != 5 or c[0] not in clean:
+            continue
+        v = _canvas_img(c)
+        w, h = v.size
+        vp, cp = v.load(), clean[c[0]].load()
+        vd = next((x for x in range(2, w) if sum(vp[x, 1][:3]) < 200), None)
+        if not vd:
+            continue
+        cs0 = clean_start(clean[c[0]])
+        for x in range(1, vd):
+            sx = x if x >= cs0 else cs0 + ((x - cs0) % 6)
+            for y in range(h):
+                vp[x, y] = cp[sx, y]
+        layer = Image.new('L', (vd, h), 0)
+        d = ImageDraw.Draw(layer)
+        l, t, r, b = d.textbbox((0, 0), label, font=font)
+        d.text(((vd - (r - l)) // 2 - l, (h - (b - t)) // 2 - t), label, font=font, fill=255)
+        lp = layer.load()
+        for x in range(vd):
+            for y in range(h):
+                a = lp[x, y]
+                if a:
+                    bgp = vp[x, y]
+                    f = a / 255.0
+                    vp[x, y] = tuple(int(color[i] * f + bgp[i] * (1 - f)) for i in range(3)) + (255,)
+        px = v.tobytes('raw', 'BGRA')
+        comp = lz4.block.compress(px, store_size=False)
+        c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
+        n += 1
+    return n
+
+def label_color(krow, data):
+    """darkest colour in a KMS creation label cell (the glyph colour)"""
+    kw, kh, kpx = wzimg.canvas_pixels(data, krow['normal'], KEY)
+    k = Image.frombytes('RGBA', (kw, kh), kpx, 'raw', 'BGRA')
+    kp = k.load()
+    best = None
+    for x in range(2, 28):
+        for y in range(2, kh - 2):
+            p = kp[x, y]
+            if p[3] > 200 and (best is None or sum(p[:3]) < sum(best[:3])):
+                best = p
+    return best[:3] if best else (60, 60, 110)
 
 def from_aria(data, name, node, root, path):
     t = node.type
@@ -371,6 +442,37 @@ def main():
                         if v83 in rows and kms in tree[sec]['avatarSel']:
                             print('  avatarSel', v83, '<-', kms,
                                   relabel_row(rows[v83], tree[sec]['avatarSel'][kms], data, clean))
+                    # rows the KMS screen did not have: Korean text in the KMS label colour
+                    col = label_color(tree[sec]['avatarSel']['0'], data)
+                    for v83, label in (('2', '머리색'), ('3', '피부색'), ('8', '성별')):
+                        if v83 in rows:
+                            print('  avatarSel', v83, label, text_row(rows[v83], label, clean, col))
+                # board heading: KMS Korean heading on the v83 board
+                import kms_title
+                cs = next((c for c in node[1] if c[0] == 'charSet'), None)
+                if cs is not None and 'charSet' in tree[sec]:
+                    v = _canvas_img(cs)
+                    kw, kh, kpx = wzimg.canvas_pixels(data, tree[sec]['charSet'], KEY)
+                    if kms_title.retitle(sec, v, Image.frombytes('RGBA', (kw, kh), kpx, 'raw', 'BGRA')):
+                        comp = lz4.block.compress(v.tobytes('raw', 'BGRA'), store_size=False)
+                        cs[3] = ('bb', struct.pack('<I', len(comp)) + comp, v.width, v.height)
+                        print('  heading', sec)
+                cn = next((c for c in node[1] if c[0] == 'charName'), None)
+                key = sec + '/charName'
+                if cn is not None and key in kms_title.BOXES and 'charName' in tree[sec]:
+                    v = _canvas_img(cn)
+                    kw, kh, kpx = wzimg.canvas_pixels(data, tree[sec]['charName'], KEY)
+                    if kms_title.retitle(key, v, Image.frombytes('RGBA', (kw, kh), kpx, 'raw', 'BGRA')):
+                        comp = lz4.block.compress(v.tobytes('raw', 'BGRA'), store_size=False)
+                        cn[3] = ('bb', struct.pack('<I', len(comp)) + comp, v.width, v.height)
+                        print('  heading', key)
+                # Aran fish buttons differ in size (KMS 70x102, v83 75x125): take
+                # the KMS pictures anyway, the client places them by their rope top
+                if sec == 'NewCharAran':
+                    for bt in ('BtYes', 'BtNo'):
+                        btn = next((c for c in node[1] if c[0] == bt), None)
+                        if btn is not None and bt in tree[sec]:
+                            print('  ', bt, swap_same(btn, tree[sec][bt], data, (bt,), free=(bt,)))
         if old is not None:
             have = {c[0] for c in new[1]}
             # keep base-only sections (e.g. v83 buttons the KMS img lacks)

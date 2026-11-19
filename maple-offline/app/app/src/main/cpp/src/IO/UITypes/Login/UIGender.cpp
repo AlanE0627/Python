@@ -47,8 +47,8 @@ UIGender::UIGender(std::function<void()> oh) :
     sprites_.emplace_back(Gender["text"][0], Point<int16_t>(601, 326));
 
     std::vector<std::string> options;
-    options.push_back("Male");
-    options.push_back("Female");
+    options.push_back("남자");
+    options.push_back("여자");
 
     uint16_t default_option = 0;
 
