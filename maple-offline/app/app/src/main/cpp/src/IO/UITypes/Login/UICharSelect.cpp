@@ -117,10 +117,21 @@ UICharSelect::UICharSelect(std::vector<CharEntry> c,
     std::string world_name = world_id < sizeof(WORLD_NAMES) / sizeof(*WORLD_NAMES)
                                  ? WORLD_NAMES[world_id]
                                  : "World " + std::to_string(world_id);
-    world_label_ = Text(Text::Font::A12B,
+    // maple-offline: KMS plaque = world slot on the left, "CH." printed in
+    // the picture with room for the number after it. Server world 0 uses
+    // the 카이니 art in world select, so it is 카이니 here too.
+    static const char *const KO_WORLDS[] = { "카이니", "베라", "브로아", "제니스", "크로아" };
+    if (world_id < sizeof(KO_WORLDS) / sizeof(*KO_WORLDS)) {
+        world_name = KO_WORLDS[world_id];
+    }
+    world_label_ = Text(Text::Font::A11M,
                         Text::Alignment::CENTER,
                         Color::Name::WHITE,
-                        world_name + "  Ch." + std::to_string(channel_id + 1));
+                        world_name);
+    channel_label_ = Text(Text::Font::A11M,
+                          Text::Alignment::LEFT,
+                          Color::Name::WHITE,
+                          std::to_string(channel_id + 1));
 
     scroll_pos_ = SCROLL_POS;
     scroll_open_ = CharSelect["scroll"]["0"];
@@ -198,7 +209,8 @@ void UICharSelect::draw(float inter) const {
     version_.draw(position_ + Point<int16_t>(707, 1));
 
     world_plaque_.draw(position_ + Point<int16_t>(196, 0));
-    world_label_.draw(position_ + Point<int16_t>(196 + 98, 18));
+    world_label_.draw(position_ + Point<int16_t>(196 + 30, 4));
+    channel_label_.draw(position_ + Point<int16_t>(196 + 72, 4));
 
     for (int i = 0; i < PAGESIZE_; i++) {
         size_t index = i + selected_page * PAGESIZE_;

@@ -83,12 +83,12 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
     nl::node base = nl::nx::ui_img("StatusBar.img")["base"];
     log_edge_ = base["chat"];
     target_box_ = base["chatTarget"];
-    target_label_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::WHITE, "All");
+    target_label_ = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::WHITE, "전체");
 
     chatfield_ = Textfield(Text::Font::A12M,
                            Text::Alignment::LEFT,
                            Color::Name::BLACK,
-                           Rectangle<int16_t>(Point<int16_t>(90, 9), Point<int16_t>(556, 27)),
+                           Rectangle<int16_t>(Point<int16_t>(90, 7), Point<int16_t>(556, 25)),
                            0);
     chatfield_.set_state(Textfield::State::DISABLED);
 
@@ -123,7 +123,7 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
 
     chatfield_.set_key_callback(KeyAction::Id::ESCAPE, [&]() { toggle_chatfield(false); });
 
-    send_chatline("[Welcome] Welcome to MapleStory!!", LineType::YELLOW);
+    // maple-offline: no client-made English greeting (not in the original)
 
     dimension_ = Point<int16_t>(570, 30);
 }

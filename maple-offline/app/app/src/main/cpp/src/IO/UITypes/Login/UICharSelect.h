@@ -100,6 +100,7 @@ private:
     uint8_t page_count_;
     Texture world_plaque_;
     Text world_label_;
+    Text channel_label_;
     Point<int16_t> scroll_pos_;
     Animation scroll_open_;
     Texture scroll_full_;
