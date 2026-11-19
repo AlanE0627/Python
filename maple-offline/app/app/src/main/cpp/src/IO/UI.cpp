@@ -254,7 +254,16 @@ namespace ms {
             // auto whisper = UI::get().get_element<UIWhisper>();
 
             if (npctalk && npctalk->get().is_active()) {
-                npctalk->get().send_key(mapping.action, pressed, escape);
+                // maple-offline: controller A (mapped to Alt/jump) confirms the
+                // dialog, so NPC talk works with the d-pad + A alone.
+                int32_t action = mapping.action;
+
+                if (keycode == GLFMKeyCodeAltLeft || keycode == GLFMKeyCodeAltRight
+                    || enter) {
+                    action = KeyAction::Id::RETURN;
+                }
+
+                npctalk->get().send_key(action, pressed, escape);
                 sent = true;
             } else if (statusbar && statusbar->get().is_menu_active()) {
                 statusbar->get().send_key(mapping.action, pressed, escape);
