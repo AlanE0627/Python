@@ -31,6 +31,7 @@ class ServerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        CrashLog.install(applicationContext)
         mapleServer = Server.getInstance(applicationContext)
     }
 
@@ -73,10 +74,18 @@ class ServerService : Service() {
                 startForeground(startId, notification)
 
                 val args = arrayOf("-Xmx2048m", "-Dwz-path=wz", "-Djava.net.preferIPv4Stack=true")
-                Server.getInstance(applicationContext)
-                Server.main(args)
-
-                notifyServerStarted()
+                try {
+                    Server.getInstance(applicationContext)
+                    Server.main(args)
+                    notifyServerStarted()
+                } catch (t: Throwable) {
+                    // maple-offline: keep the process alive and show the cause on screen
+                    CrashLog.write(applicationContext, "server", t)
+                    val failed = Intent("MapleServerMessage")
+                    failed.putExtra("Status", "ServerFailed")
+                    failed.setPackage(applicationContext.packageName)
+                    applicationContext.sendBroadcast(failed)
+                }
             }
             initializationThread.start()
         }

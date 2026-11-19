@@ -80,7 +80,9 @@ public class CharsetConstants {
     }
 
     private static Charset loadCharset() {
-        String configCharset = "US-ASCII";//loadCharsetFromConfig();
+        // maple-offline: config.yaml is not a plain file on Android; the bundled
+        // client and the desktop server both use UTF-8
+        String configCharset = "UTF-8";//loadCharsetFromConfig();
         if (configCharset != null) {
             Language language = Language.fromCharset(configCharset);
             return Charset.forName(language.getCharset());

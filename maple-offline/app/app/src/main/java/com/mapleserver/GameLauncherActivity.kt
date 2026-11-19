@@ -34,7 +34,30 @@ class GameLauncherActivity : Activity() {
         setContentView(status)
 
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        CrashLog.install(applicationContext)
         val dataDir = getExternalFilesDir(null) ?: filesDir
+
+        // A crash from the previous run: show it once, start on tap.
+        val crash = CrashLog.file(this)
+        if (crash.exists()) {
+            val text = crash.readText().lines().take(30).joinToString("\n")
+            crash.renameTo(File(crash.parentFile, "crash_prev.txt"))
+            status.gravity = Gravity.START or Gravity.TOP
+            status.textSize = 11f
+            status.setTextIsSelectable(true)
+            status.text = "지난 실행 오류 (화면을 캡처해 보내 주세요, 화면을 누르면 계속)\n\n$text"
+            status.setOnClickListener {
+                status.setOnClickListener(null)
+                status.gravity = Gravity.CENTER
+                status.textSize = 18f
+                begin(dataDir)
+            }
+            return
+        }
+        begin(dataDir)
+    }
+
+    private fun begin(dataDir: File) {
         val setup = AssetSetup(dataDir) { msg -> main.post { status.text = "첫 실행 데이터 준비 중\n\n$msg\n\n(Wi-Fi 연결 권장, 화면을 켜 둔 채로 기다려 주세요)" } }
         if (setup.isDone()) {
             launchGame(dataDir)
@@ -50,7 +73,22 @@ class GameLauncherActivity : Activity() {
         }
     }
 
+    private val serverMsg = object : android.content.BroadcastReceiver() {
+        override fun onReceive(c: android.content.Context?, i: Intent?) {
+            if (i?.getStringExtra("Status") != "ServerFailed") return
+            cancelled = true
+            val text = CrashLog.file(this@GameLauncherActivity).let { if (it.exists()) it.readText() else "" }
+                .lines().take(30).joinToString("\n")
+            status.gravity = Gravity.START or Gravity.TOP
+            status.textSize = 11f
+            status.setTextIsSelectable(true)
+            status.text = "서버 시작 실패 (화면을 캡처해 보내 주세요)\n\n$text"
+        }
+    }
+
     private fun launchGame(dataDir: File) {
+        registerReceiver(serverMsg, android.content.IntentFilter("MapleServerMessage"),
+            android.content.Context.RECEIVER_NOT_EXPORTED)
         // Client reads the server address from hostip.txt; always local.
         File(dataDir, "hostip.txt").writeText("127.0.0.1")
         installKoreanData(dataDir)
@@ -81,6 +119,7 @@ class GameLauncherActivity : Activity() {
 
     override fun onDestroy() {
         cancelled = true
+        try { unregisterReceiver(serverMsg) } catch (_: Exception) {}
         super.onDestroy()
     }
 
