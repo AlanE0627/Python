@@ -193,6 +193,51 @@ void UIQuestLog::select(int16_t qid) {
         desc = static_cast<std::string>(info["0"]);
     }
 
+    // maple-offline: a Korean objective summary built from the quest's own
+    // requirement data (Check.img), shown above the description -- the
+    // story text is still English for many quests
+    std::string goals;
+    nl::node req = check["1"];
+    auto npc_name = [](int32_t id) {
+        return static_cast<std::string>(nl::nx::string["Npc.img"][std::to_string(id)]["name"]);
+    };
+
+    for (nl::node mob : req["mob"]) {
+        int32_t id = mob["id"];
+        int32_t count = mob["count"];
+
+        if (id > 0 && count > 0) {
+            goals += "· " + MapleText::strip("#o" + std::to_string(id) + "#") + " " + std::to_string(count) + "마리 처치\\n";
+        }
+    }
+
+    for (nl::node item : req["item"]) {
+        int32_t id = item["id"];
+        int32_t count = item["count"];
+
+        if (id > 0 && count > 0) {
+            goals += "· " + MapleText::strip("#t" + std::to_string(id) + "#") + " " + std::to_string(count) + "개 모으기\\n";
+        }
+    }
+
+    int32_t endnpc = req["npc"];
+
+    if (endnpc > 0) {
+        goals += "· 완료: " + npc_name(endnpc) + "\\n";
+    }
+
+    if (tab_ == TAB0) {
+        int32_t startnpc = check["0"]["npc"];
+
+        if (startnpc > 0) {
+            goals = "· 시작: " + npc_name(startnpc) + "\\n" + goals;
+        }
+    }
+
+    if (!goals.empty() && tab_ != TAB2) {
+        desc = "#b[목표]#k\\n" + goals + "\\n" + desc;
+    }
+
     detail_desc_.change_text(MapleText::format(desc));
 
     desc_scroll_ = 0;
