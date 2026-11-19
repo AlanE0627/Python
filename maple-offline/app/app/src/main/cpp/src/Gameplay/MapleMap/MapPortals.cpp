@@ -36,7 +36,12 @@ MapPortals::MapPortals(const nl::node &src, int32_t mapid) {
         int32_t target_id = sub["tm"];
         Point<int16_t> position = { sub["x"], sub["y"] };
 
-        const Animation *animation = &animations_[type];
+        // v83 draws script portals (pt 7) like regular ones and hidden
+        // script portals (pt 11) like hidden ones
+        Portal::Type look = type == Portal::SCRIPTED ? Portal::REGULAR
+                            : type == Portal::SCRIPTED_HIDDEN ? Portal::HIDDEN
+                                                              : type;
+        const Animation *animation = animations_.count(look) ? &animations_[look] : nullptr;
         bool intramap = target_id == mapid;
 
         portals_by_id_.emplace(std::piecewise_construct,
@@ -67,6 +72,7 @@ void MapPortals::update(Point<int16_t> playerpos) {
         Portal &portal = iter.second;
         switch (portal.get_type()) {
             case Portal::HIDDEN:
+            case Portal::SCRIPTED_HIDDEN:
             case Portal::TOUCH: portal.update(playerpos); break;
         }
     }

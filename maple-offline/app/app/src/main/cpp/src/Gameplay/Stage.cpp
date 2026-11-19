@@ -281,6 +281,8 @@ void Stage::check_portals() {
         Point<int16_t> startpos = physics_.get_y_below(spawnpoint);
 
         player_.respawn(startpos, map_info_.is_underwater());
+    } else if (warpinfo.scripted) {
+        fn_change_map(false, -1, warpinfo.name, false);
     } else if (warpinfo.valid) {
         fn_change_map(false, -1, warpinfo.name, false);
 

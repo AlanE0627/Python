@@ -297,7 +297,8 @@ void UICashShop::draw(float inter) const {
                 2.0f,
                 2.0f));
 
-            if (item.label != Item::Label::NONE) {
+            if (item.label != Item::Label::NONE
+                && static_cast<size_t>(item.label) + 1 < item_labels_.size()) {
                 item_labels_[item.label + 1].draw(
                     position_ + Point<int16_t>(152, 372)
                         + Point<int16_t>(124 * div.rem, 205 * div.quot),

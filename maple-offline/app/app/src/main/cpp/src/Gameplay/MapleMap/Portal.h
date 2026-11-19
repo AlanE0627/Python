@@ -51,6 +51,9 @@ public:
         std::string name;
         bool intramap;
         bool valid;
+        // script portal (pt 7/8/11): the server runs its script when it is
+        // entered by name; there is no target map on the client side
+        bool scripted = false;
 
         WarpInfo(int32_t m, bool i, std::string tn, std::string n) :
             mapid(m),
