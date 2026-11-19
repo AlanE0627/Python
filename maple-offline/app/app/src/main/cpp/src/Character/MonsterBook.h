@@ -28,6 +28,11 @@ public:
 
     void add_card(int16_t, int8_t);
 
+    int32_t get_cover() const { return cover_; }
+
+    // card id % 10000 -> collected count (1..5)
+    const std::map<int16_t, int8_t> &get_cards() const { return cards_; }
+
 private:
     int32_t cover_;
     std::map<int16_t, int8_t> cards_;

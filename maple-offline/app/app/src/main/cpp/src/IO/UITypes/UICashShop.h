@@ -20,6 +20,7 @@
 
 #include "../../Graphics/Text.h"
 #include "../../Graphics/Texture.h"
+#include "../../Character/Look/CharLook.h"
 #include "../UIElement.h"
 
 namespace ms {
@@ -116,6 +117,8 @@ private:
     std::vector<LockerItem> locker_;
     int16_t locker_page_;
     Text locker_page_label_;
+    // try-on preview: the player's look with tapped cash equips put on
+    CharLook preview_;
     int64_t pending_take_;
     int64_t last_tap_time_;
     int16_t last_tap_slot_;

@@ -29,6 +29,7 @@
 #include "UITypes/UICharInfo.h"
 #include "UITypes/UIChat.h"
 #include "UITypes/UIChatBar.h"
+#include "UITypes/UIMonsterBook.h"
 #include "UITypes/UIEquipInventory.h"
 #include "UITypes/UIEvent.h"
 #include "UITypes/UIItemInventory.h"
@@ -238,6 +239,10 @@ auto fn_enter_cashshop = []() { EnterCashShopPacket().dispatch(); };
                         case KeyAction::Id::QUEST_LOG:
                             emplace<UIQuestLog>(
                                     Stage::get().get_player().get_quests());
+                            break;
+                        case KeyAction::Id::MONSTER_BOOK:
+                            emplace<UIMonsterBook>(
+                                    Stage::get().get_player().get_monsterbook());
                             break;
                         case KeyAction::Id::MENU:
                             if (auto statusbar =

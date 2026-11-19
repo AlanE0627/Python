@@ -390,6 +390,10 @@ struct PosSKILL : public Configuration::PointEntry {
 };
 
 // The default position of UIQuestLog
+struct PosMONSTERBOOK : public Configuration::PointEntry {
+    PosMONSTERBOOK() : PointEntry("PosMONSTERBOOK", "(400,120)") {}
+};
+
 struct PosQUEST : public Configuration::PointEntry {
     PosQUEST() : PointEntry("PosQUEST", "(300,160)") {}
 };

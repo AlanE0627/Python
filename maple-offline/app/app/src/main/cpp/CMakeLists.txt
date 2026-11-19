@@ -113,6 +113,7 @@ add_library(OpenMapleClient SHARED
         src/IO/UITypes/UIQuit.cpp
         src/IO/UITypes/UIShop.cpp
         src/IO/UITypes/UITrunk.cpp
+        src/IO/UITypes/UIMonsterBook.cpp
         src/IO/UITypes/UIParty.cpp
         src/IO/UITypes/UISkillBook.cpp
         src/IO/UITypes/UIStatsInfo.cpp

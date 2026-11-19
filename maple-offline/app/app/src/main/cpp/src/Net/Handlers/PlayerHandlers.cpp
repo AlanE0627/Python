@@ -445,6 +445,9 @@ void MonsterBookCardHandler::handle(InPacket &recv) const {
     std::string name = ItemData::get(cardid).get_name();
 
     if (added) {
+        Stage::get().get_player().get_monsterbook().add_card(
+            static_cast<int16_t>(cardid % 10000), static_cast<int8_t>(level));
+
         notice("몬스터 카드 획득: " + name + " (" + std::to_string(level) + "/5)");
     } else {
         notice("이미 5장을 모은 카드입니다: " + name);
@@ -554,7 +557,10 @@ void KeymapHandler::handle(InPacket &recv) const {
         // maple-offline: v83 numbers menu (type 4) and basic (type 5) actions
         // from 0 (EQUIPS 0 ... PICKUP 50, ATTACK 52, JUMP 53); this client's
         // KeyAction ids are one higher (EQUIPMENT 1 ... ATTACK 53, JUMP 54).
-        if ((type == 4 || type == 5) && action < 100) {
+        if (type == 4 && action == 22) {
+            // v83 monster book (B)
+            action = KeyAction::Id::MONSTER_BOOK;
+        } else if ((type == 4 || type == 5) && action < 100) {
             action += 1;
         }
 

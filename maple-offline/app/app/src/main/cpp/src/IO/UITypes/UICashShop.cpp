@@ -48,6 +48,14 @@ constexpr int16_t LOCKER_D = 35;
 constexpr int16_t LOCKER_CELL = 31;
 
 constexpr Point<int16_t> PAGE_POS(480, 503);
+// preview box (21,36)-(238,208); the character stands at its bottom centre
+constexpr Point<int16_t> PREVIEW_LT(21, 36);
+constexpr Point<int16_t> PREVIEW_RB(238, 208);
+constexpr Point<int16_t> PREVIEW_FEET(130, 192);
+// Best Item slots 1..5 (30x30), right column
+constexpr int16_t BEST_X = 742;
+constexpr int16_t BEST_Y0 = 161;
+constexpr int16_t BEST_DY = 71;
 constexpr Point<int16_t> LOCKER_PAGE_POS(205, 322);
 
 Point<int16_t> cell_pos(size_t i) {
@@ -146,6 +154,9 @@ UICashShop::UICashShop() :
     for (auto &label : cash_labels_) {
         label = Text(Text::Font::A11M, Text::Alignment::RIGHT, Color::Name::BLACK, "0");
     }
+
+    preview_ = Stage::get().get_player().get_look();
+    preview_.set_direction(false);
 
     load_commodities();
     select_tab(0);
@@ -267,6 +278,16 @@ void UICashShop::draw(float inter) const {
         details_[i].draw(DrawArgument(p + Point<int16_t>(118, 22)));
     }
 
+    // try-on preview
+    preview_.draw(DrawArgument(o + PREVIEW_FEET), inter);
+
+    // Best Item: the first five MAIN commodities
+    for (size_t b = 0; b < 5 && b < lists_[0].size(); b++) {
+        ItemData::get(lists_[0][b].itemid)
+            .get_icon(false)
+            .draw(DrawArgument(o + Point<int16_t>(BEST_X, BEST_Y0 + BEST_DY * static_cast<int16_t>(b) + 31)));
+    }
+
     if (list.empty()) {
         empty_label_.draw(DrawArgument(o + Point<int16_t>(480, 280)));
     }
@@ -314,6 +335,7 @@ void UICashShop::update() {
     UIElement::update();
 
     last_tap_time_++;
+    preview_.update(Constants::TIMESTEP);
 
     if (message_time_ > 0) {
         message_time_--;
@@ -375,6 +397,37 @@ Cursor::State UICashShop::send_cursor(bool clicked, Point<int16_t> cursorpos) {
 
                 return Cursor::State::CLICKING;
             }
+        }
+    }
+
+    // preview: tap to take everything tried on off again
+    if (p.x() >= PREVIEW_LT.x() && p.x() <= PREVIEW_RB.x() && p.y() >= PREVIEW_LT.y()
+        && p.y() <= PREVIEW_RB.y()) {
+        preview_ = Stage::get().get_player().get_look();
+        preview_.set_direction(false);
+
+        return Cursor::State::CLICKING;
+    }
+
+    // tap an equipment commodity (outside its buy button) to try it on
+    for (size_t i = 0; i < PER_PAGE; i++) {
+        Point<int16_t> c = cell_pos(i);
+        size_t index = static_cast<size_t>(page_) * PER_PAGE + i;
+
+        if (index >= lists_[tab_].size()) {
+            break;
+        }
+
+        if (p.x() >= c.x() && p.x() < c.x() + 200 && p.y() >= c.y() && p.y() < c.y() + 80
+            && !(p.x() >= c.x() + 78 && p.x() < c.x() + 115 && p.y() >= c.y() + 53
+                 && p.y() < c.y() + 72)) {
+            int32_t itemid = lists_[tab_][index].itemid;
+
+            if (itemid / 1000000 == 1) {
+                preview_.add_equip(itemid);
+            }
+
+            return Cursor::State::CLICKING;
         }
     }
 

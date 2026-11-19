@@ -72,6 +72,7 @@ public:
         NOTIFICATION,
         TRADE,
         TRUNK,
+        MONSTER_BOOK,
         NUM_TYPES
     };
 

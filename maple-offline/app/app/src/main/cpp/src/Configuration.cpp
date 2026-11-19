@@ -42,6 +42,7 @@ Configuration::Configuration() {
     settings.emplace<PosINV>();
     settings.emplace<PosSKILL>();
     settings.emplace<PosQUEST>();
+    settings.emplace<PosMONSTERBOOK>();
     settings.emplace<PosMAP>();
     settings.emplace<PosUSERLIST>();
     settings.emplace<PosCHAT>();
