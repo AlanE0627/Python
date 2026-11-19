@@ -108,6 +108,10 @@ public class EventScriptManager extends AbstractScriptManager {
         Invocable iv = SynchronizedInvocable.of((Invocable) engine);
         EventManager eventManager = new EventManager(channel, iv, script);
         engine.put(INJECTED_VARIABLE_NAME, eventManager);
+        Object maxPlayers = engine.get("maxPlayers");
+        if (maxPlayers instanceof Number n) {
+            eventManager.setMaxPlayers(n.intValue());
+        }
         return new EventEntry(iv, eventManager);
     }
 

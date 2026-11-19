@@ -450,8 +450,9 @@ public class EventInstanceManager {
 
     // maple-offline: party quests and expeditions get played alone here. A
     // boss spawned in one starts with HP for the players inside: 1/5 alone,
-    // 2/5 for two ... full HP from five players up. Job advancement and
-    // other solo events keep their HP.
+    // rising in even steps to full HP at the event's own maximum (its script's
+    // maxPlayers: 4 to 6 for party quests, 30 for Zakum, Horntail, Pink Bean
+    // ...). Job advancement and other solo events keep their HP.
     private void scalePartyQuestBoss(Monster mob) {
         if (!mob.isBoss() || em == null) {
             return;
@@ -463,12 +464,14 @@ public class EventInstanceManager {
             return;
         }
 
+        int max = em.getMaxPlayers();
         int players = Math.max(1, getPlayerCount());
-        if (players >= 5) {
+        if (max <= 1 || players >= max) {
             return;
         }
 
-        long hp = (long) mob.getMaxHp() * players / 5;
+        double factor = 0.2 + 0.8 * (players - 1) / (max - 1);
+        long hp = (long) (mob.getMaxHp() * factor);
         mob.setStartingHp((int) Math.max(1, hp));
     }
 

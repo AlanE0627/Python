@@ -276,6 +276,20 @@ public class EventManager {
         props.setProperty(key, value + "");
     }
 
+    // maple-offline: the event script's maxPlayers (party / expedition size),
+    // read from the script when it is loaded
+    private int maxPlayers = 6;
+
+    public void setMaxPlayers(int maxPlayers) {
+        if (maxPlayers > 0) {
+            this.maxPlayers = maxPlayers;
+        }
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
     public String getProperty(String key) {
         return props.getProperty(key);
     }
