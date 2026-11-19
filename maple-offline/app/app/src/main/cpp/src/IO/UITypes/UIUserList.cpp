@@ -15,6 +15,9 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIUserList.h"
 
+#include "../../Gameplay/PartyState.h"
+#include "../../Net/Packets/GameplayPackets.h"
+
 #include <nlnx/nx.hpp>
 
 #include "../IO/Components/MapleButton.h"
@@ -266,8 +269,19 @@ void UIUserList::draw(float alpha) const {
 
         if (party_tab_ == Buttons::BT_TAB_PARTY_MINE) {
             party_mine_grid_[0].draw(position_ + Point<int16_t>(10, 115));
-            party_mine_grid_[4].draw(position_ + Point<int16_t>(10, 133));
-            party_mine_name_.draw(position_ + Point<int16_t>(27, 130));
+
+            const PartyState &party = PartyState::get();
+
+            for (size_t i = 0; i < party.members.size(); i++) {
+                const PartyMember &m = party.members[i];
+                auto y = static_cast<int16_t>(133 + i * 18);
+                party_mine_grid_[4].draw(position_ + Point<int16_t>(10, y));
+
+                std::string line = m.name + (m.id == party.leader ? " ★" : "")
+                                   + "  Lv." + std::to_string(m.level);
+                Text(Text::Font::A12M, Text::Alignment::LEFT, Color::Name::BLACK, line)
+                    .draw(position_ + Point<int16_t>(27, y - 3));
+            }
         } else if (party_tab_ == Buttons::BT_TAB_PARTY_SEARCH) {
             party_search_grid_[0].draw(position_);
             party_search_grid_[1].draw(position_);
@@ -301,6 +315,12 @@ void UIUserList::draw(float alpha) const {
 
 void UIUserList::update() {
     UIElement::update();
+
+    if (tab_ == Buttons::BT_TAB_PARTY) {
+        bool in_party = PartyState::get().in_party();
+        buttons_[Buttons::BT_PARTY_CREATE]->set_active(!in_party);
+        buttons_[Buttons::BT_PARTY_LEAVE]->set_active(in_party);
+    }
 
     if (tab_ == Buttons::BT_TAB_FRIEND) {
         for (auto sprite : friend_sprites_) {
@@ -350,6 +370,18 @@ Button::State UIUserList::button_pressed(uint16_t buttonid) {
         case Buttons::BT_TAB_PARTY_SEARCH:
             change_party_tab(buttonid);
             return Button::State::PRESSED;
+        case Buttons::BT_PARTY_CREATE:
+            if (!PartyState::get().in_party()) {
+                CreatePartyPacket().dispatch();
+            }
+
+            return Button::State::NORMAL;
+        case Buttons::BT_PARTY_LEAVE:
+            if (PartyState::get().in_party()) {
+                LeavePartyPacket().dispatch();
+            }
+
+            return Button::State::NORMAL;
         case Buttons::BT_TAB_FRIEND_ALL:
         case Buttons::BT_TAB_FRIEND_ONLINE:
             change_friend_tab(buttonid);

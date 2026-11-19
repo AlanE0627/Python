@@ -43,6 +43,7 @@
 #include "UITypes/UIStatusBar.h"
 #include "UITypes/UIStatusMessenger.h"
 #include "UITypes/UIUserList.h"
+#include "UITypes/UIParty.h"
 #include "UITypes/UIWorldMap.h"
 #include "UIMobileInput.h"
 
@@ -212,10 +213,14 @@ namespace ms {
                                     Stage::get().get_player().get_stats(),
                                     Stage::get().get_player().get_skills());
                             break;
-                        case KeyAction::Id::FRIENDS:
                         case KeyAction::Id::PARTY:
+                            // maple-offline: a one-person party is still
+                            // needed to enter party quests
+                            emplace<UIParty>();
+                            break;
+                        case KeyAction::Id::FRIENDS:
                         case KeyAction::Id::BOSS_PARTY:
-                            // maple-offline: single-player, no buddy/party list.
+                            // maple-offline: single-player, no buddy list.
                             break;
                         case KeyAction::Id::WORLD_MAP:
 #ifdef MS_DESKTOP_DEBUG

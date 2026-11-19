@@ -111,4 +111,9 @@ class KeymapHandler : public PacketHandler {
 class ShowComboHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
+// Party created / updated / left
+// Opcode: PARTY_OPERATION(62)
+class PartyOperationHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
 }  // namespace ms

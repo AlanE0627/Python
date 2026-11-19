@@ -116,6 +116,7 @@ add_executable(ms_desktop
         ${C}/src/IO/UITypes/UIQuit.cpp
         ${C}/src/IO/UITypes/UIShop.cpp
         ${C}/src/IO/UITypes/UITrunk.cpp
+        ${C}/src/IO/UITypes/UIParty.cpp
         ${C}/src/IO/UITypes/UISkillBook.cpp
         ${C}/src/IO/UITypes/UIStatsInfo.cpp
         ${C}/src/IO/UITypes/UIStatusBar.cpp
@@ -220,6 +221,7 @@ add_executable(ms_desktop
         ${C}/src/Gameplay/QuestTalk.cpp
         ${C}/src/Gameplay/Summons.cpp
         ${C}/src/Gameplay/FieldObjects.cpp
+        ${C}/src/Gameplay/AutoPotion.cpp
         ${C}/thirdparty/stb/deprecated/stb_image.c
         ${CMAKE_CURRENT_SOURCE_DIR}/glfm_desktop.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/bass_stub.cpp)

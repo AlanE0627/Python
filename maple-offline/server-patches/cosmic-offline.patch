@@ -1,0 +1,647 @@
+diff --git a/config.yaml b/config.yaml
+index f4684192..c24969c7 100644
+--- a/config.yaml
++++ b/config.yaml
+@@ -9,8 +9,8 @@ worlds:
+     why_am_i_recommended: Welcome to Scania!
+     channels: 3
+     exp_rate: 10
+-    meso_rate: 10
+-    drop_rate: 10
++    meso_rate: 12
++    drop_rate: 5
+     boss_drop_rate: 10                      #NOTE: Boss drop rate OVERRIDES common drop rate, for bosses-only.
+     quest_rate: 5                           #Multiplier for Exp & Meso gains when completing a quest. Only available when USE_QUEST_RATE is true. Stacks with server Exp & Meso rates.
+     fishing_rate: 10                        #Multiplier for success likelihood on meso thrown during fishing.
+@@ -178,14 +178,15 @@ server:
+     COUPON_INTERVAL: 3600000            #60 minutes, 3600000.
+     UPDATE_INTERVAL: 777                #Dictates the frequency on which the "centralized server time" is updated.
+ 
+-    ENABLE_PIC: true               #Pick true/false to enable or disable Pic. Delete character requires PIC available.
+-    ENABLE_PIN: true               #Pick true/false to enable or disable Pin.
++    ENABLE_PIC: false              #Pick true/false to enable or disable Pic. Delete character requires PIC available.
++    ENABLE_PIN: false              #Pick true/false to enable or disable Pin.
+ 
+     BYPASS_PIC_EXPIRATION: 20           #Enables PIC bypass, which will remain active for that account by that client machine for N minutes. Set 0 to disable.
+     BYPASS_PIN_EXPIRATION: 15           #Enables PIN bypass, which will remain active for that account by that client machine for N minutes. Set 0 to disable.
+ 
+     AUTOMATIC_REGISTER: true        #Automatically register players when they login with a nonexistent username.
+     BCRYPT_MIGRATION: true          #Performs a migration from old SHA-1 and SHA-512 password to bcrypt.
++    USE_AUTO_LOOT: true
+     COLLECTIVE_CHARSLOT: false      #Available character slots are contabilized globally rather than per world server.
+     DETERRED_MULTICLIENT: false     #Enables detection of multi-client and suspicious remote IP on the login system.
+     #Besides blocking logging in with several client sessions on the same machine, this also blocks suspicious login attempts for players that tries to login on an account using several diferent remote addresses.
+@@ -264,7 +265,7 @@ server:
+ 
+     #Events/PQs Configuration
+     USE_OLD_GMS_STYLED_PQ_NPCS: true     #Enables PQ NPCs with similar behaviour to old GMS style, that skips info about the PQs and immediately tries to register the party in.
+-    USE_ENABLE_SOLO_EXPEDITIONS: false    #Enables start expeditions with any number of players. This will also bypass all the Zakum prequest.
++    USE_ENABLE_SOLO_EXPEDITIONS: true    #Enables start expeditions with any number of players. This will also bypass all the Zakum prequest.
+     USE_ENABLE_DAILY_EXPEDITIONS: false  #Enables daily entry limitations in expeditions.
+     USE_ENABLE_RECALL_EVENT: false        #Enables a disconnected player to reaccess the last event instance they were in before logging out. Recall only works if the event isn't cleared or disposed yet. Suggestion thanks to Alisson (Goukken).
+ 
+@@ -298,7 +299,7 @@ server:
+ 
+     #Miscellaneous Configuration
+     TIMEZONE: GMT
+-    CHARSET: US-ASCII                          # Is loaded first, so applies to the rest of this config. Defaults to US-ASCII if invalid or not set.
++    CHARSET: UTF-8                             # Is loaded first, so applies to the rest of this config. Defaults to US-ASCII if invalid or not set.
+     USE_DISPLAY_NUMBERS_WITH_COMMA: true          #Enforce comma on displayed strings (use this when USE_UNITPRICE_WITH_COMMA is active and you still want to display comma-separated values).
+     USE_UNITPRICE_WITH_COMMA: true                #Set this accordingly with the layout of the unitPrices on Item.wz XML's, whether it's using commas or dots to represent fractions.
+     MAX_MONITORED_BUFFSTATS: 5                 #Limits accounting for "dormant" buff effects, that should take place when stronger stat buffs expires.
+diff --git a/scripts/event/AmoriaPQ.js b/scripts/event/AmoriaPQ.js
+index f5a2baff..da2efb98 100644
+--- a/scripts/event/AmoriaPQ.js
++++ b/scripts/event/AmoriaPQ.js
+@@ -25,7 +25,7 @@
+ 
+ var isPq = true;
+ var onlyMarriedPlayers = true;
+-var minPlayers = 6, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 40, maxLevel = 255;
+ var entryMap = 670010200;
+ var exitMap = 670011000;
+diff --git a/scripts/event/BalrogBattle.js b/scripts/event/BalrogBattle.js
+index 288ca410..005fad43 100644
+--- a/scripts/event/BalrogBattle.js
++++ b/scripts/event/BalrogBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 50, maxLevel = 255;
+ var entryMap = 105100300;
+ var exitMap = 105100100;
+diff --git a/scripts/event/BalrogBattle_Easy.js b/scripts/event/BalrogBattle_Easy.js
+index 2d124e59..534b0886 100644
+--- a/scripts/event/BalrogBattle_Easy.js
++++ b/scripts/event/BalrogBattle_Easy.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 50, maxLevel = 255;
+ var entryMap = 105100400;
+ var exitMap = 105100100;
+diff --git a/scripts/event/CWKPQ.js b/scripts/event/CWKPQ.js
+index 67a3fcdb..b54f4bea 100644
+--- a/scripts/event/CWKPQ.js
++++ b/scripts/event/CWKPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 90, maxLevel = 255;
+ var entryMap = 610030100;
+ var exitMap = 610030020;
+diff --git a/scripts/event/CafePQ_1.js b/scripts/event/CafePQ_1.js
+index 293a931c..00a1890e 100644
+--- a/scripts/event/CafePQ_1.js
++++ b/scripts/event/CafePQ_1.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 190000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/CafePQ_2.js b/scripts/event/CafePQ_2.js
+index 45a7979a..78f18a81 100644
+--- a/scripts/event/CafePQ_2.js
++++ b/scripts/event/CafePQ_2.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 191000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/CafePQ_3.js b/scripts/event/CafePQ_3.js
+index b1cc5ada..eedfd590 100644
+--- a/scripts/event/CafePQ_3.js
++++ b/scripts/event/CafePQ_3.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 192000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/CafePQ_4.js b/scripts/event/CafePQ_4.js
+index 1b31e4d1..320d867b 100644
+--- a/scripts/event/CafePQ_4.js
++++ b/scripts/event/CafePQ_4.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 195000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/CafePQ_5.js b/scripts/event/CafePQ_5.js
+index 2aa91f2c..6cd562a8 100644
+--- a/scripts/event/CafePQ_5.js
++++ b/scripts/event/CafePQ_5.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 196000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/CafePQ_6.js b/scripts/event/CafePQ_6.js
+index b9e87af2..03b19695 100644
+--- a/scripts/event/CafePQ_6.js
++++ b/scripts/event/CafePQ_6.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 120;
+ var entryMap = 197000000;
+ var exitMap = 193000000;
+diff --git a/scripts/event/ElementalBattle.js b/scripts/event/ElementalBattle.js
+index 2ef3b3e9..9507dba6 100644
+--- a/scripts/event/ElementalBattle.js
++++ b/scripts/event/ElementalBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 2;
++var minPlayers = 1, maxPlayers = 2;
+ var minLevel = 100, maxLevel = 255;
+ var entryMap = 922020100;
+ var exitMap = 220050300;
+diff --git a/scripts/event/EllinPQ.js b/scripts/event/EllinPQ.js
+index c5842357..95b255b4 100644
+--- a/scripts/event/EllinPQ.js
++++ b/scripts/event/EllinPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 4, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 44, maxLevel = 55;
+ var entryMap = 930000000;
+ var exitMap = 930000800;
+diff --git a/scripts/event/GuildQuest.js b/scripts/event/GuildQuest.js
+index 23b0dfb9..498d79eb 100644
+--- a/scripts/event/GuildQuest.js
++++ b/scripts/event/GuildQuest.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 1, maxLevel = 255;
+ var entryMap = 990000000;
+ var exitMap = 990001100;
+diff --git a/scripts/event/HenesysPQ.js b/scripts/event/HenesysPQ.js
+index 93fc8058..5affc357 100644
+--- a/scripts/event/HenesysPQ.js
++++ b/scripts/event/HenesysPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 10, maxLevel = 255;
+ var entryMap = 910010000;
+ var exitMap = 910010300;
+diff --git a/scripts/event/HolidayPQ_1.js b/scripts/event/HolidayPQ_1.js
+index b2c25939..856fb297 100644
+--- a/scripts/event/HolidayPQ_1.js
++++ b/scripts/event/HolidayPQ_1.js
+@@ -26,7 +26,7 @@
+ // GMS-like event string data thanks to iHealForLove
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 21, maxLevel = 30;
+ var entryMap = 889100001;
+ var exitMap = 889100002;
+diff --git a/scripts/event/HolidayPQ_2.js b/scripts/event/HolidayPQ_2.js
+index 04ad5067..7c414108 100644
+--- a/scripts/event/HolidayPQ_2.js
++++ b/scripts/event/HolidayPQ_2.js
+@@ -26,7 +26,7 @@
+ // GMS-like event string data thanks to iHealForLove
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 31, maxLevel = 40;
+ var entryMap = 889100011;
+ var exitMap = 889100012;
+diff --git a/scripts/event/HolidayPQ_3.js b/scripts/event/HolidayPQ_3.js
+index fcd74c19..594aab64 100644
+--- a/scripts/event/HolidayPQ_3.js
++++ b/scripts/event/HolidayPQ_3.js
+@@ -26,7 +26,7 @@
+ // GMS-like event string data thanks to iHealForLove
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 41, maxLevel = 50;
+ var entryMap = 889100021;
+ var exitMap = 889100022;
+diff --git a/scripts/event/HorntailBattle.js b/scripts/event/HorntailBattle.js
+index 101e951d..730a4183 100644
+--- a/scripts/event/HorntailBattle.js
++++ b/scripts/event/HorntailBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 100, maxLevel = 255;
+ var entryMap = 240060000;
+ var exitMap = 240050600;
+diff --git a/scripts/event/HorntailPQ.js b/scripts/event/HorntailPQ.js
+index fc20bf40..49bcc40e 100644
+--- a/scripts/event/HorntailPQ.js
++++ b/scripts/event/HorntailPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 120, maxLevel = 255;
+ var entryMap = 240050100;
+ var exitMap = 240050000;
+diff --git a/scripts/event/KerningPQ.js b/scripts/event/KerningPQ.js
+index fa7ea559..acc2b935 100644
+--- a/scripts/event/KerningPQ.js
++++ b/scripts/event/KerningPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 4;
++var minPlayers = 1, maxPlayers = 4;
+ var minLevel = 21, maxLevel = 30;
+ var entryMap = 103000800;
+ var exitMap = 103000890;
+diff --git a/scripts/event/LudiMazePQ.js b/scripts/event/LudiMazePQ.js
+index 31e76839..57bdc260 100644
+--- a/scripts/event/LudiMazePQ.js
++++ b/scripts/event/LudiMazePQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 51, maxLevel = 70;
+ var entryMap = 809050000;
+ var exitMap = 809050017;
+diff --git a/scripts/event/LudiPQ.js b/scripts/event/LudiPQ.js
+index 5b19c976..3421c760 100644
+--- a/scripts/event/LudiPQ.js
++++ b/scripts/event/LudiPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 5, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 35, maxLevel = 50;
+ var entryMap = 922010100;
+ var exitMap = 922010000;
+diff --git a/scripts/event/MagatiaPQ_A.js b/scripts/event/MagatiaPQ_A.js
+index 7720d0d9..9d308231 100644
+--- a/scripts/event/MagatiaPQ_A.js
++++ b/scripts/event/MagatiaPQ_A.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 4, maxPlayers = 4;
++var minPlayers = 1, maxPlayers = 4;
+ var minLevel = 71, maxLevel = 85;
+ var entryMap = 926110000;
+ var exitMap = 926110700;
+diff --git a/scripts/event/MagatiaPQ_Z.js b/scripts/event/MagatiaPQ_Z.js
+index 877fb4d9..64e06a89 100644
+--- a/scripts/event/MagatiaPQ_Z.js
++++ b/scripts/event/MagatiaPQ_Z.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 4, maxPlayers = 4;
++var minPlayers = 1, maxPlayers = 4;
+ var minLevel = 71, maxLevel = 85;
+ var entryMap = 926100000;
+ var exitMap = 926100700;
+diff --git a/scripts/event/OrbisPQ.js b/scripts/event/OrbisPQ.js
+index 0aa9827a..023c71ca 100644
+--- a/scripts/event/OrbisPQ.js
++++ b/scripts/event/OrbisPQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 5, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 51, maxLevel = 70;
+ var entryMap = 920010000;
+ var exitMap = 920011200;
+diff --git a/scripts/event/PinkBeanBattle.js b/scripts/event/PinkBeanBattle.js
+index 606ef5cb..b104217f 100644
+--- a/scripts/event/PinkBeanBattle.js
++++ b/scripts/event/PinkBeanBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 120, maxLevel = 255;
+ var entryMap = 270050100;
+ var exitMap = 270050300;
+diff --git a/scripts/event/PiratePQ.js b/scripts/event/PiratePQ.js
+index 1b3dbad3..384c9faf 100644
+--- a/scripts/event/PiratePQ.js
++++ b/scripts/event/PiratePQ.js
+@@ -26,7 +26,7 @@
+ var isPq = true;
+ var isGrindMode = false;     // stages done after breaking all boxes on maps
+ 
+-var minPlayers = 3, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 55, maxLevel = 100;
+ var entryMap = 925100000;
+ var exitMap = 925100700;
+diff --git a/scripts/event/ScargaBattle.js b/scripts/event/ScargaBattle.js
+index 4c414c5b..892cb7ee 100644
+--- a/scripts/event/ScargaBattle.js
++++ b/scripts/event/ScargaBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 100, maxLevel = 255;
+ var entryMap = 551030200;
+ var exitMap = 551030100;
+diff --git a/scripts/event/ShowaBattle.js b/scripts/event/ShowaBattle.js
+index f6da5842..544e8439 100644
+--- a/scripts/event/ShowaBattle.js
++++ b/scripts/event/ShowaBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 3, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 100, maxLevel = 255;
+ var entryMap = 801040100;
+ var exitMap = 801040004;
+diff --git a/scripts/event/TD_Battle1.js b/scripts/event/TD_Battle1.js
+index ef06ddf0..22bb6aae 100644
+--- a/scripts/event/TD_Battle1.js
++++ b/scripts/event/TD_Battle1.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 70, maxLevel = 255;
+ var entryMap = 240070203;
+ var exitMap = 240070202;
+diff --git a/scripts/event/TD_Battle2.js b/scripts/event/TD_Battle2.js
+index eeaeb706..64a73294 100644
+--- a/scripts/event/TD_Battle2.js
++++ b/scripts/event/TD_Battle2.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 70, maxLevel = 255;
+ var entryMap = 240070303;
+ var exitMap = 240070302;
+diff --git a/scripts/event/TD_Battle3.js b/scripts/event/TD_Battle3.js
+index 85634cbc..39d366dc 100644
+--- a/scripts/event/TD_Battle3.js
++++ b/scripts/event/TD_Battle3.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 70, maxLevel = 255;
+ var entryMap = 240070403;
+ var exitMap = 240070402;
+diff --git a/scripts/event/TD_Battle4.js b/scripts/event/TD_Battle4.js
+index 8c911be2..ecb86e77 100644
+--- a/scripts/event/TD_Battle4.js
++++ b/scripts/event/TD_Battle4.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 70, maxLevel = 255;
+ var entryMap = 240070503;
+ var exitMap = 240070502;
+diff --git a/scripts/event/TD_Battle5.js b/scripts/event/TD_Battle5.js
+index f170a874..b8f3caed 100644
+--- a/scripts/event/TD_Battle5.js
++++ b/scripts/event/TD_Battle5.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 2, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 70, maxLevel = 255;
+ var entryMap = 240070603;
+ var exitMap = 240070602;
+diff --git a/scripts/event/TreasurePQ.js b/scripts/event/TreasurePQ.js
+index 25802aea..d0e5b1ab 100644
+--- a/scripts/event/TreasurePQ.js
++++ b/scripts/event/TreasurePQ.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 4, maxPlayers = 6;
++var minPlayers = 1, maxPlayers = 6;
+ var minLevel = 140, maxLevel = 255;
+ var entryMap = 674030000;
+ var exitMap = 674030100;
+diff --git a/scripts/event/ZakumBattle.js b/scripts/event/ZakumBattle.js
+index 362ee89f..88743270 100644
+--- a/scripts/event/ZakumBattle.js
++++ b/scripts/event/ZakumBattle.js
+@@ -24,7 +24,7 @@
+  */
+ 
+ var isPq = true;
+-var minPlayers = 6, maxPlayers = 30;
++var minPlayers = 1, maxPlayers = 30;
+ var minLevel = 50, maxLevel = 255;
+ var entryMap = 280030000;
+ var exitMap = 211042400;
+diff --git a/scripts/npc/9020001.js b/scripts/npc/9020001.js
+index 32adc9bf..19010dee 100644
+--- a/scripts/npc/9020001.js
++++ b/scripts/npc/9020001.js
+@@ -89,6 +89,24 @@ function rectangleStages(eim, property, areaCombos, areaRects) {
+     }
+ 
+     var curCombo = areaCombos[c];
++
++    // maple-offline: offline solo play -- with fewer members than the combo
++    // needs, every member must stand on a correct area (one right answer each)
++    var needed = 0;
++    for (var j = 0; j < curCombo.length; j++) {
++        needed += curCombo[j];
++    }
++    if (eim.getPlayerCount() < needed) {
++        var placed = 0;
++        for (var j = 0; j < curCombo.length; j++) {
++            if (playerPlacement[j] > curCombo[j]) {
++                return false;
++            }
++            placed += playerPlacement[j];
++        }
++        return placed == eim.getPlayerCount();
++    }
++
+     var accept = true;
+     for (var j = 0; j < curCombo.length; j++) {
+         if (curCombo[j] != playerPlacement[j]) {
+@@ -141,7 +159,9 @@ function action(mode, type, selection) {
+                         cm.sendNext("You gathered up " + numpasses + " passes! Congratulations on clearing the stage! I'll make the portal that sends you to the next stage. There's a time limit on getting there, so please hurry. Best of luck to you all!");
+                         clearStage(stage, eim, curMap);
+                         eim.gridClear();
+-                        cm.gainItem(4001008, -numpasses);
++                        if (numpasses > 0) {    // maple-offline: none when solo
++                            cm.gainItem(4001008, -numpasses);
++                        }
+                     } else {
+                         cm.sendNext("I'm sorry, but you are short on the number of passes. You need to give me the right number of passes; it should be the number of members of your party minus the leader, in this case the total of " + numpasses + " to clear the stage. Tell your party members to solve the questions, gather up the passes, and give them to you.");
+                     }
+diff --git a/src/main/java/client/Character.java b/src/main/java/client/Character.java
+index 64aef3f8..c5d478ff 100644
+--- a/src/main/java/client/Character.java
++++ b/src/main/java/client/Character.java
+@@ -983,7 +983,12 @@ public class Character extends AbstractCharacterObject {
+                 return false;
+             }
+         }
+-        return getIdByName(name) < 0 && Pattern.compile("[a-zA-Z0-9]{3,12}").matcher(name).matches();
++        // maple-offline: Hangul names are allowed; the name field is 12 bytes of
++        // UTF-8, so 2-4 Hangul syllables or 3-12 Latin letters/digits
++        boolean legal = Pattern.compile("[a-zA-Z0-9]{3,12}").matcher(name).matches()
++                || (Pattern.compile("[a-zA-Z0-9\uAC00-\uD7A3]{2,12}").matcher(name).matches()
++                    && name.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 12);
++        return getIdByName(name) < 0 && legal;
+     }
+ 
+     public boolean canDoor() {
+diff --git a/src/main/java/config/ServerConfig.java b/src/main/java/config/ServerConfig.java
+index 036dae25..3dfd35ec 100644
+--- a/src/main/java/config/ServerConfig.java
++++ b/src/main/java/config/ServerConfig.java
+@@ -34,6 +34,7 @@ public class ServerConfig {
+     public boolean AUTOMATIC_REGISTER;
+     public boolean BCRYPT_MIGRATION;
+     public boolean COLLECTIVE_CHARSLOT;
++    public boolean USE_AUTO_LOOT;
+     public boolean DETERRED_MULTICLIENT;
+ 
+     //Besides blocking logging in with several client sessions on the same machine, this also blocks suspicious login attempts for players that tries to login on an account using several diferent remote addresses.
+diff --git a/src/main/java/constants/string/CharsetConstants.java b/src/main/java/constants/string/CharsetConstants.java
+index 5a1243f2..ec994879 100644
+--- a/src/main/java/constants/string/CharsetConstants.java
++++ b/src/main/java/constants/string/CharsetConstants.java
+@@ -35,7 +35,9 @@ public class CharsetConstants {
+         LANGUAGE_US("US-ASCII"),
+         LANGUAGE_PT_BR("ISO-8859-1"),
+         LANGUAGE_THAI("TIS620"),
+-        LANGUAGE_KOREAN("MS949");
++        LANGUAGE_KOREAN("MS949"),
++        // maple-offline: the bundled client speaks UTF-8 both ways
++        LANGUAGE_UTF8("UTF-8");
+ 
+         private final String charset;
+ 
+diff --git a/src/main/java/server/maps/MapleMap.java b/src/main/java/server/maps/MapleMap.java
+index 9ab159af..49dd889f 100644
+--- a/src/main/java/server/maps/MapleMap.java
++++ b/src/main/java/server/maps/MapleMap.java
+@@ -1081,6 +1081,9 @@ public class MapleMap {
+ 
+         instantiateItemDrop(mdrop);
+         activateItemReactors(mdrop, chr.getClient());
++        if (questid <= 0 || chr.needQuestItem(questid, idrop.getItemId())) {
++            scheduleAutoLoot(mdrop, chr);
++        }
+     }
+ 
+     public final void spawnMesoDrop(final int meso, final Point position, final MapObject dropper,
+@@ -1100,6 +1103,28 @@ public class MapleMap {
+         }, null);
+ 
+         instantiateItemDrop(mdrop);
++        if (!playerDrop) {
++            scheduleAutoLoot(mdrop, owner);
++        }
++    }
++
++    // maple-offline: drops go straight into the inventory through the normal
++    // pickup path, so the client still plays the fly-to-player animation.
++    private void scheduleAutoLoot(final MapItem mdrop, final Character chr) {
++        if (!YamlConfig.config.server.USE_AUTO_LOOT || chr == null || mdrop.isPlayerDrop()) {
++            return;
++        }
++        // Chief Bandit / Shadower keep meso drops on the ground for Meso
++        // Explosion; items are still looted automatically
++        int jobId = chr.getJob().getId();
++        if (mdrop.getMeso() > 0 && (jobId == 421 || jobId == 422)) {
++            return;
++        }
++        TimerManager.getInstance().schedule(() -> {
++            if (!mdrop.isPickedUp() && chr.isLoggedinWorld() && chr.getMap() == this) {
++                chr.pickupItem(mdrop);
++            }
++        }, 450);
+     }
+ 
+     public final void disappearingItemDrop(final MapObject dropper, final Character owner, final Item item, final Point pos) {

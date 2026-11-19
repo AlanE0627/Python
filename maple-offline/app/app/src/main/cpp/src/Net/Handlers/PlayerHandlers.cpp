@@ -14,6 +14,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "PlayerHandlers.h"
+#include <array>
+#include "../../Gameplay/PartyState.h"
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
@@ -323,6 +325,114 @@ void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
     // shared COMBO/SUMMON bit: clear both
     if (bs == Buffstat::Id::COMBO) {
         Stage::get().get_player().cancel_buff(Buffstat::Id::SUMMON);
+    }
+}
+
+namespace {
+// Fixed six-slot party status block (ids, names, jobs, levels, channels,
+// leader, maps, doors)
+void read_party_status(InPacket &recv, PartyState &party) {
+    std::array<PartyMember, 6> slots {};
+
+    for (auto &m : slots) {
+        m.id = recv.read_int();
+    }
+
+    for (auto &m : slots) {
+        std::string name = recv.read_padded_string(13);
+        m.name = name.substr(0, name.find('\0'));
+    }
+
+    for (auto &m : slots) {
+        m.job = recv.read_int();
+    }
+
+    for (auto &m : slots) {
+        m.level = recv.read_int();
+    }
+
+    for (auto &m : slots) {
+        m.channel = recv.read_int();
+    }
+
+    party.leader = recv.read_int();
+
+    for (auto &m : slots) {
+        m.map = recv.read_int();
+    }
+
+    for (size_t i = 0; i < slots.size(); i++) {
+        recv.skip(16);  // mystic door per member
+    }
+
+    party.members.clear();
+
+    for (const auto &m : slots) {
+        if (m.id != 0) {
+            party.members.push_back(m);
+        }
+    }
+}
+
+void notice(const std::string &text) {
+    if (auto chatbar = UI::get().get_element<UIChatBar>()) {
+        chatbar->get().send_chatline(text, UIChatBar::LineType::YELLOW);
+    }
+}
+}  // namespace
+
+void PartyOperationHandler::handle(InPacket &recv) const {
+    int8_t mode = recv.read_byte();
+    PartyState &party = PartyState::get();
+    Player &player = Stage::get().get_player();
+
+    switch (mode) {
+        case 8: {  // created
+            party.party_id = recv.read_int();
+            party.leader = player.get_oid();
+            party.members.clear();
+
+            const CharStats &stats = player.get_stats();
+            party.members.push_back({ player.get_oid(),
+                                      stats.get_name(),
+                                      stats.get_stat(MapleStat::Id::JOB),
+                                      stats.get_stat(MapleStat::Id::LEVEL),
+                                      0,
+                                      Stage::get().get_mapid() });
+            notice("파티가 만들어졌습니다.");
+            break;
+        }
+        case 7:     // update
+        case 0xF: { // someone joined
+            party.party_id = recv.read_int();
+
+            if (mode == 0xF) {
+                recv.read_string();
+            }
+
+            read_party_status(recv, party);
+            break;
+        }
+        case 0xC: {  // left / expelled / disbanded
+            recv.read_int();
+            int32_t target = recv.read_int();
+            bool still = recv.read_bool();
+
+            if (!still || target == player.get_oid()) {
+                party.clear();
+                notice("파티에서 탈퇴했습니다.");
+            } else {
+                recv.read_bool();
+                recv.read_string();
+                read_party_status(recv, party);
+            }
+
+            break;
+        }
+        case 0x1B:  // new leader
+            party.leader = recv.read_int();
+            break;
+        default: break;
     }
 }
 
