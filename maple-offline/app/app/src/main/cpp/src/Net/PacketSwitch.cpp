@@ -382,10 +382,12 @@ enum Opcode : uint16_t {
     SERVER_MESSAGE = 68,
     WEEK_EVENT_MESSAGE = 77,
 
+    SCRIPT_PROGRESS_MESSAGE = 122,
     SKILL_MACROS = 124,
     SET_FIELD = 125,
     WHISPER = 135,
     FIELD_EFFECT = 138,
+    ADMIN_RESULT = 144,
 
     /// MapObject
     SPAWN_CHAR = 160,
@@ -586,6 +588,8 @@ PacketSwitch::PacketSwitch() {
     // TODO: New handlers, they need coded and moved to a proper file.
     emplace<CHECK_SPW_RESULT, CheckSpwResultHandler>();
     emplace<FIELD_EFFECT, FieldEffectHandler>();
+    emplace<SCRIPT_PROGRESS_MESSAGE, ScriptProgressMessageHandler>();
+    emplace<ADMIN_RESULT, AdminResultHandler>();
 }
 
 void PacketSwitch::forward(int8_t *bytes, size_t length) const {

@@ -19,6 +19,9 @@
 #include "../../IO/UI.h"
 #include "../../IO/UITypes/Login/UILoginNotice.h"
 #include "../../IO/UITypes/UIGaugeBoss.h"
+#include "../../IO/UITypes/UIStatusMessenger.h"
+#include "../../Audio/Audio.h"
+#include "../../Constants.h"
 
 namespace ms {
 void CheckSpwResultHandler::handle(InPacket &recv) const {
@@ -56,16 +59,47 @@ void FieldEffectHandler::handle(InPacket &recv) const {
             if (auto elem = UI::get().get_element<UIGaugeBoss>()) {
                 elem->get().update(percent);
             } else {
-                UI::get().emplace<UIGaugeBoss>(800,
+                UI::get().emplace<UIGaugeBoss>(Constants::Constants::get().get_viewwidth(),
                                                tag_color,
                                                tag_bg_color,
                                                mob_id,
                                                percent);
             }
         }
+    } else if (rand == 4 || rand == 6) {
+        // 4: play a sound, 6: change the map music. Path is "Img/Name".
+        std::string path = recv.read_string();
+        size_t split = path.find('/');
+
+        if (split != std::string::npos) {
+            std::string full =
+                path.substr(0, split) + ".img/" + path.substr(split + 1);
+
+            if (rand == 6) {
+                Music(full).play();
+            } else {
+                Sound(nl::nx::sound.resolve(full)).play();
+            }
+        }
     } else {
-        std::cout << "[FieldEffectHandler]: Unknown value: [" << rand << "]"
-                  << std::endl;
+        std::cout << "[FieldEffectHandler]: Unknown value: ["
+                  << static_cast<int>(rand) << "]" << std::endl;
     }
+}
+
+// Server script progress text (event/expedition notices): show it in the
+// status messenger like other system messages.
+void ScriptProgressMessageHandler::handle(InPacket &recv) const {
+    std::string message = recv.read_string();
+
+    if (auto messenger = UI::get().get_element<UIStatusMessenger>()) {
+        messenger->get().show_status(Color::Name::YELLOW, message);
+    }
+}
+
+// GM/admin results (hide toggles, minimap disable, ...) carry nothing the
+// offline client needs; consume them silently.
+void AdminResultHandler::handle(InPacket &recv) const {
+    recv.skip(recv.length());
 }
 }  // namespace ms

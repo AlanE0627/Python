@@ -537,13 +537,14 @@ namespace ms {
         wasted_ = 0;
     }
 
+    // Called on map change. The old check compared a 0..1 fraction with
+    // 80.0, so the atlas was never reset: textures from every visited map
+    // piled up until the atlas overflowed mid-frame, after which each frame
+    // overwrote bitmaps that were already queued (missing window frames,
+    // garbled text). Bitmaps are uploaded lazily, so a full reset per map is
+    // cheap.
     void GraphicsGL::clear() {
-        size_t used = ATLASW * border_.y() + border_.x() * y_range_.second();
-        double usedpercent = static_cast<double>(used) / (ATLASW * ATLASH);
-
-        if (usedpercent > 80.0) {
-            clear_internal();
-        }
+        clear_internal();
     }
 
     void GraphicsGL::add_bitmap(const nl::bitmap &bmp) {

@@ -187,6 +187,11 @@ void Combat::apply_move(const SpecialMove &move) {
             find_closest(reactor_objs, range, origin, mobcount, false);
 
         mobs_.send_attack(result, attack, mob_targets, mobcount);
+        if (std::getenv("MS_DEBUG_ATK")) {
+            std::cout << "[atkdmg] min " << attack.mindamage << " max " << attack.maxdamage << " lines";
+            for (auto &dl : result.damage_lines) for (auto &d : dl.second) std::cout << " " << d.first;
+            std::cout << std::endl;
+        }
         result.attacker = player_.get_oid();
         result.position = mob_targets.empty()
                               ? player_.get_position()
@@ -326,6 +331,12 @@ std::vector<int32_t> Combat::find_closest(MapObjects *objs,
         if (use_mobs) {
             const Mob *mob = static_cast<const Mob *>(mmo.second.get());
 
+            if (mob && std::getenv("MS_DEBUG_ATK")) {
+                auto mp = mob->get_position();
+                std::cout << "[atk] range " << range.left() << "," << range.right() << "," << range.top() << "," << range.bottom()
+                          << " origin " << origin.x() << "," << origin.y() << " mob " << mob->get_oid() << " pos " << mp.x() << "," << mp.y()
+                          << " alive " << mob->is_alive() << " cx " << mob->debug_center_x() << " inrange " << mob->is_in_range(range) << std::endl;
+            }
             if (mob && mob->is_alive() && mob->is_in_range(range)) {
                 int32_t oid = mob->get_oid();
                 uint16_t distance = mob->get_position().distance(origin);

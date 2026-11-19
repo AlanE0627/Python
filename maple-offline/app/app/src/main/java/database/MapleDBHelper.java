@@ -55,6 +55,22 @@ public class MapleDBHelper extends SQLiteOpenHelper {
         mInput.close();
     }
 
+    // Data fixes for databases copied by an older build (the asset copy only
+    // happens on first run). Each statement must be idempotent.
+    private void applyDataFixes() {
+        try {
+            SQLiteDatabase db = getWritableDatabase();
+            // Pirate 3rd job clone (Kyrin) had no Black Charm drop.
+            db.execSQL("INSERT INTO drop_data (dropperid, itemid, minimum_quantity, maximum_quantity, questid, chance) "
+                    + "SELECT 9001008, 4031059, 1, 1, 0, 999999 WHERE NOT EXISTS "
+                    + "(SELECT 1 FROM drop_data WHERE dropperid = 9001008 AND itemid = 4031059)");
+            // Griffey dropped the magician 4th job item for the warrior quest.
+            db.execSQL("DELETE FROM drop_data WHERE dropperid = 8180001 AND itemid = 4031511 AND questid = 6904");
+        } catch (Exception e) {
+            log.error("applyDataFixes failed", e);
+        }
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
     }
@@ -70,6 +86,7 @@ public class MapleDBHelper extends SQLiteOpenHelper {
             try {
                 sInstance = new MapleDBHelper();
                 sInstance.createDataBase();
+                sInstance.applyDataFixes();
             } catch (IOException mIOException) {
                 log.error("MapleDBHelper getInstance error", mIOException);
             }

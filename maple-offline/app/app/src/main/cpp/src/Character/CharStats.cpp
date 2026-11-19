@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <iostream>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -81,6 +83,11 @@ void CharStats::close_totalstats() {
     int32_t attack = get_total(EquipStat::Id::WATK);
     float multiplier = damage_percent_ + static_cast<float>(attack) / 100;
     max_damage_ = static_cast<int32_t>((primary + secondary) * multiplier);
+    if (std::getenv("MS_DEBUG_ATK")) {
+        std::cout << "[stats] primary " << primary << " secondary " << secondary << " watk " << attack
+                  << " STR " << get_total(EquipStat::Id::STR) << " DEX " << get_total(EquipStat::Id::DEX)
+                  << " wtype " << static_cast<int>(weapon_type_) << std::endl;
+    }
     min_damage_ = static_cast<int32_t>(((primary * 0.9f * mastery_) + secondary)
                                        * multiplier);
 }

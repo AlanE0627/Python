@@ -109,6 +109,7 @@ public:
 
     // Check if this mob collides with the specified rectangle.
     bool is_in_range(const Rectangle<int16_t> &range) const;
+    int16_t debug_center_x() const;
 
     // Check if this mob is still alive.
     bool is_alive() const;

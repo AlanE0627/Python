@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <iostream>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -665,6 +667,15 @@ bool Mob::is_in_range(const Rectangle<int16_t> &range) const {
     bounds.shift(get_position());
 
     return range.overlaps(bounds);
+}
+
+int16_t Mob::debug_center_x() const {
+    Rectangle<int16_t> bounds = animations_.at(stance_).get_bounds();
+    bounds.shift(get_position());
+    if (std::getenv("MS_DEBUG_ATK")) {
+        std::cout << "[mobb] " << oid_ << " " << bounds.left() << "," << bounds.right() << "," << bounds.top() << "," << bounds.bottom() << std::endl;
+    }
+    return static_cast<int16_t>((bounds.left() + bounds.right()) / 2);
 }
 
 Point<int16_t> Mob::get_head_position() const {

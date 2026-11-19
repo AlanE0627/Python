@@ -27,4 +27,12 @@ class CheckSpwResultHandler : public PacketHandler {
 class FieldEffectHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
+
+class ScriptProgressMessageHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
+
+class AdminResultHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
 }  // namespace ms
