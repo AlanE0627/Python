@@ -87,6 +87,22 @@ public class Server {
     private static final Logger log = LoggerFactory.getLogger(Server.class);
     private static Server instance = null;
 
+    // maple-offline: called when the game goes to the background (Android may
+    // kill the process afterwards) so progress is never more than a moment old
+    public void saveAllCharacters() {
+        for (World world : getWorlds()) {
+            for (Character chr : world.getPlayerStorage().getAllCharacters()) {
+                if (chr != null && chr.isLoggedin()) {
+                    try {
+                        chr.saveCharToDB(false);
+                    } catch (Exception e) {
+                        log.warn("Background save failed for {}", chr.getName(), e);
+                    }
+                }
+            }
+        }
+    }
+
     public static Server getInstance() {
         if (instance == null) {
             instance = new Server();

@@ -53,9 +53,30 @@ class GameLauncherActivity : Activity() {
     private fun launchGame(dataDir: File) {
         // Client reads the server address from hostip.txt; always local.
         File(dataDir, "hostip.txt").writeText("127.0.0.1")
+        installKoreanData(dataDir)
         status.text = "서버 시작 중…"
         startServer()
         waitForServer()
+    }
+
+    // maple-offline: Korean strings / quest text ship inside the APK
+    // (assets/ko) and replace the English data whenever the bundled copy
+    // differs (the client prefers String_ko.nx / Quest_ko.nx when present).
+    private fun installKoreanData(dataDir: File) {
+        for (name in listOf("String_ko.nx", "Quest_ko.nx")) {
+            try {
+                val dst = File(dataDir, name)
+                val size = assets.openFd("ko/$name").use { it.length }
+                if (dst.length() == size) continue
+                val tmp = File(dataDir, "$name.tmp")
+                assets.open("ko/$name").use { input ->
+                    tmp.outputStream().use { output -> input.copyTo(output) }
+                }
+                tmp.renameTo(dst)
+            } catch (e: Exception) {
+                android.util.Log.w("maple-offline", "Korean data copy failed: $name", e)
+            }
+        }
     }
 
     override fun onDestroy() {

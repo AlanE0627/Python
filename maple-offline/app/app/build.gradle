@@ -9,6 +9,11 @@ android {
         resources.excludes += "META-INF/*"
     }
 
+    // maple-offline: bundled Korean NX files are read with openFd()
+    androidResources {
+        noCompress += 'nx'
+    }
+
     namespace = 'com.mapleserver'
     compileSdk 35
 
