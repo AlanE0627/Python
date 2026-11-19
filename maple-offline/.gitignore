@@ -14,3 +14,4 @@ local.properties
 *.o
 *.lo
 **/freetype/objs/
+app/app/src/main/cpp/thirdparty/stb/tests/
