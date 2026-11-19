@@ -698,6 +698,28 @@ index 2dd03db3..e20550e2 100644
                  }
              }
          } else if (status == 2) {
+diff --git a/scripts/npc/1032008.js b/scripts/npc/1032008.js
+index 3aeb7fc1..f8072a48 100644
+--- a/scripts/npc/1032008.js
++++ b/scripts/npc/1032008.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031045)) {
+         var em = cm.getEventManager("Boats");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you want to go to Orbis?");
++            cm.sendYesNo("오르비스로 갈까요?");
+         } else {
+             cm.sendOk("The boat to Orbis is already travelling, please be patient for the next one.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
 diff --git a/scripts/npc/1052001.js b/scripts/npc/1052001.js
 index 5d99c65e..ad70e106 100644
 --- a/scripts/npc/1052001.js
@@ -845,6 +867,85 @@ index 74193ed6..106c4c3f 100644
              }
              cm.sendSimple(selStr);
          } else if (status == 2) {
+diff --git a/scripts/npc/2012001.js b/scripts/npc/2012001.js
+index 9f857fd3..da588e78 100644
+--- a/scripts/npc/2012001.js
++++ b/scripts/npc/2012001.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031047)) {
+         var em = cm.getEventManager("Boats");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you want to go to Ellinia?");
++            cm.sendYesNo("엘리니아로 갈까요?");
+         } else {
+             cm.sendOk("The boat to Ellinia is already travelling, please be patient for the next one.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
+diff --git a/scripts/npc/2012013.js b/scripts/npc/2012013.js
+index 6113d3b1..865098ea 100644
+--- a/scripts/npc/2012013.js
++++ b/scripts/npc/2012013.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031074)) {
+         var em = cm.getEventManager("Trains");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you want to go to Ludibrium?");
++            cm.sendYesNo("루디브리엄으로 갈까요?");
+         } else {
+             cm.sendOk("The train to Ludibrium is already travelling, please be patient for the next one.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
+diff --git a/scripts/npc/2012021.js b/scripts/npc/2012021.js
+index e9c10304..d4e9b74f 100644
+--- a/scripts/npc/2012021.js
++++ b/scripts/npc/2012021.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031331)) {
+         var em = cm.getEventManager("Cabin");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you wish to board the flight?");
++            cm.sendYesNo("탑승할까요?");
+         } else {
+             cm.sendOk("The flight has not arrived yet. Come back soon.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
+diff --git a/scripts/npc/2012025.js b/scripts/npc/2012025.js
+index c1327625..54377588 100644
+--- a/scripts/npc/2012025.js
++++ b/scripts/npc/2012025.js
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
 diff --git a/scripts/npc/2013000.js b/scripts/npc/2013000.js
 index 3d2b1110..cc2321f9 100644
 --- a/scripts/npc/2013000.js
@@ -1038,6 +1139,28 @@ index 60024208..b43e0088 100644
                      if (playersOnCombo == 5 || cm.getPlayer().gmLevel() > 1) {
                          var comboStr = eim.getProperty("stage" + stage + "combo");
                          if (comboStr == null) {
+diff --git a/scripts/npc/2041000.js b/scripts/npc/2041000.js
+index 6fe6cc4f..d7bc30b1 100644
+--- a/scripts/npc/2041000.js
++++ b/scripts/npc/2041000.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031045)) {
+         var em = cm.getEventManager("Trains");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you want to go to Orbis?");
++            cm.sendYesNo("오르비스로 갈까요?");
+         } else {
+             cm.sendOk("The train to Orbis is already travelling, please be patient for the next one.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
 diff --git a/scripts/npc/2041023.js b/scripts/npc/2041023.js
 index 67078a96..c9e8aee9 100644
 --- a/scripts/npc/2041023.js
@@ -1051,6 +1174,19 @@ index 67078a96..c9e8aee9 100644
          } else if (status == 1) {
              if (selection == 0) {
                  if (cm.getParty() == null) {
+diff --git a/scripts/npc/2081005.js b/scripts/npc/2081005.js
+index 27b56f9f..13ae2224 100644
+--- a/scripts/npc/2081005.js
++++ b/scripts/npc/2081005.js
+@@ -37,7 +37,7 @@ function start() {
+         return;
+     }
+ 
+-    cm.sendSimple("Welcome to Cave of Life - Entrance ! Would you like to go inside and fight #rHorntail#k ? If you want to fight him, you may might need some #b#v2000005##k, so you can recover some HP if you have been hit by #rHorntail#k.\r\n#L1#I would like to buy 10 for 100,000 Mesos!#l\r\n\#L2#No thanks, let me in now!#l");
++    cm.sendSimple("Welcome to Cave of Life - Entrance ! Would you like to go inside and fight #rHorntail#k ? If you want to fight him, you may might need some #b#v2000005##k, so you can recover some HP if you have been hit by #rHorntail#k.\r\n#L1#10개 사기(100,000 메소)#l\r\n\#L2#바로 들어가기#l");
+ }
+ 
+ function action(mode, type, selection) {
 diff --git a/scripts/npc/2081100.js b/scripts/npc/2081100.js
 index 9b23238c..1cdf5a9c 100644
 --- a/scripts/npc/2081100.js
@@ -1116,6 +1252,28 @@ index dc03ff40..96eb4dd8 100644
                  //cm.dispose();
              }
          } else if (status == 1) {
+diff --git a/scripts/npc/2082001.js b/scripts/npc/2082001.js
+index c8710c07..bbbf675b 100644
+--- a/scripts/npc/2082001.js
++++ b/scripts/npc/2082001.js
+@@ -2,7 +2,7 @@ function start() {
+     if (cm.haveItem(4031045)) {
+         var em = cm.getEventManager("Cabin");
+         if (em.getProperty("entry") == "true") {
+-            cm.sendYesNo("Do you wish to board the flight?");
++            cm.sendYesNo("탑승할까요?");
+         } else {
+             cm.sendOk("The flight has not arrived yet. Come back soon.");
+             cm.dispose();
+@@ -15,7 +15,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
 diff --git a/scripts/npc/2083004.js b/scripts/npc/2083004.js
 index 6523026d..8c602492 100644
 --- a/scripts/npc/2083004.js
@@ -1164,6 +1322,19 @@ index 150fe03a..1bf16528 100644
              } else {
                  cm.sendYesNo("The mission succeeded, thanks for escorting me! I can lead you to #b#m120000104##k, are you ready?");
              }
+diff --git a/scripts/npc/2102000.js b/scripts/npc/2102000.js
+index 28ae9f58..470f1238 100644
+--- a/scripts/npc/2102000.js
++++ b/scripts/npc/2102000.js
+@@ -37,7 +37,7 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode <= 0) {
+-        cm.sendOk("Okay, talk to me if you change your mind!");
++        cm.sendOk("마음이 바뀌면 다시 말 걸어 주세요.");
+         cm.dispose();
+         return;
+     }
 diff --git a/scripts/npc/2112003.js b/scripts/npc/2112003.js
 index 088edc85..82778fb3 100644
 --- a/scripts/npc/2112003.js

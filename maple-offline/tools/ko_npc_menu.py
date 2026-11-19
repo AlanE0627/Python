@@ -40,6 +40,13 @@ R.update({
  "Choose your destination, for fees will change from place to place.#b": "목적지를 고르세요. 요금은 곳마다 달라요.#b",
  "We have a special 90% discount for beginners.": "초보자는 요금 90% 할인.",
  " mesos)#l": " 메소)#l",
+ "Do you want to go to Ellinia?": "엘리니아로 갈까요?",
+ "Do you want to go to Ludibrium?": "루디브리엄으로 갈까요?",
+ "Do you want to go to Orbis?": "오르비스로 갈까요?",
+ "Do you wish to board the flight?": "탑승할까요?",
+ "Okay, talk to me if you change your mind!": "마음이 바뀌면 다시 말 걸어 주세요.",
+ "I would like to buy 10 for 100,000 Mesos!": "10개 사기(100,000 메소)",
+ "No thanks, let me in now!": "바로 들어가기",
 })
 files = sys.argv[1:]
 tot = 0
