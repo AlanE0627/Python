@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.    //
 //////////////////////////////////////////////////////////////////////////////
 #pragma once
+#include <string>
 #include "nxfwd.hpp"
 #include "glfm.h"
 #include <android/asset_manager.h>
@@ -27,6 +28,8 @@ namespace nl::nx
 extern node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui;
 // maple-offline: small Korean UI overlay (UI_ko.nx, tools/nx_merge_ui.py --overlay); empty node when absent
 extern node uiko;
+// maple-offline: top-level UI image, Korean overlay first
+node ui_img(const std::string &name);
 //! Loads the pre-defined nodes from a standard setup of NX files for
 //! MapleStory.
 //! Only call this function once.

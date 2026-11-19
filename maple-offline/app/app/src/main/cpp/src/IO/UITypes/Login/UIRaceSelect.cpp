@@ -49,7 +49,7 @@ UIRaceSelect::UIRaceSelect() :
     LoginScene::get().set_step(LoginScene::RACE_SELECT);
     position_ = LoginScene::get().frame_origin();
 
-    nl::node Login = nl::nx::ui["Login.img"];
+    nl::node Login = nl::nx::ui_img("Login.img");
     nl::node Common = Login["Common"];
     nl::node RaceSelect = Login["RaceSelect"];
     nl::node KoRace = nl::nx::uiko["Login.img"]["RaceSelect"];

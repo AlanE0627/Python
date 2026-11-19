@@ -29,7 +29,7 @@ UILogo::UILogo() :
     user_clicked_(false) {
     Music("BgmUI.img/NxLogo").play_once();
 
-    nl::node Logo = nl::nx::ui["Logo.img"];
+    nl::node Logo = nl::nx::ui_img("Logo.img");
 
     nexon_ = Logo["Nexon"];
     wizet_ = Logo["Wizet"];

@@ -54,12 +54,34 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
 
     // maple-offline: v83 title. Background, logo and signboard come from MapLogin.img
     // (LoginScene); buttons sit on the signboard whose top-left is (353, 203) in the frame.
-    nl::node title = nl::nx::ui["Login.img"]["Title"];
-    nl::node common = nl::nx::ui["Login.img"]["Common"];
+    nl::node title = nl::nx::ui_img("Login.img")["Title"];
+    nl::node common = nl::nx::ui_img("Login.img")["Common"];
 
     sprites_.emplace_back(common["frame"], Point<int16_t>(400, 300));
 
+    // KMS 1.2.95 title (Login.img/Title/signboard present): one centred
+    // signboard with the fields, login button and six small buttons.
+    if (title["signboard"]) {
+        kms_ = true;
+        sprites_.emplace_back(title["signboard"], Point<int16_t>(396, 332));
+        buttons_[Buttons::BT_LOGIN] =
+            std::make_unique<MapleButton>(title["BtLogin"], Point<int16_t>(455, 279));
+        buttons_[Buttons::BT_SAVEID] =
+            std::make_unique<MapleButton>(title["BtEmailSave"], Point<int16_t>(299, 329));
+        buttons_[Buttons::BT_IDLOST] =
+            std::make_unique<MapleButton>(title["BtEmailLost"], Point<int16_t>(370, 329));
+        buttons_[Buttons::BT_PASSLOST] =
+            std::make_unique<MapleButton>(title["BtPasswdLost"], Point<int16_t>(444, 329));
+        buttons_[Buttons::BT_REGISTER] =
+            std::make_unique<MapleButton>(title["BtNew"], Point<int16_t>(290, 352));
+        buttons_[Buttons::BT_HOMEPAGE] =
+            std::make_unique<MapleButton>(title["BtHomePage"], Point<int16_t>(364, 352));
+        buttons_[Buttons::BT_QUIT] =
+            std::make_unique<MapleButton>(title["BtQuit"], Point<int16_t>(438, 352));
+    }
+
     const Point<int16_t> board(353, 203);
+    if (!kms_) {
     buttons_[Buttons::BT_LOGIN] =
         std::make_unique<MapleButton>(title["BtLogin"], board + Point<int16_t>(268, 21));
     buttons_[Buttons::BT_SAVEID] =
@@ -74,6 +96,7 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
         std::make_unique<MapleButton>(title["BtHomePage"], board + Point<int16_t>(141, 140));
     buttons_[Buttons::BT_QUIT] =
         std::make_unique<MapleButton>(title["BtQuit"], board + Point<int16_t>(244, 140));
+    }
 
     checkbox_[false] = title["check"]["0"];
     checkbox_[true] = title["check"]["1"];
@@ -81,8 +104,9 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
     account_ = Textfield(
         Text::Font::A13M,
         Text::Alignment::LEFT,
-        Color::Name::WHITE,
-        Rectangle<int16_t>(Point<int16_t>(468, 225), Point<int16_t>(614, 245)),
+        kms_ ? Color::Name::BLACK : Color::Name::WHITE,
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 282), Point<int16_t>(446, 300))
+             : Rectangle<int16_t>(Point<int16_t>(468, 225), Point<int16_t>(614, 245)),
         12);
 
     account_.set_key_callback(KeyAction::Id::TAB, [&] {
@@ -98,8 +122,9 @@ UILogin::UILogin() : UIElement(LoginScene::get().frame_origin(), Point<int16_t>(
     password_ = Textfield(
         Text::Font::A13M,
         Text::Alignment::LEFT,
-        Color::Name::WHITE,
-        Rectangle<int16_t>(Point<int16_t>(468, 258), Point<int16_t>(614, 278)),
+        kms_ ? Color::Name::BLACK : Color::Name::WHITE,
+        kms_ ? Rectangle<int16_t>(Point<int16_t>(292, 309), Point<int16_t>(446, 327))
+             : Rectangle<int16_t>(Point<int16_t>(468, 258), Point<int16_t>(614, 278)),
         12);
 
     password_.set_key_callback(KeyAction::Id::TAB, [&] {
@@ -142,15 +167,15 @@ void UILogin::draw(float alpha) const {
     password_.draw(position_);
 
     if (account_.get_state() == Textfield::State::NORMAL && account_.empty()) {
-        accountbg_.draw(DrawArgument(position_ + Point<int16_t>(466, 225)));
+        accountbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(288, 279) : Point<int16_t>(466, 225))));
     }
 
     if (password_.get_state() == Textfield::State::NORMAL
         && password_.empty()) {
-        passwordbg_.draw(DrawArgument(position_ + Point<int16_t>(466, 258)));
+        passwordbg_.draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(288, 306) : Point<int16_t>(466, 258))));
     }
 
-    checkbox_[saveid_].draw(DrawArgument(position_ + Point<int16_t>(404, 296)));
+    checkbox_[saveid_].draw(DrawArgument(position_ + (kms_ ? Point<int16_t>(289, 333) : Point<int16_t>(404, 296))));
 }
 
 void UILogin::update() {

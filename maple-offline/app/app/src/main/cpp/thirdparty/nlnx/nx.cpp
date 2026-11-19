@@ -97,5 +97,9 @@ void load_all(GLFMDisplay *pApp)
         throw std::runtime_error("Failed to locate nx files.");
     }
 }
+node ui_img(const std::string &name) {
+    node k = uiko[name];
+    return k ? k : ui[name];
+}
 } // namespace nx
 } // namespace nl

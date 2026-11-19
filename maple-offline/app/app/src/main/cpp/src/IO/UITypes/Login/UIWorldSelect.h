@@ -50,6 +50,16 @@ public:
 
     uint16_t get_worldbyid(uint16_t worldid);
 
+    Point<int16_t> channel_cell(size_t i) const;
+    bool kms_ = false;
+    Point<int16_t> panel_tl_;
+    Point<int16_t> ch_off_ = Point<int16_t>(20, 66);
+    Point<int16_t> ch_step_ = Point<int16_t>(104, 34);
+    int16_t ch_cols_ = 4;
+    Point<int16_t> wname_off_ = Point<int16_t>(20, 12);
+    Point<int16_t> go_off_ = Point<int16_t>(326, 10);
+    Point<int16_t> ch_box_ = Point<int16_t>(92, 30);
+
     uint8_t get_channel_count(uint8_t wid) const;
 
 protected:

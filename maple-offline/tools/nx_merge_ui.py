@@ -76,6 +76,15 @@ def from_aria(data, name, node, root, path):
         n[1].append(from_aria(data, k, v, root, path + [k]))
     return n
 
+def deep_merge(new, old):
+    """add children that exist only in old (recursively for dirs)."""
+    have = {c[0]: c for c in new[1]}
+    for c in old[1]:
+        if c[0] not in have:
+            new[1].append(c)
+        elif have[c[0]][2] == 0 and c[2] == 0:
+            deep_merge(have[c[0]], c)
+
 def resolve_uol(root, path, target, depth=0):
     if depth > 8:
         return None
@@ -157,8 +166,9 @@ def main():
     subs = [a for a in sys.argv[4:] if ':' in a]     # Login.img:RaceSelect (one section only)
     imgs = [a for a in sys.argv[4:] if '=' not in a and ':' not in a]
     extras = [a for a in sys.argv[4:] if '=' in a]   # Back/login.img=<path>
-    if base == '--overlay':
+    if base.startswith('--overlay'):
         root = ['', [], 0, None]          # only the parts given below
+        b = Base(base.split('=', 1)[1]) if '=' in base else None
     else:
         b = Base(base)
         root = from_base(b, 0)
@@ -169,8 +179,12 @@ def main():
         for e in extras:
             rel, path = e.split('=', 1)
             grp, name = rel.split('/', 1)
-            data = open(path, 'rb').read()
-            tree = wzimg.parse_img(data, KEY)
+            if path.endswith('.wz'):
+                wz = wzimg.WzFile(path, wzimg.keystream(wzimg.IVS['KMS_OLD'], 0x100000))
+                data, tree = wz.d, wz.img(rel)
+            else:
+                data = open(path, 'rb').read()
+                tree = wzimg.parse_img(data, KEY)
             groups.setdefault(grp, ['%s' % grp, [], 0, None])[1].append(from_aria(data, name, tree, tree, []))
             print('extra', rel)
         res[1] = list(groups.values())
@@ -190,6 +204,15 @@ def main():
         data, tree = read_img(uidir, img)
         new = from_aria(data, img, tree, tree, [])
         old = next((c for c in root[1] if c[0] == img), None)
+        if old is None and b is not None:
+            # overlay: still keep v83-only sections of this img (deep merge)
+            for i0 in range(b.node(0)[2]):
+                ci = b.node(0)[1] + i0
+                if b.string(b.node(ci)[0]) == img:
+                    old = from_base(b, ci)
+        if old is not None:
+            deep_merge(new, old)
+            old = None
         if old is not None:
             have = {c[0] for c in new[1]}
             # keep base-only sections (e.g. v83 buttons the KMS img lacks)

@@ -31,7 +31,7 @@ UILoginNotice::UILoginNotice(uint16_t message,
     multiple_(false),
     okhandler_(std::move(okhandler)),
     cancel_handler_(std::move(cancelhandler)) {
-    nl::node Notice = nl::nx::ui["Login.img"]["Notice"];
+    nl::node Notice = nl::nx::ui_img("Login.img")["Notice"];
     nl::node backgrnd;
 
     switch (message) {
@@ -105,7 +105,7 @@ Button::State UILoginNotice::button_pressed(uint16_t buttonid) {
 }
 
 UIQuitConfirm::UIQuitConfirm() {
-    nl::node notice = nl::nx::ui["Login.img"]["Notice"];
+    nl::node notice = nl::nx::ui_img("Login.img")["Notice"];
     nl::node backgrnd = notice["backgrnd"]["0"];
 
     sprites_.emplace_back(backgrnd);
@@ -150,7 +150,7 @@ UIClassConfirm::UIClassConfirm(uint8_t selected_class,
                                bool unavailable,
                                std::function<void()> okhandler) :
     okhandler_(std::move(okhandler)) {
-    nl::node RaceSelect = nl::nx::ui["Login.img"]["RaceSelect_new"];
+    nl::node RaceSelect = nl::nx::ui_img("Login.img")["RaceSelect_new"];
     nl::node type = unavailable ? RaceSelect["deny"] : RaceSelect["confirm"];
     nl::node backgrnd = type["backgrnd"];
     nl::node race = type["race"][selected_class];

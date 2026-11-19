@@ -75,11 +75,27 @@ UIWorldSelect::UIWorldSelect() :
     channelid_ = Setting<DefaultChannel>::get().load();
     uint8_t regionid = Setting<DefaultRegion>::get().load();
 
-    nl::node login = nl::nx::ui["Login.img"];
+    nl::node login = nl::nx::ui_img("Login.img");
     world_select_ = login["WorldSelect"];
     world_src_ = world_select_["BtWorld"];
     channel_src_ = world_select_["channel"];
     nl::node common = login["Common"];
+
+    // KMS 1.2.95 world select (Login.img/Title/signboard marks the KMS set):
+    // world list board at the top, channel board 371x222 with 5 columns.
+    kms_ = static_cast<bool>(login["Title"]["signboard"]);
+    if (kms_) {
+        panel_tl_ = Point<int16_t>(218, 198);
+        ch_off_ = Point<int16_t>(22, 60);
+        ch_step_ = Point<int16_t>(66, 28);
+        ch_cols_ = 5;
+        wname_off_ = Point<int16_t>(8, 8);
+        go_off_ = Point<int16_t>(229, 15);
+        ch_box_ = Point<int16_t>(60, 21);
+        channel_src_pos_ = panel_tl_;   // chBackgrn origin is (0,0)
+    } else {
+        panel_tl_ = channel_src_pos_ - Point<int16_t>(224, 116);
+    }
 
     set_region(regionid);
 
@@ -113,20 +129,18 @@ UIWorldSelect::UIWorldSelect() :
     buttons_[Buttons::BT_QUIT_GAME] =
         std::make_unique<MapleButton>(common["BtExit"], Point<int16_t>(0, 515));
 
-    // Channel panel: chBackgrn is centred (origin 224,116) on channel_src_pos_.
-    const Point<int16_t> panel_tl = channel_src_pos_ - Point<int16_t>(224, 116);
+    // Channel panel (v83: chBackgrn centred, origin 224,116, on channel_src_pos_).
+    const Point<int16_t> panel_tl = panel_tl_;
     for (size_t i = 0; i < Buttons::BT_ENTER_WORLD - Buttons::BT_CHANNEL0; i++) {
-        int16_t col = static_cast<int16_t>(i % 4), row = static_cast<int16_t>(i / 4);
         buttons_[Buttons::BT_CHANNEL0 + i] = std::make_unique<MapleButton>(
-            channel_src_[std::to_string(i)],
-            panel_tl + Point<int16_t>(static_cast<int16_t>(20 + col * 104), static_cast<int16_t>(66 + row * 34)));
+            channel_src_[std::to_string(i)], panel_tl + channel_cell(i));
         buttons_[Buttons::BT_CHANNEL0 + i]->set_active(false);
     }
 
     channels_background_ = world_select_["chBackgrn"];
 
     buttons_[Buttons::BT_ENTER_WORLD] = std::make_unique<MapleButton>(
-        world_select_["BtGoworld"], panel_tl + Point<int16_t>(326, 10));
+        world_select_["BtGoworld"], panel_tl + go_off_);
     buttons_[Buttons::BT_ENTER_WORLD]->set_active(false);
 
     chatballoon_.change_text(
@@ -162,22 +176,20 @@ void UIWorldSelect::draw(float alpha) const {
 
     if (world_selected_) {
         channels_background_.draw(position_ + channel_src_pos_);
-        world_textures_[worldid_].draw(position_ + channel_src_pos_ - Point<int16_t>(224, 116) + Point<int16_t>(20, 12));
+        world_textures_[worldid_].draw(position_ + panel_tl_ + wname_off_);
     }
 
     UIElement::draw_buttons(alpha);
 
     if (world_selected_) {
         // maple-offline: v83 has no "selected" channel art; mark it with a light box.
-        const Point<int16_t> panel_tl = channel_src_pos_ - Point<int16_t>(224, 116);
-        int16_t col = static_cast<int16_t>(channelid_ % 4), row = static_cast<int16_t>(channelid_ / 4);
-        ColorBox(92, 30, Color::Name::WHITE, 0.35f)
-            .draw(DrawArgument(position_ + panel_tl + Point<int16_t>(static_cast<int16_t>(20 + col * 104), static_cast<int16_t>(66 + row * 34))));
+        ColorBox(ch_box_.x(), ch_box_.y(), Color::Name::WHITE, 0.35f)
+            .draw(DrawArgument(position_ + panel_tl_ + channel_cell(channelid_)));
     }
 
     version_.draw(position_ + Point<int16_t>(707, 1));
 
-    if (draw_chatballoon_) {
+    if (draw_chatballoon_ && !kms_) {
         chatballoon_.draw(position_ + Point<int16_t>(500, 80));
     }
 }
@@ -476,11 +488,21 @@ void UIWorldSelect::set_region(uint8_t /*regionid*/) {
         std::string world = std::to_string(world_map_[i]);
         world_textures_.emplace_back(world_select_["world"][world]);
         recommended_world_textures_.emplace_back(world_select_["world"][world]);
-        buttons_[Buttons::BT_WORLD0 + i] = std::make_unique<MapleButton>(
-            world_src_[world],
-            Point<int16_t>(static_cast<int16_t>(200 + 30 * i), 120));
+        Point<int16_t> wpos(static_cast<int16_t>(200 + 30 * i), 120);
+        if (static_cast<bool>(nl::nx::ui_img("Login.img")["Title"]["signboard"])) {
+            // KMS: grid on the world board, 6 per row
+            wpos = Point<int16_t>(static_cast<int16_t>(125 + 97 * (i % 6)),
+                                  static_cast<int16_t>(48 + 26 * (i / 6)));
+        }
+        buttons_[Buttons::BT_WORLD0 + i] = std::make_unique<MapleButton>(world_src_[world], wpos);
         buttons_[Buttons::BT_WORLD0 + i]->set_active(false);
     }
+}
+
+Point<int16_t> UIWorldSelect::channel_cell(size_t i) const {
+    int16_t col = static_cast<int16_t>(i % ch_cols_), row = static_cast<int16_t>(i / ch_cols_);
+    return ch_off_ + Point<int16_t>(static_cast<int16_t>(col * ch_step_.x()),
+                                    static_cast<int16_t>(row * ch_step_.y()));
 }
 
 uint16_t UIWorldSelect::get_worldbyid(uint16_t worldid) {

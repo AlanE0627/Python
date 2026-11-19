@@ -58,6 +58,7 @@ private:
     Text version_;
     Textfield account_;
     Textfield password_;
+    bool kms_ = false;
     Texture accountbg_;
     Texture passwordbg_;
     BoolPair<Texture> checkbox_;

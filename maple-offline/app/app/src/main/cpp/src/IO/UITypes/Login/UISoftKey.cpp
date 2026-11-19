@@ -32,7 +32,7 @@ UISoftKey::UISoftKey(OkCallback ok,
     tooltip_position_(tooltip_pos) {
     Point<int16_t> screen_adj = Point<int16_t>(-1, 0);
 
-    nl::node SoftKey = nl::nx::ui["Login.img"]["Common"]["SoftKey"];
+    nl::node SoftKey = nl::nx::ui_img("Login.img")["Common"]["SoftKey"];
     nl::node backgrnd = SoftKey["backgrnd"];
 
     nl::node Tab = SoftKey["Tab"];

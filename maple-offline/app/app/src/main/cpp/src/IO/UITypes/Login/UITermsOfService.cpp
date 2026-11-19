@@ -32,7 +32,7 @@ UITermsOfService::UITermsOfService(std::function<void()> oh) :
     okhandler_(std::move(oh)),
     offset_(0),
     unit_rows_(1) {
-    nl::node Login = nl::nx::ui["Login.img"];
+    nl::node Login = nl::nx::ui_img("Login.img");
     nl::node TOS = Login["TOS"];
 
     sprites_.emplace_back(TOS, Point<int16_t>(399, 250));

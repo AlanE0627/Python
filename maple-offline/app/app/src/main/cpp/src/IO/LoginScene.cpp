@@ -16,7 +16,7 @@ constexpr double STOP_Y[] = {0.0, -600.0, -1200.0, -1800.0, -2400.0, -3000.0, -3
 
 void LoginScene::init() {
     if (loaded_) return;
-    nl::node src = nl::nx::ui["MapLogin.img"];
+    nl::node src = nl::nx::ui_img("MapLogin.img");
     if (!src) return;
     backgrounds_ = MapBackgrounds(src["back"]);
     tiles_objs_ = MapTilesObjs(src);

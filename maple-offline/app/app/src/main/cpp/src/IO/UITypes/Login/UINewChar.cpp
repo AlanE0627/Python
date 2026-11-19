@@ -32,7 +32,7 @@ UINewChar::UINewChar(Race race) :
     focus_pending_(false),
     named_(false),
     select_row_(0) {
-    nl::node Login = nl::nx::ui["Login.img"];
+    nl::node Login = nl::nx::ui_img("Login.img");
     nl::node Common = Login["Common"];
     nl::node mkinfo = nl::nx::etc["MakeCharInfo.img"];
 

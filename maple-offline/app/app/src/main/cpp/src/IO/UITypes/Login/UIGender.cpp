@@ -36,7 +36,7 @@ UIGender::UIGender(std::function<void()> oh) :
     okhandler_(std::move(oh)) {
     cur_timestep_ = 0;
 
-    nl::node Login = nl::nx::ui["Login.img"];
+    nl::node Login = nl::nx::ui_img("Login.img");
     nl::node Gender = Login["Gender"];
     nl::node scroll = Gender["scroll"][0];
 

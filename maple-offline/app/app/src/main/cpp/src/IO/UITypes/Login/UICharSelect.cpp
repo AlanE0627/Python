@@ -104,7 +104,7 @@ UICharSelect::UICharSelect(std::vector<CharEntry> c,
     selected_page = selected_character_ / PAGESIZE_;
     page_count_ = std::max<int>(1, std::ceil((double)slots_ / (double)PAGESIZE_));
 
-    nl::node Login = nl::nx::ui["Login.img"];
+    nl::node Login = nl::nx::ui_img("Login.img");
     nl::node Common = Login["Common"];
     nl::node CharSelect = Login["CharSelect"];
 

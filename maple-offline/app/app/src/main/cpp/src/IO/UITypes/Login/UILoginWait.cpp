@@ -26,7 +26,7 @@ UILoginWait::UILoginWait() : UILoginWait([]() {}) {}
 
 UILoginWait::UILoginWait(std::function<void()> okhandler) :
     okhandler_(std::move(okhandler)) {
-    nl::node Loading = nl::nx::ui["Login.img"]["Notice"]["Loading"];
+    nl::node Loading = nl::nx::ui_img("Login.img")["Notice"]["Loading"];
     nl::node backgrnd = Loading["backgrnd"];
 
     sprites_.emplace_back(backgrnd);
