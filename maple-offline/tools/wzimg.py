@@ -198,3 +198,88 @@ def canvas_pixels(data, node, key):
             o[4*i] = b * 255 // 31; o[4*i+1] = g * 255 // 63; o[4*i+2] = r * 255 // 31; o[4*i+3] = 255
         return w, h, bytes(o)
     raise ValueError('canvas format %d not supported' % fmt)
+
+
+def _rotl(v, n):
+    n &= 31
+    return ((v << n) | (v >> (32 - n))) & 0xFFFFFFFF
+
+
+class WzFile:
+    """Packed .wz archive (PKG1). list() -> {path: (offset, size)}; img(path) -> Node."""
+    def __init__(self, path, key, version=None):
+        import mmap
+        self.f = open(path, 'rb')
+        self.d = mmap.mmap(self.f.fileno(), 0, access=mmap.ACCESS_READ)
+        assert self.d[:4] == b'PKG1', 'not a wz file'
+        self.fstart = struct.unpack_from('<I', self.d, 12)[0]
+        self.key = key
+        enc = struct.unpack_from('<h', self.d, self.fstart)[0]
+        cands = [version] if version else range(1, 400)
+        self.entries = None
+        for v in cands:
+            h = 0
+            for c in str(v):
+                h = (h * 32 + ord(c) + 1) & 0xFFFFFFFF
+            a = 0xFF ^ ((h >> 24) & 0xFF) ^ ((h >> 16) & 0xFF) ^ ((h >> 8) & 0xFF) ^ (h & 0xFF)
+            if a != (enc & 0xFF) and enc != a:
+                continue
+            self.hash = h
+            try:
+                ent = {}
+                self._dir(self.fstart + 2, '', ent, 0)
+                if ent and all(0 < o < len(self.d) for o, _ in ent.values()):
+                    self.version = v
+                    self.entries = ent
+                    break
+            except Exception:
+                continue
+        assert self.entries is not None, 'version not found'
+
+    def _off(self, r):
+        cur = r.p
+        o = ((cur - self.fstart) ^ 0xFFFFFFFF) & 0xFFFFFFFF
+        o = (o * self.hash) & 0xFFFFFFFF
+        o = (o - 0x581C3F6D) & 0xFFFFFFFF
+        o = _rotl(o, o & 0x1F)
+        enc = r.u32()
+        return ((o ^ enc) + self.fstart * 2) & 0xFFFFFFFF
+
+    def _dir(self, pos, prefix, out, depth):
+        if depth > 12:
+            raise ValueError('too deep')
+        r = Reader(self.d, self.key)
+        r.p = pos
+        n = r.cint()
+        if n < 0 or n > 100000:
+            raise ValueError('bad count')
+        subs = []
+        for _ in range(n):
+            t = r.u8()
+            if t == 1:
+                r.p += 10
+                continue
+            if t == 2:
+                so = r.s32()
+                save = r.p
+                r.p = self.fstart + so
+                t = r.u8()
+                name = r.raw_string()
+                r.p = save
+            elif t in (3, 4):
+                name = r.raw_string()
+            else:
+                raise ValueError('bad dir entry %d' % t)
+            size = r.cint()
+            r.cint()  # checksum
+            off = self._off(r)
+            if t == 3:
+                subs.append((off, prefix + name + '/'))
+            else:
+                out[prefix + name] = (off, size)
+        for off, p in subs:
+            self._dir(off, p, out, depth + 1)
+
+    def img(self, path):
+        off, size = self.entries[path]
+        return parse_img(self.d, self.key, base=off)
