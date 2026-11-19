@@ -940,21 +940,14 @@ namespace ms {
                 const std::string message =
                         "기본 설정으로 되돌리시겠습니까?";
 
+                // maple-offline: v83 has no "Type A / Type B" key layout
+                // picker (UIWindow2.img/KeyConfig/KeyType is a later-version
+                // asset), so reset straight to the basic layout.
                 auto onok = [&](bool ok) {
                     if (ok) {
-                        auto keysel_onok = [&](bool alternate) {
-                            clear();
-
-                            if (alternate) {
-                                staged_mappings_ = alternate_keys_;
-                            } else {
-                                staged_mappings_ = basic_keys_;
-                            }
-
-                            bind_staged_action_keys();
-                        };
-
-                        UI::get().emplace<UIKeySelect>(keysel_onok, false);
+                        clear();
+                        staged_mappings_ = basic_keys_;
+                        bind_staged_action_keys();
                     }
                 };
 
