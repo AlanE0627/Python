@@ -164,6 +164,8 @@ def main():
         KEY = wzimg.keystream(wzimg.IVS['KMS_OLD'], 0x100000)
         WZ = wzimg.WzFile(uidir, KEY)
     subs = [a for a in sys.argv[4:] if ':' in a]     # Login.img:RaceSelect (one section only)
+    dels = [a[1:] for a in sys.argv[4:] if a.startswith('-')]
+    sys.argv[4:] = [a for a in sys.argv[4:] if not a.startswith('-')]
     # Img.img!A,B : take the KMS img but keep the base (v83) sections A, B
     drops = {}
     args = []
@@ -230,6 +232,17 @@ def main():
             new[1] += [c for c in old[1] if c[0] not in have]
         root[1] = [c for c in root[1] if c[0] != img] + [new]
         print('replaced', img)
+    # -Img.img/a/b : remove a node from the result (e.g. an unwanted login map object)
+    for d in dels:
+        parts = d.split('/')
+        cur = root
+        for seg in parts[:-1]:
+            cur = next((c for c in cur[1] if c[0] == seg), None)
+            if cur is None:
+                break
+        if cur is not None:
+            cur[1] = [c for c in cur[1] if c[0] != parts[-1]]
+            print('removed', d)
     write(out, root)
 
 if __name__ == '__main__':
