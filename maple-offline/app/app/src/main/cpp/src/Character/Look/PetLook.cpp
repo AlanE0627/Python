@@ -51,7 +51,7 @@ PetLook::PetLook(int32_t iid,
     animations_[Stance::FLY] = src["fly"];
     animations_[Stance::HANG] = src["hang"];
 
-    nl::node effsrc = nl::nx::effect["PetEff.img"][strid];
+    nl::node effsrc = nl::nx::effect_img("PetEff.img")[strid];
 
     animations_[Stance::WARP] = effsrc["warp"];
 }
@@ -176,7 +176,7 @@ PetLook::Stance PetLook::get_stance() const {
 }  // namespace ms
 namespace ms {
 void PetLook::show_levelup() {
-    levelup_ = Animation(nl::nx::effect["PetEff.img"]["Basic"]["LevelUp"]);
+    levelup_ = Animation(nl::nx::effect_img("PetEff.img")["Basic"]["LevelUp"]);
     levelup_active_ = true;
 }
 

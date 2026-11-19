@@ -158,27 +158,27 @@ int16_t DamageNumber::row_height(bool critical) {
 void DamageNumber::init() {
     charsets_[DamageNumber::Type::NORMAL].set(
         false,
-        nl::nx::effect["BasicEff.img"]["NoRed1"],
+        nl::nx::effect_img("BasicEff.img")["NoRed1"],
         Charset::Alignment::LEFT);
     charsets_[DamageNumber::Type::NORMAL].set(
         true,
-        nl::nx::effect["BasicEff.img"]["NoRed0"],
+        nl::nx::effect_img("BasicEff.img")["NoRed0"],
         Charset::Alignment::LEFT);
     charsets_[DamageNumber::Type::CRITICAL].set(
         false,
-        nl::nx::effect["BasicEff.img"]["NoCri1"],
+        nl::nx::effect_img("BasicEff.img")["NoCri1"],
         Charset::Alignment::LEFT);
     charsets_[DamageNumber::Type::CRITICAL].set(
         true,
-        nl::nx::effect["BasicEff.img"]["NoCri0"],
+        nl::nx::effect_img("BasicEff.img")["NoCri0"],
         Charset::Alignment::LEFT);
     charsets_[DamageNumber::Type::TOPLAYER].set(
         false,
-        nl::nx::effect["BasicEff.img"]["NoViolet1"],
+        nl::nx::effect_img("BasicEff.img")["NoViolet1"],
         Charset::Alignment::LEFT);
     charsets_[DamageNumber::Type::TOPLAYER].set(
         true,
-        nl::nx::effect["BasicEff.img"]["NoViolet0"],
+        nl::nx::effect_img("BasicEff.img")["NoViolet0"],
         Charset::Alignment::LEFT);
 }
 

@@ -71,7 +71,7 @@ UIBuffList::UIBuffList() {
 
     update_screen(width, height);
 
-    nl::node combo = nl::nx::effect["BasicEff.img"]["Combo"]["0"];
+    nl::node combo = nl::nx::effect_img("BasicEff.img")["Combo"]["0"];
 
     for (size_t i = 0; i < combo_digits_.size(); i++) {
         combo_digits_[i] = combo[std::to_string(i)]["0"];

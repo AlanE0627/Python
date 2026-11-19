@@ -385,7 +385,7 @@ PhysicsObject &Char::get_phobj() {
 void Char::init() {
     CharLook::init();
 
-    nl::node src = nl::nx::effect["BasicEff.img"];
+    nl::node src = nl::nx::effect_img("BasicEff.img");
 
     for (auto iter : CharEffect::PATHS) {
         char_effects_.emplace(iter.first, src.resolve(iter.second));

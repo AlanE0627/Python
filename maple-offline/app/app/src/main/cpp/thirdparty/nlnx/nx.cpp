@@ -47,7 +47,7 @@ node add_file(std::string name)
     files.emplace_back(new file(filePath + "/" + name));
     return *files.back();
 }
-node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui, uiko;
+node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui, uiko, effectko;
 void load_all(GLFMDisplay *pApp)
 {
     if (exists("Base.nx", pApp)) {
@@ -76,6 +76,9 @@ void load_all(GLFMDisplay *pApp)
         if (exists("UI_ko.nx", pApp)) {
             uiko = add_file("UI_ko.nx");
         }
+        if (exists("Effect_ko.nx", pApp)) {
+            effectko = add_file("Effect_ko.nx");
+        }
     } else if (exists("Data.nx", pApp)) {
         base = add_file("Data.nx");
         character = base["Character"];
@@ -97,6 +100,11 @@ void load_all(GLFMDisplay *pApp)
         throw std::runtime_error("Failed to locate nx files.");
     }
 }
+node effect_img(const std::string &name) {
+    node k = effectko[name];
+    return k ? k : effect[name];
+}
+
 node ui_img(const std::string &name) {
     node k = uiko[name];
     return k ? k : ui[name];

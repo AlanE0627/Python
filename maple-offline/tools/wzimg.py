@@ -147,8 +147,8 @@ def _parse_extended(r, t, node, base):
             ct = r.string_block(0 if False else base)
             ch = Node('dir'); _parse_extended(r, ct, ch, base); node[str(i)] = ch
     elif t == 'Sound_DX8':
+        # sound data is not needed here; the enclosing entry is skipped by size
         node.type = 'sound'; node.value = None
-        raise ValueError('sound not supported')
     elif t == 'UOL':
         r.u8(); node.type = 'uol'; node.value = r.string_block(base)
     else:

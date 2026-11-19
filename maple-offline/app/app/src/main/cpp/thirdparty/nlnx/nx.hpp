@@ -30,6 +30,9 @@ extern node base, character, effect, etc, item, map, mapPretty, mapLatest, map00
 extern node uiko;
 // maple-offline: top-level UI image, Korean overlay first
 node ui_img(const std::string &name);
+// maple-offline: Korean text effects overlay (Effect_ko.nx)
+extern node effectko;
+node effect_img(const std::string &name);
 //! Loads the pre-defined nodes from a standard setup of NX files for
 //! MapleStory.
 //! Only call this function once.
