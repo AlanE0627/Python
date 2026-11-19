@@ -49,13 +49,7 @@
 
 namespace ms {
     namespace {
-// maple-offline: the v83 cash shop screen is being rebuilt; until then the
-// button only says so instead of opening the unfinished one
-auto fn_enter_cashshop = []() {
-    if (auto chatbar = UI::get().get_element<UIChatBar>()) {
-        chatbar->get().send_chatline("캐시샵은 다음 업데이트에서 열립니다.", UIChatBar::LineType::YELLOW);
-    }
-};
+auto fn_enter_cashshop = []() { EnterCashShopPacket().dispatch(); };
     }  // namespace
 
     UIStateGame::UIStateGame(uint8_t channel_count) :

@@ -468,7 +468,9 @@ enum Opcode : uint16_t {
     PLAYER_INTERACTION = 314,
 
     /// Cash Shop
-    SET_CASH_SHOP = 127
+    SET_CASH_SHOP = 127,
+    QUERY_CASH_RESULT = 324,
+    CASHSHOP_OPERATION = 325
 };
 
 PacketSwitch::PacketSwitch() {
@@ -584,6 +586,8 @@ PacketSwitch::PacketSwitch() {
 
     // Cash Shop
     emplace<SET_CASH_SHOP, SetCashShopHandler>();
+    emplace<QUERY_CASH_RESULT, QueryCashResultHandler>();
+    emplace<CASHSHOP_OPERATION, CashShopOperationHandler>();
 
     // TODO: New handlers, they need coded and moved to a proper file.
     emplace<CHECK_SPW_RESULT, CheckSpwResultHandler>();

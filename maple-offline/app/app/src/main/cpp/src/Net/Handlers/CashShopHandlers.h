@@ -26,4 +26,16 @@ public:
 private:
     void transition() const;
 };
+
+// Cash shop results: locker list, bought item, item moved out, failure
+class CashShopOperationHandler : public PacketHandler {
+public:
+    void handle(InPacket &recv) const override;
+};
+
+// NX credit / maple points / prepaid balance
+class QueryCashResultHandler : public PacketHandler {
+public:
+    void handle(InPacket &recv) const override;
+};
 }  // namespace ms

@@ -16,15 +16,16 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
-#include "../../Data/ItemData.h"
 #include "../../Graphics/Text.h"
-#include "../Components/Charset.h"
-#include "../Components/Gauge.h"
-#include "../Components/Slider.h"
+#include "../../Graphics/Texture.h"
 #include "../UIElement.h"
 
 namespace ms {
+// maple-offline: v83 cash shop (CashShop.img, 800x600 screen centred in the
+// view). Commodities come from Etc Commodity.img; every price is 0 because
+// the bundled server sells everything for free.
 class UICashShop : public UIElement {
 public:
     static constexpr Type TYPE = UIElement::Type::CASHSHOP;
@@ -40,119 +41,83 @@ public:
 
     Cursor::State send_cursor(bool clicked, Point<int16_t> cursorpos) override;
 
+    void send_scroll(double yoffset) override;
+
+    void send_key(int32_t keycode, bool pressed, bool escape) override;
+
+    bool is_in_range(Point<int16_t> cursorpos) const override;
+
     UIElement::Type get_type() const override;
 
-private:
-    void update_items();
-
-    static constexpr uint8_t MAX_ITEMS = 7u * 2u + 1u;
-
-    class Item {
-    public:
-        enum Label : uint8_t {
-            ACTION,
-            BOMB_SALE,
-            BONUS,
-            EVENT = 4,
-            HOT,
-            LIMITED,
-            LIMITED_BRONZE,
-            LIMITED_GOLD,
-            LIMITED_SILVER,
-            LUNA_CRYSTAL,
-            MASTER = 12,
-            MUST,
-            NEW,
-            SALE = 17,
-            SPEICAL,
-            SPECIAL_PRICE,
-            TIME,
-            TODAY,
-            WEEKLY,
-            WONDER_BERRY,
-            WORLD_SALE,
-            NONE
-        };
-
-        Item(int32_t itemid, Label label, int32_t discount, uint16_t count) :
-            label(label),
-            discount_price(discount),
-            count(count),
-            data_(ItemData::get(itemid)) {}
-
-        Label label;
-        int32_t discount_price;
-        uint16_t count;
-
-        void draw(const DrawArgument &args) const {
-            data_.get_icon(false).draw(args);
-        }
-
-        const std::string get_name() const { return data_.get_name(); }
-
-        const int32_t get_price() const { return data_.get_price(); }
-
-    private:
-        const ItemData &data_;
+    // cash locker contents (server 0x4B list, 0x57 bought item)
+    struct LockerItem {
+        int64_t cashid;
+        int32_t itemid;
+        int32_t sn;
+        int16_t count;
     };
+
+    void set_locker(std::vector<LockerItem> items);
+    void add_locker(const LockerItem &item);
+    // the item asked for with take() reached the item inventory
+    void taken();
+    void set_cash(int32_t credit, int32_t points, int32_t prepaid);
+    void show_message(const std::string &text);
+
+private:
+    struct Commodity {
+        int32_t sn;
+        int32_t itemid;
+        int16_t count;
+        int32_t period;
+        int32_t price;
+    };
+
+    void load_commodities();
+    void select_tab(uint8_t tab);
+    void set_page(int16_t page);
+    int16_t page_count() const;
+    void buy(size_t cell);
+    void take(size_t slot);
+    Point<int16_t> origin() const;
+
+    static constexpr uint8_t NUM_TABS = 9;
+    static constexpr uint8_t PER_PAGE = 10;
+    static constexpr uint8_t LOCKER_COLS = 6;
+    static constexpr uint8_t LOCKER_ROWS = 2;
 
     enum Buttons : uint16_t {
-        BT_PREVIEW1,
-        BT_PREVIEW2,
-        BT_PREVIEW3,
         BT_EXIT,
-        BT_CHARGE_NX,
-        BT_CHARGE_REFRESH,
-        BT_WISH,
-        BT_MILEAGE,
-        BT_HELP,
-        BT_COUPON,
-        BT_NEXT,
-        BT_PREV,
-        BT_DETAIL_PACKAGE,
-        BT_NON_GRADE,
-        BT_BUY_AVATAR,
-        BT_DEFAULT_AVATAR,
-        BT_INVENTORY,
-        BT_SAVE_AVATAR,
-        BT_TAKE_OFF_AVATAR,
-        BT_BUY
+        BT_BUY0,
+        BT_BUY_LAST = BT_BUY0 + PER_PAGE - 1
     };
 
-    Point<int16_t> best_new_dim_;
+    Texture backgrnd_;
+    std::array<Texture, NUM_TABS> tabs_;
+    Texture cell_;
 
-    std::array<Sprite, 3> preview_sprites_;
-    uint8_t preview_index_;
+    // commodities per tab (0 = MAIN ... 8 = WISH LIST)
+    std::array<std::vector<Commodity>, NUM_TABS> lists_;
+    uint8_t tab_;
+    int16_t page_;
 
-    std::array<Sprite, 9> menu_tabs_;
-    uint8_t menu_index_;
+    std::array<Text, PER_PAGE> names_;
+    std::array<Text, PER_PAGE> prices_;
+    std::array<Text, PER_PAGE> details_;
+    Text page_label_;
+    Text prev_label_;
+    Text next_label_;
+    Text empty_label_;
+    Text char_label_;
+    std::array<Text, 3> cash_labels_;
+    Text message_label_;
+    int16_t message_time_;
 
-    Text job_label_;
-    Text name_label_;
-
-    std::vector<Sprite> promotion_sprites_;
-    Point<int16_t> promotion_pos_;
-    int8_t promotion_index_;
-
-    std::array<Sprite, 7> mvp_sprites_;
-    Point<int16_t> mvp_pos_;
-    uint8_t mvp_grade_;
-    Gauge mvp_gauge_;
-    float_t mvp_exp_;
-
-    Charset charge_charset_;
-
-    Sprite item_base_;
-    Sprite item_line_;
-    Sprite item_none_;
-    std::vector<Sprite> item_labels_;
-    std::vector<Item> items_;
-    std::array<Text, MAX_ITEMS> item_name_;
-    std::array<Text, MAX_ITEMS> item_price_;
-    std::array<Text, MAX_ITEMS> item_discount_;
-    std::array<Text, MAX_ITEMS> item_percent_;
-
-    Slider list_slider_;
-    int16_t list_offset_;
+    std::vector<LockerItem> locker_;
+    int16_t locker_page_;
+    Text locker_page_label_;
+    int64_t pending_take_;
+    int64_t last_tap_time_;
+    int16_t last_tap_slot_;
 };
 }  // namespace ms

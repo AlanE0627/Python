@@ -234,4 +234,28 @@ public:
     // Finished updating player stats
     PlayerUpdatePacket() : OutPacket(OutPacket::Opcode::PLAYER_UPDATE) {}
 };
+
+// Opcode: CASHSHOP_OPERATION(229) - buy one commodity (action 3) with NX credit
+class CashShopBuyPacket : public OutPacket {
+public:
+    CashShopBuyPacket(int32_t sn) : OutPacket(OutPacket::Opcode::CASHSHOP_OPERATION) {
+        write_byte(3);
+        write_byte(0);
+        write_int(1);  // NX credit
+        write_int(sn);
+    }
+};
+
+// Opcode: CASHSHOP_OPERATION(229) - move an item from the cash locker to the
+// item inventory (action 0x0D); the server looks it up by its cash id
+class CashShopTakePacket : public OutPacket {
+public:
+    CashShopTakePacket(int64_t cashid, int8_t invtype) :
+        OutPacket(OutPacket::Opcode::CASHSHOP_OPERATION) {
+        write_byte(0x0D);
+        write_long(cashid);
+        write_byte(invtype);
+        write_short(-1);
+    }
+};
 }  // namespace ms

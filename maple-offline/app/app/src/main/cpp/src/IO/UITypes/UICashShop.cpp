@@ -15,477 +15,495 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UICashShop.h"
 
+#include <algorithm>
+
+#include "../../Character/Inventory/InventoryType.h"
+#include "../../Data/ItemData.h"
 #include "../../Gameplay/Stage.h"
 #include "../../Net/Packets/GameplayPackets.h"
-#include "../../Net/Packets/LoginPackets.h"
 #include "../Components/MapleButton.h"
 #include "../UI.h"
 #include "../Window.h"
-#include "../../../Timer.h"
-
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include "../../Timer.h"
 
 #include <nlnx/nx.hpp>
 
 namespace ms {
 namespace {
-auto fn_change_map = []<typename... T>(T && ...args) {
-    ChangeMapPacket(std::forward<T>(args)...).dispatch();
-};
+// v83 CashShop.img layout, measured on Base/backgrnd (800x600)
+constexpr Point<int16_t> TAB_POS(272, 14);
+const int16_t TAB_X[] = { 3, 68, 120, 172, 224, 276, 328, 380, 450 };
+const int16_t TAB_W[] = { 63, 50, 50, 50, 50, 50, 50, 50, 55 };
+constexpr int16_t TAB_TOP = 10;
+constexpr int16_t TAB_BOTTOM = 55;
+
+constexpr int16_t CELL_X0 = 277;
+constexpr int16_t CELL_DX = 206;
+constexpr int16_t CELL_Y0 = 98;
+constexpr int16_t CELL_DY = 81;
+
+constexpr int16_t LOCKER_X0 = 21;
+constexpr int16_t LOCKER_Y0 = 349;
+constexpr int16_t LOCKER_D = 35;
+constexpr int16_t LOCKER_CELL = 31;
+
+constexpr Point<int16_t> PAGE_POS(480, 503);
+constexpr Point<int16_t> LOCKER_PAGE_POS(205, 322);
+
+Point<int16_t> cell_pos(size_t i) {
+    return Point<int16_t>(CELL_X0 + CELL_DX * static_cast<int16_t>(i % 2),
+                          CELL_Y0 + CELL_DY * static_cast<int16_t>(i / 2));
+}
+
+// commodity SN group -> tab. KMS 1.2.95 tab strip: 메인, 장비, 소비, 스페셜,
+// 기타, 펫, 패키지, 도움말, 찜목록 (the v83 strip has EVENT and SET-UP
+// instead; both put equipment in the 2xx groups, use in 3xx and so on)
+int8_t tab_of(int32_t sn) {
+    switch (sn / 10000000) {
+        case 1: return 0;
+        case 2: return 1;
+        case 3: return 2;
+        case 4: return 3;
+        case 5: return 4;
+        case 6: return 5;
+        case 7:
+        case 8: return 6;
+        default: return -1;
+    }
+}
+
+std::string with_commas(int32_t value) {
+    std::string s = std::to_string(value);
+
+    for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3) {
+        s.insert(static_cast<size_t>(i), ",");
+    }
+
+    return s;
+}
+
+void exit_cashshop() {
+    float fadestep = 0.025f;
+
+    Window::get().fadeout(fadestep, []() {
+        GraphicsGL::get().clear();
+        ChangeMapPacket().dispatch();
+    });
+
+    GraphicsGL::get().lock();
+    Stage::get().clear();
+    Timer::get().start();
+}
 }  // namespace
 
 UICashShop::UICashShop() :
-    preview_index_(0),
-    menu_index_(1),
-    promotion_index_(0),
-    mvp_grade_(1),
-    mvp_exp_(0.07f),
-    list_offset_(0) {
-    nl::node CashShop = nl::nx::ui_img("CashShop.img");
-    nl::node Base = CashShop["Base"];
-    nl::node backgrnd = Base["backgrnd"];
-    nl::node BestNew = Base["BestNew"];
-    nl::node Preview = Base["Preview"];
-    nl::node CSTab = CashShop["CSTab"];
-    nl::node CSGLChargeNX = CSTab["CSGLChargeNX"];
-    nl::node CSStatus = CashShop["CSStatus"];
-    nl::node CSPromotionBanner = CashShop["CSPromotionBanner"];
-    nl::node CSMVPBanner = CashShop["CSMVPBanner"];
-    nl::node CSItemSearch = CashShop["CSItemSearch"];
-    nl::node CSChar = CashShop["CSChar"];
-    nl::node CSList = CashShop["CSList"];
-    nl::node CSEffect = CashShop["CSEffect"];
+    tab_(0),
+    page_(0),
+    message_time_(0),
+    locker_page_(0),
+    pending_take_(0),
+    last_tap_time_(-1000),
+    last_tap_slot_(-1) {
+    nl::node src = nl::nx::ui_img("CashShop.img");
 
-    sprites_.emplace_back(backgrnd);
-    sprites_.emplace_back(BestNew, Point<int16_t>(139, 346));
+    backgrnd_ = src["Base"]["backgrnd"];
+    cell_ = src["CSList"]["Base"];
 
-    best_new_dim_ = Texture(BestNew).get_dimensions();
-
-    for (size_t i = 0; i < preview_sprites_.size(); i++) {
-        preview_sprites_[i] = Preview[i];
+    for (size_t i = 0; i < NUM_TABS; i++) {
+        tabs_[i] = src["CSTab"]["Tab"][std::to_string(i + 1)];
     }
 
-    for (size_t i = 0; i < 3; i++) {
-        buttons_[Buttons::BT_PREVIEW1 + i] = std::make_unique<TwoSpriteButton>(
-            Base["Tab"]["Disable"][i],
-            Base["Tab"]["Enable"][i],
-            Point<int16_t>(957 + (i * 17), 46));
-    }
+    int16_t vw = Constants::Constants::get().get_viewwidth();
+    int16_t vh = Constants::Constants::get().get_viewheight();
 
-    buttons_[Buttons::BT_PREVIEW1]->set_state(Button::State::PRESSED);
+    position_ = Point<int16_t>((vw - 800) / 2, (vh - 600) / 2);
+    dimension_ = Point<int16_t>(800, 600);
 
     buttons_[Buttons::BT_EXIT] =
-        std::make_unique<MapleButton>(CSTab["BtExit"], Point<int16_t>(5, 728));
-    buttons_[Buttons::BT_CHARGE_NX] =
-        std::make_unique<MapleButton>(CSGLChargeNX["BtChargeNX"],
-                                      Point<int16_t>(5, 554));
-    buttons_[Buttons::BT_CHARGE_REFRESH] =
-        std::make_unique<MapleButton>(CSGLChargeNX["BtChargeRefresh"],
-                                      Point<int16_t>(92, 554));
+        std::make_unique<MapleButton>(src["CSStatus"]["BtExit"], Point<int16_t>(632, 540));
 
-    for (size_t i = 0; i < menu_tabs_.size(); i++) {
-        menu_tabs_[i] = CSTab["Tab"][i];
+    for (size_t i = 0; i < PER_PAGE; i++) {
+        buttons_[Buttons::BT_BUY0 + i] = std::make_unique<MapleButton>(
+            src["CSList"]["BtBuy"], cell_pos(i) + Point<int16_t>(78, 53));
+
+        names_[i] = Text(Text::Font::A11B, Text::Alignment::CENTER, Color::Name::BLACK, "", 118);
+        prices_[i] = Text(Text::Font::A12B, Text::Alignment::LEFT, Color::Name::MEDIUMBLUE);
+        details_[i] = Text(Text::Font::A11M, Text::Alignment::LEFT, Color::Name::EMPEROR);
     }
 
-    buttons_[Buttons::BT_CHARGE_REFRESH] =
-        std::make_unique<MapleButton>(CSGLChargeNX["BtChargeRefresh"],
-                                      Point<int16_t>(92, 554));
-    buttons_[Buttons::BT_WISH] =
-        std::make_unique<MapleButton>(CSStatus["BtWish"],
-                                      Point<int16_t>(226, 6));
-    buttons_[Buttons::BT_MILEAGE] =
-        std::make_unique<MapleButton>(CSStatus["BtMileage"],
-                                      Point<int16_t>(869, 4));
-    buttons_[Buttons::BT_HELP] =
-        std::make_unique<MapleButton>(CSStatus["BtHelp"],
-                                      Point<int16_t>(997, 4));
-    buttons_[Buttons::BT_COUPON] =
-        std::make_unique<MapleButton>(CSStatus["BtCoupon"],
-                                      Point<int16_t>(950, 4));
+    page_label_ = Text(Text::Font::A12B, Text::Alignment::CENTER, Color::Name::WHITE);
+    prev_label_ = Text(Text::Font::A15B, Text::Alignment::CENTER, Color::Name::WHITE, "◀");
+    next_label_ = Text(Text::Font::A15B, Text::Alignment::CENTER, Color::Name::WHITE, "▶");
+    empty_label_ = Text(Text::Font::A13B, Text::Alignment::CENTER, Color::Name::WHITE,
+                        "판매 중인 상품이 없습니다.");
+    locker_page_label_ = Text(Text::Font::A11B, Text::Alignment::CENTER, Color::Name::EMPEROR);
+    message_label_ = Text(Text::Font::A13B, Text::Alignment::CENTER, Color::Name::YELLOW,
+                          Text::Background::NAMETAG);
 
-    Charset tab;
+    char_label_ = Text(Text::Font::A11M, Text::Alignment::LEFT, Color::Name::BLACK,
+                       Stage::get().get_player().get_name());
 
-    job_label_ = Text(Text::Font::A11B,
-                      Text::Alignment::LEFT,
-                      Color::Name::SUPERNOVA,
-                      "Illium");
-    name_label_ = Text(Text::Font::A11B,
-                       Text::Alignment::LEFT,
-                       Color::Name::WHITE,
-                       "ShomeiZekkou");
-
-    promotion_pos_ = Point<int16_t>(138, 40);
-    sprites_.emplace_back(CSPromotionBanner["shadow"], promotion_pos_);
-
-    promotion_sprites_.emplace_back(CSPromotionBanner["basic"]);
-
-    buttons_[Buttons::BT_NEXT] =
-        std::make_unique<MapleButton>(CSPromotionBanner["BtNext"],
-                                      promotion_pos_);
-    buttons_[Buttons::BT_PREV] =
-        std::make_unique<MapleButton>(CSPromotionBanner["BtPrev"],
-                                      promotion_pos_);
-
-    for (size_t i = 0; i < mvp_sprites_.size(); i++) {
-        mvp_sprites_[i] = CSMVPBanner["grade"][i];
+    for (auto &label : cash_labels_) {
+        label = Text(Text::Font::A11M, Text::Alignment::RIGHT, Color::Name::BLACK, "0");
     }
 
-    mvp_pos_ = Point<int16_t>(63, 681);
-    buttons_[Buttons::BT_DETAIL_PACKAGE] =
-        std::make_unique<MapleButton>(CSMVPBanner["BtDetailPackage"], mvp_pos_);
-    buttons_[Buttons::BT_NON_GRADE] =
-        std::make_unique<MapleButton>(CSMVPBanner["BtNonGrade"], mvp_pos_);
+    load_commodities();
+    select_tab(0);
+}
 
-    buttons_[Buttons::BT_DETAIL_PACKAGE]->set_active(mvp_grade_);
-    buttons_[Buttons::BT_NON_GRADE]->set_active(!mvp_grade_);
+void UICashShop::load_commodities() {
+    bool female = Stage::get().get_player().get_stats().get_female();
 
-    mvp_gauge_ = Gauge(Gauge::Type::CASHSHOP,
-                       CSMVPBanner["gage"][0],
-                       CSMVPBanner["gage"][2],
-                       CSMVPBanner["gage"][1],
-                       84,
-                       0.0f);
+    for (const nl::node &sub : nl::nx::etc["Commodity.img"]) {
+        if (sub["OnSale"].get_integer() != 1) {
+            continue;
+        }
 
-    Point<int16_t> search_pos = Point<int16_t>(0, 36);
-    sprites_.emplace_back(CSItemSearch["backgrnd"], search_pos);
-    sprites_.emplace_back(CSItemSearch["search"],
-                          search_pos + Point<int16_t>(35, 8));
+        int32_t gender = sub["Gender"] ? sub["Gender"].get_integer() : 2;
 
-    buttons_[Buttons::BT_BUY_AVATAR] =
-        std::make_unique<MapleButton>(CSChar["BtBuyAvatar"],
-                                      Point<int16_t>(642, 305));
-    buttons_[Buttons::BT_DEFAULT_AVATAR] =
-        std::make_unique<MapleButton>(CSChar["BtDefaultAvatar"],
-                                      Point<int16_t>(716, 305));
-    buttons_[Buttons::BT_INVENTORY] =
-        std::make_unique<MapleButton>(CSChar["BtInventory"],
-                                      Point<int16_t>(938, 305));
-    buttons_[Buttons::BT_SAVE_AVATAR] =
-        std::make_unique<MapleButton>(CSChar["BtSaveAvatar"],
-                                      Point<int16_t>(864, 305));
-    buttons_[Buttons::BT_TAKE_OFF_AVATAR] =
-        std::make_unique<MapleButton>(CSChar["BtTakeoffAvatar"],
-                                      Point<int16_t>(790, 305));
+        if (gender != 2 && gender != (female ? 1 : 0)) {
+            continue;
+        }
 
-    charge_charset_ =
-        Charset(CSGLChargeNX["Number"], Charset::Alignment::RIGHT);
+        Commodity c;
+        c.sn = sub["SN"];
+        c.itemid = sub["ItemId"];
+        c.count = static_cast<int16_t>(sub["Count"] ? sub["Count"].get_integer() : 1);
+        c.period = sub["Period"] ? sub["Period"].get_integer() : 0;
+        c.price = 0;
 
-    item_base_ = CSList["Base"];
-    item_line_ = Base["line"];
-    item_none_ = Base["noItem"];
+        int8_t tab = tab_of(c.sn);
 
-    for (const nl::node &item_label : CSEffect) {
-        item_labels_.emplace_back(item_label);
+        if (tab < 0 || !ItemData::get(c.itemid).is_valid()) {
+            continue;
+        }
+
+        lists_[tab].push_back(c);
     }
 
-    items_.emplace_back(5220000, Item::Label::HOT, 34000, 11);
-    items_.emplace_back(5220000, Item::Label::HOT, 34000, 11);
-    items_.emplace_back(5220000, Item::Label::HOT, 0, 0);
-    items_.emplace_back(5220000, Item::Label::HOT, 0, 0);
-    items_.emplace_back(5220000, Item::Label::HOT, 10000, 11);
-    items_.emplace_back(5220000, Item::Label::NEW, 0, 0);
-    items_.emplace_back(5220000, Item::Label::SALE, 7000, 0);
-    items_.emplace_back(5220000, Item::Label::NEW, 13440, 0);
-    items_.emplace_back(5220000, Item::Label::NEW, 7480, 0);
-    items_.emplace_back(5220000, Item::Label::NEW, 7480, 0);
-    items_.emplace_back(5220000, Item::Label::NEW, 7480, 0);
-    items_.emplace_back(5220000, Item::Label::NONE, 12000, 11);
-    items_.emplace_back(5220000, Item::Label::NONE, 22000, 11);
-    items_.emplace_back(5220000, Item::Label::NONE, 0, 0);
-    items_.emplace_back(5220000, Item::Label::NONE, 0, 0);
-    items_.emplace_back(5220000, Item::Label::MASTER, 0, 15);
+    for (auto &list : lists_) {
+        std::sort(list.begin(), list.end(),
+                  [](const Commodity &a, const Commodity &b) { return a.sn < b.sn; });
+    }
+}
 
-    for (size_t i = 0; i < MAX_ITEMS; i++) {
-        div_t div = std::div(i, 7);
+Point<int16_t> UICashShop::origin() const {
+    return position_;
+}
 
-        buttons_[Buttons::BT_BUY + i] = std::make_unique<MapleButton>(
-            CSList["BtBuy"],
-            Point<int16_t>(146, 523)
-                + Point<int16_t>(124 * div.rem, 205 * div.quot));
+int16_t UICashShop::page_count() const {
+    auto n = static_cast<int16_t>(lists_[tab_].size());
 
-        item_name_[i] = Text(Text::Font::A11B,
-                             Text::Alignment::CENTER,
-                             Color::Name::MINESHAFT);
-        item_price_[i] =
-            Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::GRAY);
-        item_discount_[i] = Text(Text::Font::A11M,
-                                 Text::Alignment::CENTER,
-                                 Color::Name::SILVERCHALICE);
-        item_percent_[i] = Text(Text::Font::A11M,
-                                Text::Alignment::CENTER,
-                                Color::Name::TORCHRED);
+    return std::max<int16_t>(1, (n + PER_PAGE - 1) / PER_PAGE);
+}
+
+void UICashShop::select_tab(uint8_t tab) {
+    tab_ = tab;
+    set_page(0);
+}
+
+void UICashShop::set_page(int16_t page) {
+    page_ = std::max<int16_t>(0, std::min<int16_t>(page, page_count() - 1));
+
+    const auto &list = lists_[tab_];
+
+    for (size_t i = 0; i < PER_PAGE; i++) {
+        size_t index = static_cast<size_t>(page_) * PER_PAGE + i;
+        bool shown = index < list.size();
+
+        buttons_[Buttons::BT_BUY0 + i]->set_active(shown);
+
+        if (!shown) {
+            continue;
+        }
+
+        const Commodity &c = list[index];
+        const ItemData &data = ItemData::get(c.itemid);
+
+        names_[i].change_text(data.get_name());
+        prices_[i].change_text(with_commas(c.price) + " NX");
+
+        std::string detail;
+
+        if (c.count > 1) {
+            detail = "수량 " + std::to_string(c.count);
+        }
+
+        if (c.period > 0) {
+            detail += (detail.empty() ? "" : "  ") + std::to_string(c.period) + "일";
+        } else if (InventoryType::by_item_id(c.itemid) == InventoryType::EQUIP) {
+            detail += detail.empty() ? "영구" : "  영구";
+        }
+
+        details_[i].change_text(detail);
     }
 
-    Point<int16_t> slider_pos = Point<int16_t>(1007, 372);
-
-    list_slider_ = Slider(Slider::Type::THIN_MINESHAFT,
-                          Range<int16_t>(slider_pos.y(), slider_pos.y() + 381),
-                          slider_pos.x(),
-                          2,
-                          7,
-                          [&](bool upwards) {
-                              int16_t shift = upwards ? -7 : 7;
-                              bool above = list_offset_ >= 0;
-                              bool below = list_offset_ + shift < items_.size();
-
-                              if (above && below) {
-                                  list_offset_ += shift;
-
-                                  update_items();
-                              }
-                          });
-
-    update_items();
-
-    dimension_ = Texture(backgrnd).get_dimensions();
+    page_label_.change_text(std::to_string(page_ + 1) + " / " + std::to_string(page_count()));
 }
 
 void UICashShop::draw(float inter) const {
-    preview_sprites_[preview_index_].draw(position_ + Point<int16_t>(644, 65),
-                                          inter);
+    Point<int16_t> o = origin();
 
-    UIElement::draw_sprites(inter);
+    backgrnd_.draw(DrawArgument(o));
+    tabs_[tab_].draw(DrawArgument(o + TAB_POS));
 
-    menu_tabs_[menu_index_].draw(position_ + Point<int16_t>(0, 63), inter);
+    const auto &list = lists_[tab_];
 
-    Point<int16_t> label_pos = position_ + Point<int16_t>(4, 3);
-    job_label_.draw(label_pos);
+    for (size_t i = 0; i < PER_PAGE; i++) {
+        size_t index = static_cast<size_t>(page_) * PER_PAGE + i;
 
-    size_t length = job_label_.width();
-    name_label_.draw(label_pos + Point<int16_t>(length + 10, 0));
-
-    promotion_sprites_[promotion_index_].draw(position_ + promotion_pos_,
-                                              inter);
-
-    mvp_sprites_[mvp_grade_].draw(position_ + mvp_pos_, inter);
-    mvp_gauge_.draw(position_ + mvp_pos_);
-
-    Point<int16_t> charge_pos = position_ + Point<int16_t>(107, 388);
-
-    charge_charset_.draw("0", charge_pos + Point<int16_t>(0, 30 * 1));
-    charge_charset_.draw("3,300", charge_pos + Point<int16_t>(0, 30 * 2));
-    charge_charset_.draw("0", charge_pos + Point<int16_t>(0, 30 * 3));
-    charge_charset_.draw("8,698,565", charge_pos + Point<int16_t>(0, 30 * 4));
-    charge_charset_.draw("0", charge_pos + Point<int16_t>(0, 30 * 5));
-
-    if (!items_.empty()) {
-        item_line_.draw(position_ + Point<int16_t>(139, 566), inter);
-    } else {
-        item_none_.draw(
-            position_ + Point<int16_t>(137, 372)
-                + Point<int16_t>(best_new_dim_.x() / 2,
-                                 list_slider_.getvertical().length() / 2)
-                - item_none_.get_dimensions() / 2,
-            inter);
-    }
-
-    for (size_t i = 0; i < MAX_ITEMS; i++) {
-        int16_t index = i + list_offset_;
-
-        if (index < items_.size()) {
-            div_t div = std::div(i, 7);
-            Item item = items_[index];
-
-            item_base_.draw(position_ + Point<int16_t>(137, 372)
-                                + Point<int16_t>(124 * div.rem, 205 * div.quot),
-                            inter);
-            item.draw(DrawArgument(
-                position_ + Point<int16_t>(164, 473)
-                    + Point<int16_t>(124 * div.rem, 205 * div.quot),
-                2.0f,
-                2.0f));
-
-            if (item.label != Item::Label::NONE
-                && static_cast<size_t>(item.label) + 1 < item_labels_.size()) {
-                item_labels_[item.label + 1].draw(
-                    position_ + Point<int16_t>(152, 372)
-                        + Point<int16_t>(124 * div.rem, 205 * div.quot),
-                    inter);
-            }
-
-            item_name_[i].draw(position_ + Point<int16_t>(192, 480)
-                               + Point<int16_t>(124 * div.rem, 205 * div.quot));
-
-            if (item_discount_[i].get_text().empty()) {
-                item_price_[i].draw(
-                    position_ + Point<int16_t>(195, 499)
-                    + Point<int16_t>(124 * div.rem, 205 * div.quot));
-            } else {
-                item_price_[i].draw(
-                    position_ + Point<int16_t>(196, 506)
-                    + Point<int16_t>(124 * div.rem, 205 * div.quot));
-
-                item_discount_[i].draw(
-                    position_ + Point<int16_t>(185, 495)
-                    + Point<int16_t>(124 * div.rem, 205 * div.quot));
-                item_percent_[i].draw(
-                    position_
-                    + Point<int16_t>(198 + (item_discount_[i].width() / 2), 495)
-                    + Point<int16_t>(124 * div.rem, 205 * div.quot));
-            }
+        if (index >= list.size()) {
+            break;
         }
+
+        Point<int16_t> p = o + cell_pos(i);
+
+        cell_.draw(DrawArgument(p));
+        ItemData::get(list[index].itemid)
+            .get_icon(false)
+            .draw(DrawArgument(p + Point<int16_t>(5, 69), 2.0f, 2.0f));
+        names_[i].draw(DrawArgument(p + Point<int16_t>(134, 4)));
+        prices_[i].draw(DrawArgument(p + Point<int16_t>(80, 22)));
+        details_[i].draw(DrawArgument(p + Point<int16_t>(118, 22)));
     }
 
-    list_slider_.draw(position_);
+    if (list.empty()) {
+        empty_label_.draw(DrawArgument(o + Point<int16_t>(480, 280)));
+    }
+
+    prev_label_.draw(DrawArgument(o + PAGE_POS - Point<int16_t>(60, 2)));
+    page_label_.draw(DrawArgument(o + PAGE_POS));
+    next_label_.draw(DrawArgument(o + PAGE_POS + Point<int16_t>(60, -2)));
+
+    // cash locker
+    size_t per = LOCKER_COLS * LOCKER_ROWS;
+
+    for (size_t s = 0; s < per; s++) {
+        size_t index = static_cast<size_t>(locker_page_) * per + s;
+
+        if (index >= locker_.size()) {
+            break;
+        }
+
+        Point<int16_t> cell = o + Point<int16_t>(LOCKER_X0 + LOCKER_D * static_cast<int16_t>(s % LOCKER_COLS),
+                                                 LOCKER_Y0 + LOCKER_D * static_cast<int16_t>(s / LOCKER_COLS));
+
+        ItemData::get(locker_[index].itemid)
+            .get_icon(false)
+            .draw(DrawArgument(cell + Point<int16_t>(0, LOCKER_CELL)));
+    }
+
+    if (locker_.size() > per) {
+        locker_page_label_.draw(DrawArgument(o + LOCKER_PAGE_POS));
+    }
+
+    char_label_.draw(DrawArgument(o + Point<int16_t>(95, 262)));
+
+    for (size_t i = 0; i < cash_labels_.size(); i++) {
+        cash_labels_[i].draw(DrawArgument(o + Point<int16_t>(520, 541 + 12 * static_cast<int16_t>(i))));
+    }
 
     UIElement::draw_buttons(inter);
+
+    if (message_time_ > 0) {
+        message_label_.draw(DrawArgument(o + Point<int16_t>(400, 290)));
+    }
 }
 
 void UICashShop::update() {
     UIElement::update();
 
-    mvp_gauge_.update(mvp_exp_);
+    last_tap_time_++;
+
+    if (message_time_ > 0) {
+        message_time_--;
+    }
 }
 
 Button::State UICashShop::button_pressed(uint16_t buttonid) {
-    switch (buttonid) {
-        case Buttons::BT_PREVIEW1:
-        case Buttons::BT_PREVIEW2:
-        case Buttons::BT_PREVIEW3:
-            buttons_[preview_index_]->set_state(Button::State::NORMAL);
-
-            preview_index_ = buttonid;
-            return Button::State::PRESSED;
-        case Buttons::BT_EXIT: {
-            uint16_t width = Setting<Width>::get().load();
-            uint16_t height = Setting<Height>::get().load();
-
-            Constants::Constants::get().set_viewwidth(width);
-            Constants::Constants::get().set_viewheight(height);
-
-            float fadestep = 0.025f;
-
-            Window::get().fadeout(fadestep, []() {
-                GraphicsGL::get().clear();
-                fn_change_map();
-            });
-
-            GraphicsGL::get().lock();
-            Stage::get().clear();
-            Timer::get().start();
-
-            return Button::State::NORMAL;
-        }
-        case Buttons::BT_NEXT: {
-            size_t size = promotion_sprites_.size() - 1;
-
-            promotion_index_++;
-
-            if (promotion_index_ > size) {
-                promotion_index_ = 0;
-            }
-
-            return Button::State::NORMAL;
-        }
-        case Buttons::BT_PREV: {
-            size_t size = promotion_sprites_.size() - 1;
-
-            promotion_index_--;
-
-            if (promotion_index_ < 0) {
-                promotion_index_ = size;
-            }
-
-            return Button::State::NORMAL;
-        }
-        case Buttons::BT_CHARGE_NX: {
-            std::string url = Configuration::get().get_chargenx();
-
-// todo: open url on linux
-#ifdef WIN32
-            ShellExecute(NULL, "open", url.c_str(), NULL, NULL, SW_SHOWNORMAL);
-#endif
-
-            return Button::State::NORMAL;
-        }
-        default: break;
-    }
-
-    if (buttonid >= Buttons::BT_BUY) {
-        int16_t index = buttonid - Buttons::BT_BUY + list_offset_;
-
-        Item item = items_[index];
-
-        // TODO: Purchase item
+    if (buttonid == Buttons::BT_EXIT) {
+        exit_cashshop();
 
         return Button::State::NORMAL;
     }
 
-    return Button::State::DISABLED;
+    if (buttonid >= Buttons::BT_BUY0 && buttonid <= Buttons::BT_BUY_LAST) {
+        buy(buttonid - Buttons::BT_BUY0);
+    }
+
+    return Button::State::NORMAL;
+}
+
+void UICashShop::buy(size_t cell) {
+    size_t index = static_cast<size_t>(page_) * PER_PAGE + cell;
+    const auto &list = lists_[tab_];
+
+    if (index < list.size()) {
+        CashShopBuyPacket(list[index].sn).dispatch();
+    }
+}
+
+void UICashShop::take(size_t slot) {
+    if (slot >= locker_.size() || pending_take_ != 0) {
+        return;
+    }
+
+    const LockerItem &item = locker_[slot];
+
+    pending_take_ = item.cashid;
+    CashShopTakePacket(item.cashid, InventoryType::by_item_id(item.itemid)).dispatch();
 }
 
 Cursor::State UICashShop::send_cursor(bool clicked, Point<int16_t> cursorpos) {
-    Point<int16_t> cursor_relative = cursorpos - position_;
+    Cursor::State state = UIElement::send_cursor(clicked, cursorpos);
 
-    if (list_slider_.isenabled()) {
-        Cursor::State state =
-            list_slider_.send_cursor(cursor_relative, clicked);
+    if (!clicked) {
+        return state;
+    }
 
-        if (state != Cursor::State::IDLE) {
-            return state;
+    Point<int16_t> p = cursorpos - origin();
+
+    // tabs
+    if (p.y() >= TAB_POS.y() + TAB_TOP && p.y() <= TAB_POS.y() + TAB_BOTTOM) {
+        for (uint8_t t = 0; t < NUM_TABS; t++) {
+            int16_t x0 = TAB_POS.x() + TAB_X[t];
+
+            if (p.x() >= x0 && p.x() < x0 + TAB_W[t]) {
+                if (t != tab_) {
+                    select_tab(t);
+                }
+
+                return Cursor::State::CLICKING;
+            }
         }
     }
 
-    return UIElement::send_cursor(clicked, cursorpos);
+    // page arrows
+    if (std::abs(p.y() - (PAGE_POS.y() + 6)) <= 12) {
+        if (std::abs(p.x() - (PAGE_POS.x() - 60)) <= 18) {
+            set_page(page_ - 1);
+
+            return Cursor::State::CLICKING;
+        }
+
+        if (std::abs(p.x() - (PAGE_POS.x() + 60)) <= 18) {
+            set_page(page_ + 1);
+
+            return Cursor::State::CLICKING;
+        }
+    }
+
+    // cash locker: tap the page label to flip, double tap an item to move it
+    // into the item inventory
+    size_t per = LOCKER_COLS * LOCKER_ROWS;
+
+    if (locker_.size() > per && std::abs(p.x() - LOCKER_PAGE_POS.x()) <= 30
+        && std::abs(p.y() - (LOCKER_PAGE_POS.y() + 6)) <= 10) {
+        int16_t pages = static_cast<int16_t>((locker_.size() + per - 1) / per);
+
+        locker_page_ = static_cast<int16_t>((locker_page_ + 1) % pages);
+        locker_page_label_.change_text(std::to_string(locker_page_ + 1) + "/" + std::to_string(pages));
+
+        return Cursor::State::CLICKING;
+    }
+
+    int16_t lx = p.x() - LOCKER_X0;
+    int16_t ly = p.y() - LOCKER_Y0;
+
+    if (lx >= 0 && ly >= 0 && lx < LOCKER_D * LOCKER_COLS && ly < LOCKER_D * LOCKER_ROWS
+        && lx % LOCKER_D < LOCKER_CELL && ly % LOCKER_D < LOCKER_CELL) {
+        auto slot = static_cast<int16_t>(locker_page_ * per + (ly / LOCKER_D) * LOCKER_COLS
+                                         + lx / LOCKER_D);
+
+        // update() runs about 125 times a second
+        if (slot == last_tap_slot_ && last_tap_time_ < 60) {
+            take(static_cast<size_t>(slot));
+            last_tap_slot_ = -1;
+        } else {
+            last_tap_slot_ = slot;
+            last_tap_time_ = 0;
+        }
+
+        return Cursor::State::CLICKING;
+    }
+
+    return state;
+}
+
+void UICashShop::send_scroll(double yoffset) {
+    if (yoffset > 0) {
+        set_page(page_ - 1);
+    } else if (yoffset < 0) {
+        set_page(page_ + 1);
+    }
+}
+
+void UICashShop::send_key(int32_t keycode, bool pressed, bool escape) {
+    if (pressed && escape) {
+        exit_cashshop();
+    }
+}
+
+bool UICashShop::is_in_range(Point<int16_t>) const {
+    return true;
 }
 
 UIElement::Type UICashShop::get_type() const {
     return TYPE;
 }
 
-void UICashShop::update_items() {
-    for (size_t i = 0; i < MAX_ITEMS; i++) {
-        int16_t index = i + list_offset_;
-        bool found_item = index < items_.size();
+void UICashShop::set_locker(std::vector<LockerItem> items) {
+    locker_ = std::move(items);
+    locker_page_ = 0;
 
-        buttons_[Buttons::BT_BUY + i]->set_active(found_item);
+    size_t per = LOCKER_COLS * LOCKER_ROWS;
+    auto pages = static_cast<int16_t>(std::max<size_t>(1, (locker_.size() + per - 1) / per));
 
-        std::string name = "";
-        std::string price_text = "";
-        std::string discount_text = "";
-        std::string percent_text = "";
+    locker_page_label_.change_text("1/" + std::to_string(pages));
+}
 
-        if (found_item) {
-            Item item = items_[index];
+void UICashShop::add_locker(const LockerItem &item) {
+    locker_.push_back(item);
 
-            name = item.get_name();
+    size_t per = LOCKER_COLS * LOCKER_ROWS;
+    auto pages = static_cast<int16_t>((locker_.size() + per - 1) / per);
 
-            int32_t price = item.get_price();
-            price_text = std::to_string(price);
+    locker_page_ = static_cast<int16_t>(pages - 1);
+    locker_page_label_.change_text(std::to_string(locker_page_ + 1) + "/" + std::to_string(pages));
 
-            if (item.discount_price > 0 && price > 0) {
-                discount_text = price_text;
+    show_message(ItemData::get(item.itemid).get_name() + " 구매 완료 (캐시 보관함)");
+}
 
-                uint32_t discount = item.discount_price;
-                price_text = std::to_string(discount);
+void UICashShop::taken() {
+    auto it = std::find_if(locker_.begin(), locker_.end(),
+                           [&](const LockerItem &i) { return i.cashid == pending_take_; });
 
-                float_t percent = (float)discount / price;
-                std::string percent_str = std::to_string(percent);
-                percent_text = "(" + percent_str.substr(2, 1) + "%)";
-            }
+    if (it != locker_.end()) {
+        show_message(ItemData::get(it->itemid).get_name() + " → 인벤토리");
+        locker_.erase(it);
+    }
 
-            string_format::split_number(price_text);
-            string_format::split_number(discount_text);
+    pending_take_ = 0;
 
-            price_text += " NX";
+    size_t per = LOCKER_COLS * LOCKER_ROWS;
+    auto pages = static_cast<int16_t>(std::max<size_t>(1, (locker_.size() + per - 1) / per));
 
-            if (!discount_text.empty()) {
-                discount_text += " NX";
-            }
+    locker_page_ = std::min<int16_t>(locker_page_, pages - 1);
+    locker_page_label_.change_text(std::to_string(locker_page_ + 1) + "/" + std::to_string(pages));
+}
 
-            if (item.count > 0) {
-                price_text += "(" + std::to_string(item.count) + ")";
-            }
-        }
+void UICashShop::set_cash(int32_t credit, int32_t points, int32_t prepaid) {
+    cash_labels_[0].change_text(with_commas(credit));
+    cash_labels_[1].change_text(with_commas(prepaid));
+    cash_labels_[2].change_text(with_commas(points));
+}
 
-        item_name_[i].change_text(name);
-        item_price_[i].change_text(price_text);
-        item_discount_[i].change_text(discount_text);
-        item_percent_[i].change_text(percent_text);
+void UICashShop::show_message(const std::string &text) {
+    message_label_.change_text(text);
+    message_time_ = 250;
 
-        string_format::format_with_ellipsis(item_name_[i], 92);
+    if (pending_take_ != 0 && text.find("실패") != std::string::npos) {
+        pending_take_ = 0;
     }
 }
 }  // namespace ms

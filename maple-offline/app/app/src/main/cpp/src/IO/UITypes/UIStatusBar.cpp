@@ -1,4 +1,3 @@
-#include "UIChatBar.h"
 #include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
@@ -37,13 +36,7 @@
 
 namespace ms {
 namespace {
-// maple-offline: the v83 cash shop screen is being rebuilt; until then the
-// button only says so instead of opening the unfinished one
-auto fn_enter_cashshop = []() {
-    if (auto chatbar = UI::get().get_element<UIChatBar>()) {
-        chatbar->get().send_chatline("캐시샵은 다음 업데이트에서 열립니다.", UIChatBar::LineType::YELLOW);
-    }
-};
+auto fn_enter_cashshop = []() { EnterCashShopPacket().dispatch(); };
 
 // Layout of StatusBar.img/gauge/bar (340x31): fill rows 15..28,
 // HP x 2..107, MP x 111..216, EXP x 225..338.

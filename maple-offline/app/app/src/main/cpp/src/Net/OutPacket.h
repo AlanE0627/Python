@@ -284,7 +284,8 @@ public:
         PICKUP_ITEM = 202,
         DAMAGE_REACTOR = 205,
         PLAYER_MAP_TRANSFER = 207,
-        PLAYER_UPDATE = 223
+        PLAYER_UPDATE = 223,
+        CASHSHOP_OPERATION = 229
     };
 
 protected:

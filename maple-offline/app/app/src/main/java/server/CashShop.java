@@ -241,7 +241,8 @@ public class CashShop {
             for (Data item : etc.getData("Commodity.img").getChildren()) {
                 int sn = DataTool.getIntConvert("SN", item);
                 int itemId = DataTool.getIntConvert("ItemId", item);
-                int price = DataTool.getIntConvert("Price", item, 0);
+                // maple-offline: single-player build, every cash item is free
+                int price = 0;
                 long period = DataTool.getIntConvert("Period", item, 1);
                 short count = (short) DataTool.getIntConvert("Count", item, 1);
                 boolean onSale = DataTool.getIntConvert("OnSale", item, 0) == 1;
