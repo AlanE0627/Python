@@ -1321,8 +1321,13 @@ namespace ms {
                 for (const Text::Layout::Line &line: layout) {
                     GLshort left = x + line.position.x() - 1;
                     GLshort right = left + w + 3;
-                    GLshort top = y + line.position.y() - font.linespace() + 6 + font_cal_[id].y();
-                    GLshort bottom = top + h - 2;
+                    // centred on the capital 'H' (Hangul shares its height in
+                    // Pretendard), so Latin and Korean names sit in the middle
+                    const Font::Char &cap = font.chars[static_cast<int>('H')];
+                    GLshort box_h = h - 2;
+                    GLshort cap_mid = y + line.position.y() - cap.bt + cap.bh / 2 + font_cal_[id].y();
+                    GLshort top = cap_mid - box_h / 2;
+                    GLshort bottom = top + box_h;
                     Color ntcolor = Color(0.0f, 0.0f, 0.0f, 0.6f);
 
                     quads_.emplace_back(left,

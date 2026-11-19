@@ -15,9 +15,13 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Npc.h"
 
+#include "../../Constants.h"
 #include "../../Util/QuestCheck.h"
 
 #include <nlnx/nx.hpp>
+
+#include <cstdio>
+#include <cstdlib>
 
 namespace ms {
 Npc::Npc(int32_t id,
@@ -86,6 +90,7 @@ Npc::Npc(int32_t id,
     }
 
     npc_id_ = id;
+    if (getenv("MS_NPC_DEBUG")) { size_t n = 0; for (auto &kv : lines_) n += kv.second.size(); fprintf(stderr, "npc %d speak %zu\n", id, n); }
     flip_ = !fl;
     control_ = cnt;
     stance_ = "stand";
@@ -113,6 +118,12 @@ void Npc::draw(double viewx, double viewy, float alpha) const {
             alpha);
     }
 
+    if (animations_.count(stance_)) {
+        const Animation &body = animations_.at(stance_);
+        int16_t top = absp.y() - body.get_origin().y();
+        speak_balloon_.draw(Point<int16_t>(absp.x(), top - 4));
+    }
+
     if (!hide_name_) {
         // If ever changing code for namelabel confirm placements with map 10000
         name_label_.draw(absp + Point<int16_t>(0, -4));
@@ -128,6 +139,27 @@ int8_t Npc::update(const Physics &physics) {
     physics.move_object(phobj_);
 
     quest_icon_ = QuestCheck::npc_icon(npc_id_);
+
+    speak_balloon_.update();
+    speak_timer_ -= Constants::TIMESTEP;
+
+    if (speak_timer_ <= 0) {
+        speak_timer_ = 8000 + random_.next_int(8000);
+
+        std::vector<const std::string *> all;
+
+        for (const auto &[state, ls] : lines_) {
+            for (const auto &l : ls) {
+                if (!l.empty()) {
+                    all.push_back(&l);
+                }
+            }
+        }
+
+        if (!all.empty() && random_.next_int(2) == 0) {
+            speak_balloon_.change_text(*all[random_.next_int(all.size())]);
+        }
+    }
 
     if (quest_icon_ >= 0 && quest_icon_ < 3) {
         quest_icons_[quest_icon_].update();

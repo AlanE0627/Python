@@ -213,6 +213,18 @@ void Stage::update() {
         aran_attack(dirs);
     }
 
+    // holding up (or down) while walking or jumping into a rope grabs it,
+    // as in v83; a stick held diagonally also counts. On the rope the
+    // climb state ignores left/right except for jumping off.
+    if (!player_.is_climbing()) {
+        if (player_.is_key_down(KeyAction::Id::UP)) {
+            check_ladders(true);
+        } else if (player_.is_key_down(KeyAction::Id::DOWN)
+                   && !player_.is_key_down(KeyAction::Id::JUMP)) {
+            check_ladders(false);
+        }
+    }
+
     mob_combat_.update();
     summons_.update();
     AutoPotion::update();

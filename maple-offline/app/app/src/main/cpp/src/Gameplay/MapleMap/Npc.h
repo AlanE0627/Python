@@ -19,6 +19,7 @@
 
 #include "../../Graphics/Animation.h"
 #include "../../Graphics/Text.h"
+#include "../../IO/Components/ChatBalloon.h"
 #include "../../Util/Randomizer.h"
 #include "MapObject.h"
 
@@ -66,7 +67,7 @@ public:
         }
 
         if (!dialogue_["d0"].empty()) {
-            talk_func(npc_id_, 0, 0, 1, 0, dialogue_["d0"].at(0));
+            talk_func(npc_id_, 0, 0, 0, 0, dialogue_["d0"].at(0));
         }
     }
 
@@ -88,6 +89,10 @@ private:
     bool control_;
 
     Randomizer random_;
+    // idle speech balloon with the NPC's own lines (String Npc.img n0, n1..
+    // listed under the Npc.wz "speak" nodes)
+    ChatBalloon speak_balloon_;
+    int32_t speak_timer_ = 5000;
     // maple-offline: overhead quest marker (UIWindow.img/QuestIcon)
     Animation quest_icons_[3];
     int8_t quest_icon_ = -1;
