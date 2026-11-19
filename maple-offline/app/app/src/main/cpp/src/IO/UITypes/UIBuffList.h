@@ -17,7 +17,10 @@
 
 #include <unordered_map>
 
+#include <array>
+
 #include "../Components/IconCover.h"
+#include "../../Graphics/Animation.h"
 #include "../Constants.h"
 #include "../Graphics/Texture.h"
 #include "../UIElement.h"
@@ -64,6 +67,10 @@ public:
 
     void remove_buff(int32_t buffid) { icons_.erase(buffid); }
 
+    // Aran combo counter (SHOW_COMBO), drawn under the buff icons and
+    // hidden 3 s after the last hit (the server resets it after 3 s)
+    void set_combo(int32_t count);
+
     // Icons run right-to-left from position_ (32 px each, origin bottom-left)
     bool is_in_range(Point<int16_t> cursorpos) const override;
 
@@ -72,6 +79,11 @@ public:
 
 private:
     int32_t buff_at(Point<int16_t> cursorpos) const;
+
+    int32_t combo_ = 0;
+    int32_t combo_timer_ = 0;
+    std::array<Texture, 10> combo_digits_;
+    Animation combo_label_;
 
     std::unordered_map<int32_t, BuffIcon> icons_;
 };

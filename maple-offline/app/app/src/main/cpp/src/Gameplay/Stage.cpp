@@ -14,6 +14,8 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "Stage.h"
+
+#include <chrono>
 #include "AutoPotion.h"
 #include <cstdio>
 
@@ -204,6 +206,13 @@ void Stage::update() {
         combat_.use_move(held_skill_);
     }
 
+    // an attack pressed during the previous swing continues the chain
+    if (!aran_queue_.empty() && !player_.is_attacking()) {
+        std::vector<int32_t> dirs = aran_queue_.front();
+        aran_queue_.erase(aran_queue_.begin());
+        aran_attack(dirs);
+    }
+
     mob_combat_.update();
     summons_.update();
     AutoPotion::update();
@@ -305,6 +314,18 @@ void Stage::send_key(KeyType::Id type, int32_t action, bool down) {
 
     switch (type) {
         case KeyType::Id::ACTION:
+            if (down && (action == KeyAction::Id::UP || action == KeyAction::Id::DOWN
+                         || action == KeyAction::Id::LEFT || action == KeyAction::Id::RIGHT)) {
+                int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                  std::chrono::steady_clock::now().time_since_epoch())
+                                  .count();
+                aran_dirs_.emplace_back(action, now);
+
+                if (aran_dirs_.size() > 4) {
+                    aran_dirs_.erase(aran_dirs_.begin());
+                }
+            }
+
             if (down) {
                 switch (action) {
                     case KeyAction::Id::UP:
@@ -313,7 +334,18 @@ void Stage::send_key(KeyType::Id type, int32_t action, bool down) {
                         break;
                     case KeyAction::Id::DOWN: check_ladders(false); break;
                     case KeyAction::Id::SIT: check_seats(); break;
-                    case KeyAction::Id::ATTACK: combat_.use_move(0); break;
+                    case KeyAction::Id::ATTACK: {
+                        int32_t job = player_.get_stats().get_stat(MapleStat::Id::JOB);
+
+                        if (job / 100 == 21 && player_.get_weapontype() == Weapon::Type::POLEARM) {
+                            aran_press();
+                        } else {
+                            combat_.use_move(0);
+                        }
+
+                        break;
+                    }
+
                     case KeyAction::Id::PICKUP: check_drops(); break;
                 }
             }
@@ -344,6 +376,96 @@ void Stage::send_key(KeyType::Id type, int32_t action, bool down) {
         case KeyType::Id::ITEM: player_.use_item(action); break;
         case KeyType::Id::FACE: player_.set_expression(action); break;
     }
+}
+
+bool Stage::aran_has(int32_t skill) {
+    return player_.get_skills().get_level(skill) > 0;
+}
+
+// Aran attacks are key commands, not hotkeys (commands from the skill
+// descriptions): attack x2 Double Swing, x3 Triple Swing; right after Triple
+// Swing forward / up / down + attack: Final Charge / Final Cross / Final
+// Blow; down, forward + attack: Combo Smash/Fenrir/Tempest by combo count;
+// up, up + attack: Rolling Spin. Full/Over Swing replace the swings.
+void Stage::aran_press() {
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
+
+    std::vector<int32_t> dirs;
+
+    for (const auto &[dir, time] : aran_dirs_) {
+        if (now - time < 600) {
+            dirs.push_back(dir);
+        }
+    }
+
+    aran_dirs_.clear();
+
+    if (player_.is_attacking() || !aran_queue_.empty()) {
+        if (aran_queue_.size() < 3) {
+            aran_queue_.push_back(dirs);
+        }
+
+        return;
+    }
+
+    aran_attack(dirs);
+}
+
+void Stage::aran_attack(const std::vector<int32_t> &dirs) {
+    int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      std::chrono::steady_clock::now().time_since_epoch())
+                      .count();
+
+    int32_t forward = player_.getflip() ? KeyAction::Id::RIGHT : KeyAction::Id::LEFT;
+    size_t n = dirs.size();
+#ifdef MS_DESKTOP_DEBUG
+    std::fprintf(stderr, "[dbg] aran dirs %zu last %d forward %d since_triple %lld chain %d combo %d\n", n,
+                 n ? dirs[n - 1] : -1, forward, (long long) (now - aran_last_triple_), aran_chain_, aran_combo_);
+#endif
+    int32_t skill = 0;
+
+    if (n >= 2 && dirs[n - 2] == KeyAction::Id::DOWN && dirs[n - 1] == forward) {
+        if (aran_combo_ >= 200 && aran_has(21120006)) {
+            skill = 21120006;
+        } else if (aran_combo_ >= 100 && aran_has(21110004)) {
+            skill = 21110004;
+        } else if (aran_combo_ >= 30 && aran_has(21100004)) {
+            skill = 21100004;
+        }
+    } else if (n >= 2 && dirs[n - 2] == KeyAction::Id::UP && dirs[n - 1] == KeyAction::Id::UP) {
+        if (aran_has(21110006)) {
+            skill = 21110006;
+        }
+    } else if (n >= 1 && now - aran_last_triple_ < 2000) {
+        if (dirs[n - 1] == forward && aran_has(21100002)) {
+            skill = 21100002;
+        } else if (dirs[n - 1] == KeyAction::Id::UP && aran_has(21110003)) {
+            skill = 21110003;
+        } else if (dirs[n - 1] == KeyAction::Id::DOWN && aran_has(21120005)) {
+            skill = 21120005;
+        }
+    }
+
+    if (skill != 0) {
+        aran_chain_ = 0;
+        aran_last_triple_ = 0;
+    } else {
+        aran_chain_ = (now - aran_last_attack_ < 1000 && aran_chain_ < 2) ? aran_chain_ + 1 : 0;
+
+        if (aran_chain_ == 1 && aran_has(21000002)) {
+            skill = aran_has(21120009) ? 21120009 : aran_has(21110007) ? 21110007 : 21000002;
+        } else if (aran_chain_ == 2 && aran_has(21100001)) {
+            skill = aran_has(21120010) ? 21120010 : aran_has(21110008) ? 21110008 : 21100001;
+            aran_last_triple_ = now;
+        } else {
+            aran_chain_ = 0;
+        }
+    }
+
+    aran_last_attack_ = now;
+    combat_.use_move(skill);
 }
 
 Cursor::State Stage::send_cursor(bool pressed, Point<int16_t> position) {

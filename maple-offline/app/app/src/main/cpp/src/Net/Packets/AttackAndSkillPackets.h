@@ -34,8 +34,24 @@ public:
         write_byte((attack.mobcount << 4) | attack.hitcount);
         write_int(attack.skill);
 
-        if (attack.charge > 0) {
-            write_int(attack.charge);
+        // Charged skills always carry the charge time (Big Bang, Grenade,
+        // Corkscrew Blow, Poison Bomb, Evan breaths); the server reads it
+        switch (attack.skill) {
+            case 2121001:
+            case 2221001:
+            case 2321001:
+            case 5201002:
+            case 5101004:
+            case 15101003:
+            case 14111006:
+            case 22121000:
+            case 22151001: write_int(attack.charge); break;
+            default:
+                if (attack.charge > 0) {
+                    write_int(attack.charge);
+                }
+
+                break;
         }
 
         skip(8);
@@ -73,9 +89,14 @@ public:
                 // TODO: Add critical here
             }
 
-            if (attack.skill != 5221004) {
-                skip(4);
-            }
+            // the server skips these 4 bytes after every target
+            skip(4);
+        }
+
+        // Poison Bomb: where the bomb lands
+        if (attack.skill == 14111006) {
+            skip(4);
+            write_point(attack.position);
         }
     }
 

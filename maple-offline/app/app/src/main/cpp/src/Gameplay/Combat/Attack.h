@@ -122,6 +122,7 @@ struct AttackResult {
         damage_lines;
     int32_t first_oid;
     int32_t last_oid;
+    Point<int16_t> position;
 };
 
 // an attack coming from a user

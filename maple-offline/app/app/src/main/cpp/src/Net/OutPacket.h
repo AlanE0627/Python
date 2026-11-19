@@ -253,6 +253,7 @@ public:
         QUEST_ACTION = 107,
         SUMMON_ATTACK = 176,
         PET_COMMAND = 169,
+        ARAN_COMBO_COUNTER = 163,
 
         /// Player Interaction
         GIVE_FAME = 95,

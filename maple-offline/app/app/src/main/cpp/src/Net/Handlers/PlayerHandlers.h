@@ -106,4 +106,9 @@ class AddCooldownHandler : public PacketHandler {
 class KeymapHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
+// Aran combo counter
+// Opcode: SHOW_COMBO(225)
+class ShowComboHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
 }  // namespace ms

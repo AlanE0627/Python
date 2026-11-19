@@ -24,7 +24,9 @@ namespace ms {
 SkillData::SkillData(int32_t id) {
     /// Locate sources
     std::string strid = string_format::extend_id(id, 7);
-    std::string jobid = strid.substr(0, 3);
+    // job id = everything but the last 4 digits (3 for 1st..4th job skills,
+    // 4 for Cygnus/Aran skills such as 21000002 -> 2100.img)
+    std::string jobid = strid.substr(0, strid.size() - 4);
     nl::node src = nl::nx::skill[jobid + ".img"]["skill"][strid];
     nl::node strsrc = nl::nx::string["Skill.img"][strid];
 
@@ -98,7 +100,8 @@ SkillData::SkillData(int32_t id) {
     // Weapon charges carry damage/matk but are buffs: White Knight 1211003-
     // 1211008, Paladin 1221003/1221004, Thunder Breaker 15101006, Aran 21111005
     bool charge = (id >= 1211003 && id <= 1211008) || id == 1221003
-                  || id == 1221004 || id == 15101006 || id == 21111005;
+                  || id == 1221004 || id == 15101006 || id == 21111005
+                  || id == 11111007;
 
     if (flags_ == NONE && !passive_ && !charge && src["summon"].size() == 0) {
         nl::node lv1 = src["level"]["1"];
@@ -108,12 +111,34 @@ SkillData::SkillData(int32_t id) {
             flags_ = ATTACK;
         }
     }
+    // Aran key-command attacks use passive-looking ids (21000002, ...)
+    switch (id) {
+        case 21000002:
+        case 21100001:
+        case 21100002:
+        case 21100004:
+        case 21110003:
+        case 21110004:
+        case 21110006:
+        case 21110007:
+        case 21110008:
+        case 21120005:
+        case 21120006:
+        case 21120009:
+        case 21120010:
+            passive_ = false;
+            flags_ = ATTACK;
+            break;
+    }
+
     // Snipe has no damage field (the server fixes its damage) and Shadow Meso
     // only a meso cost, but both attack; Ninja Ambush carries damage yet is a
-    // monster-status special move (the server applies it in range)
-    if (id == 3221007 || id == 4111004 || id == 4211006) {
+    // monster-status special move (the server applies it in range); Body
+    // Pressure is a buff that damages on touch
+    if (id == 3221007 || id == 4111004 || id == 4211006 || id == 4121003
+        || id == 4221003) {
         flags_ = ATTACK;
-    } else if (id == 4121004 || id == 4221004) {
+    } else if (id == 4121004 || id == 4221004 || id == 21101003 || id == 15111006) {
         flags_ = NONE;
     }
 

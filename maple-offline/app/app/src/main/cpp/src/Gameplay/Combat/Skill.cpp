@@ -1,3 +1,4 @@
+#include <cstdio>
 //	This file is part of the continued Journey MMORPG client
 //	Copyright (C) 2015-2019  Daniel Allendorf, Ryan Payton
 //
@@ -33,7 +34,7 @@ Skill::Skill(int32_t id) : skill_id_(id) {
         strid = std::to_string(skill_id_);
     }
 
-    nl::node src = nl::nx::skill[strid.substr(0, 3) + ".img"]["skill"][strid];
+    nl::node src = nl::nx::skill[strid.substr(0, strid.size() - 4) + ".img"]["skill"][strid];
 
     projectile_ = true;
     over_regular_ = false;
@@ -229,11 +230,13 @@ SpecialMove::ForbidReason Skill::can_use(int32_t level,
                                          uint16_t hp,
                                          uint16_t mp,
                                          uint16_t bullets) const {
-    if (level <= 0 || level > SkillData::get(skill_id_).get_masterlevel()) {
-        return FBR_OTHER;
-    }
-
-    if (job.can_use(skill_id_) == false) {
+    if (level <= 0 || level > SkillData::get(skill_id_).get_masterlevel()
+        || job.can_use(skill_id_) == false) {
+#ifdef MS_DESKTOP_DEBUG
+        std::fprintf(stderr, "[dbg] skill %d level %d master %d job %d can %d\n", skill_id_, level,
+                     SkillData::get(skill_id_).get_masterlevel(), (int) job.get_id(),
+                     (int) job.can_use(skill_id_));
+#endif
         return FBR_OTHER;
     }
 

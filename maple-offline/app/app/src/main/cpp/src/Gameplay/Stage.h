@@ -15,6 +15,9 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include <chrono>
 
 #include "../Character/Player.h"
@@ -88,6 +91,8 @@ public:
 
     // Returns a reference to the drops on the current map.
     MapDrops &get_drops();
+
+    void set_aran_combo(int32_t count) { aran_combo_ = count; }
 
     // Returns a reference to the Player.
     Player &get_player();
@@ -172,6 +177,20 @@ private:
 
     // Skill key held down for a keydown skill (Hurricane, Rapid Fire, ...)
     int32_t held_skill_ = 0;
+
+    // Aran key commands: recent arrow presses, attack chain, combo count
+    // attack press: snapshot the arrow keys pressed just before it; presses
+    // made during a swing wait in order until the swing ends
+    void aran_press();
+    void aran_attack(const std::vector<int32_t> &dirs);
+    bool aran_has(int32_t skill);
+
+    std::vector<std::pair<int32_t, int64_t>> aran_dirs_;
+    int64_t aran_last_attack_ = 0;
+    int64_t aran_last_triple_ = 0;
+    uint8_t aran_chain_ = 0;
+    std::vector<std::vector<int32_t>> aran_queue_;
+    int32_t aran_combo_ = 0;
     Summons summons_;
     FieldObjects field_objects_;
     Point<int16_t> spawn_override_;

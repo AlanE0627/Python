@@ -326,6 +326,15 @@ void CancelBuffHandler::handle_buff(InPacket &, Buffstat::Id bs) const {
     }
 }
 
+void ShowComboHandler::handle(InPacket &recv) const {
+    int32_t count = recv.read_int();
+    Stage::get().set_aran_combo(count);
+
+    if (auto bufflist = UI::get().get_element<UIBuffList>()) {
+        bufflist->get().set_combo(count);
+    }
+}
+
 void RecalculateStatsHandler::handle(InPacket &) const {
     Stage::get().get_player().recalc_stats(false);
 }

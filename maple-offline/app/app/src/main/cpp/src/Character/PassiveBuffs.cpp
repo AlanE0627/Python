@@ -137,7 +137,7 @@ void PassiveBuffs::apply_buff(CharStats &stats,
         strid = std::to_string(skill_id);
     }
 
-    nl::node src = nl::nx::skill[strid.substr(0, 3) + ".img"]["skill"][strid]
+    nl::node src = nl::nx::skill[strid.substr(0, strid.size() - 4) + ".img"]["skill"][strid]
                                 ["level"][skill_level];
 
     const PassiveBuff *buff = iter->second.get();

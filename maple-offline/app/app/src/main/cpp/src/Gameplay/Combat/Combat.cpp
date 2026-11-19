@@ -134,6 +134,18 @@ void Combat::apply_move(const SpecialMove &move) {
             }
         }
 
+        // Hit through the ranged-attack path on the server even with melee
+        // weapons: Energy Orb, Spark, Shark Wave, Taunt, Aran combo skills
+        switch (move.get_id()) {
+            case 5121002:
+            case 15111007:
+            case 4121003:
+            case 4221003:
+            case 21100004:
+            case 21110004:
+            case 21120006: attack.type = Attack::Type::RANGED; break;
+        }
+
         move.apply_useeffects(player_);
         move.apply_actions(player_, attack.type);
 
@@ -176,6 +188,16 @@ void Combat::apply_move(const SpecialMove &move) {
 
         mobs_.send_attack(result, attack, mob_targets, mobcount);
         result.attacker = player_.get_oid();
+        result.position = mob_targets.empty()
+                              ? player_.get_position()
+                              : mobs_.get_mob_head_position(mob_targets.front());
+
+        // Aran: every mob hit adds one to the server-side combo count
+        if (player_.get_stats().get_stat(MapleStat::Id::JOB) / 100 == 21) {
+            for (size_t i = 0; i < result.damage_lines.size(); i++) {
+                OutPacket(OutPacket::Opcode::ARAN_COMBO_COUNTER).dispatch();
+            }
+        }
         extract_effects(player_, move, result);
 
         apply_use_movement(move);

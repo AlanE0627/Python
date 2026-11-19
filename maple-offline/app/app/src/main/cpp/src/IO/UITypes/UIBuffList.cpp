@@ -34,7 +34,7 @@ BuffIcon::BuffIcon(int32_t buff, int32_t dur) :
     if (buffid_ >= 0) {
         std::string strid = string_format::extend_id(buffid_, 7);
         nl::node src =
-            nl::nx::skill[strid.substr(0, 3) + ".img"]["skill"][strid];
+            nl::nx::skill[strid.substr(0, strid.size() - 4) + ".img"]["skill"][strid];
         icon_ = src["icon"];
     } else {
         icon_ = ItemData::get(-buffid_).get_icon(true);
@@ -70,6 +70,14 @@ UIBuffList::UIBuffList() {
     int16_t width = Constants::Constants::get().get_viewwidth();
 
     update_screen(width, height);
+
+    nl::node combo = nl::nx::effect["BasicEff.img"]["Combo"]["0"];
+
+    for (size_t i = 0; i < combo_digits_.size(); i++) {
+        combo_digits_[i] = combo[std::to_string(i)]["0"];
+    }
+
+    combo_label_ = combo["Combo"];
 }
 
 void UIBuffList::draw(float alpha) const {
@@ -79,9 +87,32 @@ void UIBuffList::draw(float alpha) const {
         icon.second.draw(icpos, alpha);
         icpos.shift_x(-32);
     }
+
+    if (combo_ > 0 && combo_timer_ > 0) {
+        std::string digits = std::to_string(combo_);
+        int16_t x = position_.x() + 30 - static_cast<int16_t>(digits.size()) * 30;
+        int16_t y = position_.y() + 60;
+
+        for (char c : digits) {
+            combo_digits_[c - '0'].draw(DrawArgument(Point<int16_t>(x, y)));
+            x += 30;
+        }
+
+        combo_label_.draw(DrawArgument(Point<int16_t>(position_.x() - 40, y + 10)), alpha);
+    }
+}
+
+void UIBuffList::set_combo(int32_t count) {
+    combo_ = count;
+    combo_timer_ = 3000;
 }
 
 void UIBuffList::update() {
+    if (combo_timer_ > 0) {
+        combo_timer_ -= Constants::TIMESTEP;
+        combo_label_.update();
+    }
+
     for (auto iter = icons_.begin(); iter != icons_.end();) {
         bool expired = iter->second.update();
 
