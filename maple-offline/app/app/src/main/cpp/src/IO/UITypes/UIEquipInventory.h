@@ -108,5 +108,15 @@ private:
 
     bool has_pendant_slot_;
     bool has_pocket_slot_;
+
+    // maple-offline: v83 pet equipment panel (UIWindow.img/Equip/pet),
+    // attached to the right edge while a pet is out or its equip is worn.
+    static constexpr int16_t PET_SLOT = 114;
+    Texture pet_bg_;
+    std::unique_ptr<Icon> pet_icon_;
+    bool pet_visible() const;
+    Point<int16_t> pet_origin() const;
+    bool in_pet_cell(Point<int16_t> cursorpos) const;
+    void update_pet_slot();
 };
 }  // namespace ms

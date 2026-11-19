@@ -281,6 +281,11 @@ int32_t Inventory::get_bulletid() const {
 }
 
 EquipSlot::Id Inventory::find_equipslot(int32_t itemid) const {
+    // maple-offline: pet equipment (180xxxx) is worn in v83 equip slot -114
+    if (itemid / 10000 == 180) {
+        return static_cast<EquipSlot::Id>(114);
+    }
+
     const EquipData &cloth = EquipData::get(itemid);
 
     if (!cloth.is_valid()) {

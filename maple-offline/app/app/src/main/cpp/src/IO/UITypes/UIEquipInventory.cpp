@@ -22,10 +22,12 @@
 #include "../../Net/Packets/InventoryPackets.h"
 #include "../Components/MapleButton.h"
 #include "../UI.h"
+#include "../../Gameplay/Stage.h"
 #include "../UITypes/UIItemInventory.h"
 
 namespace ms {
 namespace {
+const Point<int16_t> PET_CELL(12 + 33 * 3, 11 + 33 * 2);
 auto fn_equip_item = []<typename... T>(T && ...args) {
     EquipItemPacket(std::forward<T>(args)...).dispatch();
 };
@@ -74,6 +76,7 @@ UIEquipInventory::UIEquipInventory(const Inventory &invent) :
     nl::node Equip = nl::nx::ui_img("UIWindow.img")["Equip"];
 
     background_[Buttons::BT_TAB0] = Equip["backgrnd"];
+    pet_bg_ = Equip["pet"];
     Point<int16_t> bg_dimensions = background_[Buttons::BT_TAB0].get_dimensions();
 
     totem_dimensions_ = Point<int16_t>(0, 0);
@@ -113,7 +116,50 @@ void UIEquipInventory::draw(float alpha) const {
         }
     }
 
+    if (pet_visible()) {
+        pet_bg_.draw(position_ + pet_origin());
+
+        if (pet_icon_) {
+            pet_icon_->draw(position_ + pet_origin() + PET_CELL);
+        }
+    }
+
     UIElement::draw_buttons(alpha);
+}
+
+bool UIEquipInventory::pet_visible() const {
+    if (inventory_.get_item_id(InventoryType::Id::EQUIPPED, PET_SLOT)) {
+        return true;
+    }
+
+    return Stage::get().get_player().get_pet(0) != nullptr;
+}
+
+Point<int16_t> UIEquipInventory::pet_origin() const {
+    return Point<int16_t>(dimension_.x(), 0);
+}
+
+bool UIEquipInventory::in_pet_cell(Point<int16_t> cursorpos) const {
+    if (!pet_visible()) {
+        return false;
+    }
+
+    Point<int16_t> lt = position_ + pet_origin() + PET_CELL;
+
+    return Rectangle<int16_t>(lt, lt + Point<int16_t>(32, 32)).contains(cursorpos);
+}
+
+void UIEquipInventory::update_pet_slot() {
+    if (int32_t item_id =
+            inventory_.get_item_id(InventoryType::Id::EQUIPPED, PET_SLOT)) {
+        pet_icon_ = std::make_unique<Icon>(std::make_unique<EquipIcon>(PET_SLOT),
+                                           ItemData::get(item_id).get_icon(false),
+                                           -1);
+    } else {
+        pet_icon_.reset();
+    }
+
+    clear_tooltip();
 }
 
 Button::State UIEquipInventory::button_pressed(uint16_t id) {
@@ -150,6 +196,8 @@ void UIEquipInventory::load_icons() {
     for (auto iter : EquipSlot::values) {
         update_slot(iter);
     }
+
+    update_pet_slot();
 }
 
 Cursor::State UIEquipInventory::send_cursor(bool pressed,
@@ -160,6 +208,26 @@ Cursor::State UIEquipInventory::send_cursor(bool pressed,
         clear_tooltip();
 
         return dstate;
+    }
+
+    if (in_pet_cell(cursorpos)) {
+        if (pet_icon_) {
+            if (pressed) {
+                pet_icon_->start_drag(cursorpos - position_ - pet_origin() - PET_CELL);
+                UI::get().drag_icon(pet_icon_.get());
+                clear_tooltip();
+
+                return Cursor::State::GRABBING;
+            }
+
+            UI::get().show_equip(Tooltip::Parent::EQUIP_INVENTORY, PET_SLOT);
+
+            return Cursor::State::CAN_GRAB;
+        }
+
+        clear_tooltip();
+
+        return Cursor::State::IDLE;
     }
 
     EquipSlot::Id slot = slot_by_position(cursorpos);
@@ -204,6 +272,17 @@ UIElement::Type UIEquipInventory::get_type() const {
 }
 
 void UIEquipInventory::doubleclick(Point<int16_t> cursorpos) {
+    if (in_pet_cell(cursorpos)) {
+        if (pet_icon_) {
+            if (int16_t freeslot =
+                    inventory_.find_free_slot(InventoryType::Id::EQUIP)) {
+                fn_unequip_item(PET_SLOT, freeslot);
+            }
+        }
+
+        return;
+    }
+
     EquipSlot::Id slot = slot_by_position(cursorpos);
 
     if (icons_[slot]) {
@@ -222,10 +301,25 @@ bool UIEquipInventory::is_in_range(Point<int16_t> cursorpos) const {
         Rectangle<int16_t>(position_, position_ + totem_dimensions_);
     totem_bounds.shift(totem_adj_);
 
+    if (pet_visible()) {
+        Rectangle<int16_t> pet_bounds(position_ + pet_origin(),
+                                      position_ + pet_origin() + pet_bg_.get_dimensions());
+
+        if (pet_bounds.contains(cursorpos)) {
+            return true;
+        }
+    }
+
     return bounds.contains(cursorpos) || totem_bounds.contains(cursorpos);
 }
 
 bool UIEquipInventory::send_icon(const Icon &icon, Point<int16_t> cursorpos) {
+    if (in_pet_cell(cursorpos)) {
+        icon.drop_on_equips(static_cast<EquipSlot::Id>(PET_SLOT));
+
+        return true;
+    }
+
     if (EquipSlot::Id slot = slot_by_position(cursorpos)) {
         icon.drop_on_equips(slot);
     }
@@ -240,6 +334,14 @@ void UIEquipInventory::toggle_active() {
 }
 
 void UIEquipInventory::modify(int16_t pos, int8_t mode, int16_t arg) {
+    if (pos == PET_SLOT || arg == PET_SLOT) {
+        update_pet_slot();
+
+        if (pos == PET_SLOT && (mode == 0 || mode == 3)) {
+            return;
+        }
+    }
+
     EquipSlot::Id eqpos = EquipSlot::by_id(pos);
     EquipSlot::Id eqarg = EquipSlot::by_id(arg);
 

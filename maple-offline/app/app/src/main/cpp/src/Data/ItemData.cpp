@@ -60,8 +60,15 @@ ItemData::ItemData(int32_t id) : item_id_(id) {
             break;
         case 5:
             category_ = "Cash";
-            src = nl::nx::item["Cash"][strprefix + ".img"][strid]["info"];
-            strsrc = nl::nx::string["Cash.img"][std::to_string(item_id_)];
+
+            if (item_id_ / 10000 == 500) {
+                // pets live in Item/Pet/<id>.img, names in String/Pet.img
+                src = nl::nx::item["Pet"][std::to_string(item_id_) + ".img"]["info"];
+                strsrc = nl::nx::string["Pet.img"][std::to_string(item_id_)];
+            } else {
+                src = nl::nx::item["Cash"][strprefix + ".img"][strid]["info"];
+                strsrc = nl::nx::string["Cash.img"][std::to_string(item_id_)];
+            }
             break;
     }
 
@@ -99,6 +106,11 @@ std::string ItemData::get_eqcategory(int32_t id) const {
 
     if (index >= 30 && index <= 70) {
         return "Weapon";
+    }
+
+    // 180 pet equipment
+    if (index == 80) {
+        return "PetEquip";
     }
 
     // 190 mount, 191 saddle, 193 skill mounts
