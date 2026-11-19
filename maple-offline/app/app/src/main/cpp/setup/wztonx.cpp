@@ -1345,4 +1345,8 @@ Converts WZ files into NX files
         << std::chrono::duration_cast<std::chrono::seconds>(b - a).count() << " seconds"
         << std::endl;
     std::cerr.rdbuf(old);
+    // maple-offline: the function had no return; clang -O2 on Android turns
+    // falling off the end of a non-void function into a trap, which killed
+    // the app right after the first file (Base) was converted.
+    return 0;
 }
