@@ -517,6 +517,308 @@ index 362ee89f..88743270 100644
  var minLevel = 50, maxLevel = 255;
  var entryMap = 280030000;
  var exitMap = 211042400;
+diff --git a/scripts/npc/1002000.js b/scripts/npc/1002000.js
+index 490837a3..1090bea0 100644
+--- a/scripts/npc/1002000.js
++++ b/scripts/npc/1002000.js
+@@ -42,7 +42,7 @@ function action(mode, type, selection) {
+         } else if (selection == 1) {
+             var selStr = cm.getJobId() == 0 ? "There's a special 90% discount for all beginners. Alright, where would you want to go?#b" : "Oh you aren't a beginner, huh? Then I'm afraid I may have to charge you full price. Where would you like to go?#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cost[i] / (cm.getJobId() == 0 ? 10 : 1)) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cost[i] / (cm.getJobId() == 0 ? 10 : 1)) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         }
+diff --git a/scripts/npc/1002007.js b/scripts/npc/1002007.js
+index beda2bfd..d831f93b 100644
+--- a/scripts/npc/1002007.js
++++ b/scripts/npc/1002007.js
+@@ -39,11 +39,11 @@ function action(mode, type, selection) {
+ 
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/1002100.js b/scripts/npc/1002100.js
+index a99a7140..fcbba3e1 100644
+--- a/scripts/npc/1002100.js
++++ b/scripts/npc/1002100.js
+@@ -50,7 +50,7 @@ function action(mode, type, selection) {
+     if (status == 0) {
+         var selStr = "Which item would you like to buy?#b";
+         for (var i = 0; i < items.length; i++) {
+-            selStr += "\r\n#L" + i + "##i" + items[i][0] + "# (Price : " + items[i][1] + " mesos)#l";
++            selStr += "\r\n#L" + i + "##i" + items[i][0] + "# (Price : " + items[i][1] + " 메소)#l";
+         }
+         cm.sendSimple(selStr);
+     } else if (status == 1) {
+diff --git a/scripts/npc/1012000.js b/scripts/npc/1012000.js
+index 08a21bdd..7816c19f 100644
+--- a/scripts/npc/1012000.js
++++ b/scripts/npc/1012000.js
+@@ -28,11 +28,11 @@ function action(mode, type, selection) {
+         if (status == 1) {
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/1012100.js b/scripts/npc/1012100.js
+index 95a7f8e5..d9a15426 100644
+--- a/scripts/npc/1012100.js
++++ b/scripts/npc/1012100.js
+@@ -151,7 +151,7 @@ function action(mode, type, selection) {
+     } else if (actionx["2ndJob"]) {
+         if (status == 0) {
+             if (cm.haveItem(4031012)) {
+-                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#Please explain to me what being the Hunter is all about.\r\n#L1#Please explain to me what being the Crossbowman is all about.\r\n#L3#I'll choose my occupation!");
++                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#헌터 설명 듣기\r\n#L1#사수 설명 듣기\r\n#L3#직업 고르기");
+             } else {
+                 cm.sendNext("Good decision. You look strong, but I need to see if you really are strong enough to pass the test, it's not a difficult test, so you'll do just fine. Here, take my letter first... make sure you don't lose it!");
+                 if (!cm.isQuestStarted(100000)) {
+@@ -180,7 +180,7 @@ function action(mode, type, selection) {
+ 
+                     status -= 2;
+                 } else {
+-                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#Hunter\r\n#L1#Crossbowman");
++                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#헌터\r\n#L1#사수");
+                 }
+             }
+         } else if (status == 2) {
+diff --git a/scripts/npc/1022000.js b/scripts/npc/1022000.js
+index 65bbb799..9ab19af6 100644
+--- a/scripts/npc/1022000.js
++++ b/scripts/npc/1022000.js
+@@ -151,7 +151,7 @@ function action(mode, type, selection) {
+     } else if (actionx["2ndJob"]) {
+         if (status == 0) {
+             if (cm.haveItem(4031012)) {
+-                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#Please explain to me what being the Fighter is all about.\r\n#L1#Please explain to me what being the Page is all about.\r\n#L2#Please explain to me what being the Spearman is all about.\r\n#L3#I'll choose my occupation!");
++                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#파이터 설명 듣기\r\n#L1#페이지 설명 듣기\r\n#L2#스피어맨 설명 듣기\r\n#L3#직업 고르기");
+             } else {
+                 cm.sendNext("Good decision. You look strong, but I need to see if you really are strong enough to pass the test, it's not a difficult test, so you'll do just fine. Here, take my letter first... make sure you don't lose it!");
+                 if (!cm.isQuestStarted(100003)) {
+@@ -181,7 +181,7 @@ function action(mode, type, selection) {
+ 
+                     status -= 2;
+                 } else {
+-                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#Fighter\r\n#L1#Page\r\n#L2#Spearman");
++                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#파이터\r\n#L1#페이지\r\n#L2#스피어맨");
+                 }
+             }
+         } else if (status == 2) {
+diff --git a/scripts/npc/1022001.js b/scripts/npc/1022001.js
+index 34ab757f..924efc8f 100644
+--- a/scripts/npc/1022001.js
++++ b/scripts/npc/1022001.js
+@@ -28,11 +28,11 @@ function action(mode, type, selection) {
+         if (status == 1) {
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/1032000.js b/scripts/npc/1032000.js
+index e496e3b5..99a701db 100644
+--- a/scripts/npc/1032000.js
++++ b/scripts/npc/1032000.js
+@@ -29,11 +29,11 @@ function action(mode, type, selection) {
+         if (status == 1) {
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/1032001.js b/scripts/npc/1032001.js
+index 2dd03db3..e20550e2 100644
+--- a/scripts/npc/1032001.js
++++ b/scripts/npc/1032001.js
+@@ -155,7 +155,7 @@ function action(mode, type, selection) {
+     } else if (actionx["2ndJob"]) {
+         if (status == 0) {
+             if (cm.haveItem(4031012)) {
+-                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#Please explain to me what being the Wizard (Fire / Poison) is all about.\r\n#L1#Please explain to me what being the Wizard (Ice / Lighting) is all about.\r\n#L2#Please explain to me what being the Cleric is all about.\r\n#L3#I'll choose my occupation!");
++                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#위자드(불·독) 설명 듣기\r\n#L1#위자드(썬·콜) 설명 듣기\r\n#L2#클레릭 설명 듣기\r\n#L3#직업 고르기");
+             } else {
+                 cm.sendNext("Good decision. You look strong, but I need to see if you really are strong enough to pass the test, it's not a difficult test, so you'll do just fine. Here, take my letter first... make sure you don't lose it!");
+                 if (!cm.isQuestStarted(100006)) {
+@@ -185,7 +185,7 @@ function action(mode, type, selection) {
+ 
+                     status -= 2;
+                 } else {
+-                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#Wizard (Fire / Poison)\r\n#L1#Wizard (Ice / Lighting)\r\n#L2#Cleric");
++                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#위자드(불·독)\r\n#L1#위자드(썬·콜)\r\n#L2#클레릭");
+                 }
+             }
+         } else if (status == 2) {
+diff --git a/scripts/npc/1052001.js b/scripts/npc/1052001.js
+index 5d99c65e..ad70e106 100644
+--- a/scripts/npc/1052001.js
++++ b/scripts/npc/1052001.js
+@@ -154,7 +154,7 @@ function action(mode, type, selection) {
+     } else if (actionx["2ndJob"]) {
+         if (status == 0) {
+             if (cm.haveItem(4031012)) {
+-                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#Please explain to me what being the Assassin is all about.\r\n#L1#Please explain to me what being the Bandit is all about.\r\n#L3#I'll choose my occupation!");
++                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#어쌔신 설명 듣기\r\n#L1#시프 설명 듣기\r\n#L3#직업 고르기");
+             } else {
+                 cm.sendNext("Good decision. You look strong, but I need to see if you really are strong enough to pass the test, it's not a difficult test, so you'll do just fine. Here, take my letter first... make sure you don't lose it!");
+                 if (!cm.isQuestStarted(100009)) {
+@@ -182,7 +182,7 @@ function action(mode, type, selection) {
+ 
+                     status -= 2;
+                 } else {
+-                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#Assassin\r\n#L1#Bandit");
++                    cm.sendSimple("Now... have you made up your mind? Please choose the job you'd like to select for your 2nd job advancement. #b\r\n#L0#어쌔신\r\n#L1#시프");
+                 }
+             }
+         } else if (status == 2) {
+diff --git a/scripts/npc/1052006.js b/scripts/npc/1052006.js
+index b6f37079..d7cdadde 100644
+--- a/scripts/npc/1052006.js
++++ b/scripts/npc/1052006.js
+@@ -27,7 +27,7 @@ function action(mode, type, selection) {
+         } else {
+             var selStr = "Which ticket would you like?#b";
+             for (var i = 0; i < zones; i++) {
+-                selStr += "\r\n#L" + i + "#Construction site B" + (i + 1) + " (" + cost + " mesos)#l";
++                selStr += "\r\n#L" + i + "#Construction site B" + (i + 1) + " (" + cost + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         }
+diff --git a/scripts/npc/1052007.js b/scripts/npc/1052007.js
+index a3bdc194..84a3dabd 100644
+--- a/scripts/npc/1052007.js
++++ b/scripts/npc/1052007.js
+@@ -6,7 +6,7 @@ var NLC = false;
+ var em;
+ 
+ function start() {
+-    cm.sendSimple("Pick your destination.\n\r\n#L0##bKerning Square Shopping Center#l\n\n\r\n#L1#Enter Contruction Site#l\r\n#L2#New Leaf City#l");
++    cm.sendSimple("Pick your destination.\n\r\n#L0##b커닝 스퀘어#l\n\n\r\n#L1#공사장 들어가기#l\r\n#L2#뉴리프 시티#l");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/1052016.js b/scripts/npc/1052016.js
+index 72aa8396..9e81ed6a 100644
+--- a/scripts/npc/1052016.js
++++ b/scripts/npc/1052016.js
+@@ -28,11 +28,11 @@ function action(mode, type, selection) {
+         if (status == 1) {
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/1061100.js b/scripts/npc/1061100.js
+index 076ef93c..35dd08c7 100644
+--- a/scripts/npc/1061100.js
++++ b/scripts/npc/1061100.js
+@@ -52,7 +52,7 @@ function action(mode, type, selection) {
+         }
+         status++;
+         if (status == 1) {
+-            cm.sendSimple("We offer two kinds of rooms for our service. Please choose the one of your liking.\r\n#b#L0#Regular sauna (" + regcost + " mesos per use)#l\r\n#L1#VIP sauna (" + vipcost + " mesos per use)#l");
++            cm.sendSimple("We offer two kinds of rooms for our service. Please choose the one of your liking.\r\n#b#L0#일반 사우나 (" + regcost + " mesos per use)#l\r\n#L1#VIP 사우나 (" + vipcost + " mesos per use)#l");
+             iwantreg = 1;
+         } else if (status == 2) {
+             if (selection == 0) {
+diff --git a/scripts/npc/1090000.js b/scripts/npc/1090000.js
+index 6c8a5aa3..3c706ade 100644
+--- a/scripts/npc/1090000.js
++++ b/scripts/npc/1090000.js
+@@ -202,7 +202,7 @@ function action(mode, type, selection) {
+     } else if (actionx["2ndJob"]) {
+         if (status == 0) {
+             if (cm.isQuestCompleted(2191) || cm.isQuestCompleted(2192)) {
+-                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#Please explain to me what being the Brawler is all about.\r\n#L1#Please explain to me what being the Gunslinger is all about.\r\n#L3#I'll choose my occupation!");
++                cm.sendSimple("Alright, when you have made your decision, click on [I'll choose my occupation] at the bottom.#b\r\n#L0#인파이터 설명 듣기\r\n#L1#건슬링거 설명 듣기\r\n#L3#직업 고르기");
+             } else {
+                 cm.sendNext("Good decision. You look strong, but I need to see if you really are strong enough to pass the test, it's not a difficult test, so you'll do just fine.");
+             }
+diff --git a/scripts/npc/1092014.js b/scripts/npc/1092014.js
+index 74193ed6..106c4c3f 100644
+--- a/scripts/npc/1092014.js
++++ b/scripts/npc/1092014.js
+@@ -27,11 +27,11 @@ function action(mode, type, selection) {
+         if (status == 1) {
+             var selStr = "";
+             if (cm.getJobId() == 0) {
+-                selStr += "We have a special 90% discount for beginners.";
++                selStr += "초보자는 요금 90% 할인.";
+             }
+-            selStr += "Choose your destination, for fees will change from place to place.#b";
++            selStr += "목적지를 고르세요. 요금은 곳마다 달라요.#b";
+             for (var i = 0; i < maps.length; i++) {
+-                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " mesos)#l";
++                selStr += "\r\n#L" + i + "##m" + maps[i] + "# (" + (cm.getJobId() == 0 ? cost[i] / 10 : cost[i]) + " 메소)#l";
+             }
+             cm.sendSimple(selStr);
+         } else if (status == 2) {
+diff --git a/scripts/npc/2013000.js b/scripts/npc/2013000.js
+index 3d2b1110..cc2321f9 100644
+--- a/scripts/npc/2013000.js
++++ b/scripts/npc/2013000.js
+@@ -59,7 +59,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Tower of Goddess>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble or join a team to solve the puzzles of the #bTower of Goddess#k? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.\r\n#L3#I would like to reclaim a prize.");
++                cm.sendSimple("#e#b<Party Quest: Tower of Goddess>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble or join a team to solve the puzzles of the #bTower of Goddess#k? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기\r\n#L3#보상 다시 받기");
+             } else if (status == 1) {
+                 if (selection == 0) {
+                     if (cm.getParty() == null) {
+@@ -88,7 +88,7 @@ function action(mode, type, selection) {
+                     cm.sendOk("#e#b<Party Quest: Tower of Goddess>#k#n\r\nOur goddess has been missing since some time ago, rumor has it She has been seen last time inside the Tower of Goddess. Furthermore, our sanctuary has been seized by the overwhelming forces of the pixies, those beings that are recently wandering at the outskirts of Orbis. Their leader, Papa Pixie, currently holds the throne and may know Her whereabouts, so we urge to find a composition of brave heroes to charge into and claim back our sanctuary and rescue Her. If your team is able to be a composite of every job niche available (Warrior, Magician, Bowman, Thief and Pirate), you guys will receive my blessings to aid you in battle. Will you aid us?\r\n");
+                     cm.dispose();
+                 } else {
+-                    cm.sendSimple("So, what prize do you want to obtain?\r\n#b#L0#Give me Goddess Wristband.\r\n");
++                    cm.sendSimple("So, what prize do you want to obtain?\r\n#b#L0#여신의 팔찌 받기\r\n");
+                 }
+             } else if (status == 2) {
+                 if (selection == 0) {
 diff --git a/scripts/npc/2013001.js b/scripts/npc/2013001.js
 index 98a2c4df..e794f694 100644
 --- a/scripts/npc/2013001.js
@@ -549,6 +851,106 @@ index 98a2c4df..e794f694 100644
                          cm.sendOk("There needs to be exactly 3 players on these platforms.");
                      } else {
                          var num_correct = 0;
+diff --git a/scripts/npc/2020008.js b/scripts/npc/2020008.js
+index 5e4b8b54..09159850 100644
+--- a/scripts/npc/2020008.js
++++ b/scripts/npc/2020008.js
+@@ -71,7 +71,7 @@ function start() {
+     } else if (cm.haveItem(4031057)) {
+         actionx["Physical"] = true;
+     }
+-    cm.sendSimple("Can I help you?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
++    cm.sendSimple("Can I help you?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#3차 전직 하기" : "") + "\r\n#L1#자쿰 던전 퀘스트 받기");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/2020009.js b/scripts/npc/2020009.js
+index 08af26e0..c17187b4 100644
+--- a/scripts/npc/2020009.js
++++ b/scripts/npc/2020009.js
+@@ -44,7 +44,7 @@ function start() {
+     } else if (cm.haveItem(4031057)) {
+         actionx["Physical"] = true;
+     }
+-    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
++    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#3차 전직 하기" : "") + "\r\n#L1#자쿰 던전 퀘스트 받기");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/2020010.js b/scripts/npc/2020010.js
+index 30386696..b1622169 100644
+--- a/scripts/npc/2020010.js
++++ b/scripts/npc/2020010.js
+@@ -46,7 +46,7 @@ function start() {
+     } else if (cm.haveItem(4031057)) {
+         actionx["Physical"] = true;
+     }
+-    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
++    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#3차 전직 하기" : "") + "\r\n#L1#자쿰 던전 퀘스트 받기");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/2020011.js b/scripts/npc/2020011.js
+index 8891e3be..db9b4131 100644
+--- a/scripts/npc/2020011.js
++++ b/scripts/npc/2020011.js
+@@ -44,7 +44,7 @@ function start() {
+     } else if (cm.haveItem(4031057)) {
+         actionx["Physical"] = true;
+     }
+-    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
++    cm.sendSimple("Anything you want from me?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#3차 전직 하기" : "") + "\r\n#L1#자쿰 던전 퀘스트 받기");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/2020013.js b/scripts/npc/2020013.js
+index fc18a21e..f4ff2fa7 100644
+--- a/scripts/npc/2020013.js
++++ b/scripts/npc/2020013.js
+@@ -44,7 +44,7 @@ function start() {
+     } else if (cm.haveItem(4031057)) {
+         actionx["Physical"] = true;
+     }
+-    cm.sendSimple("Can I help you?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#I want to make the 3th job advancement." : "") + "\r\n#L1#Please allow me to do the Zakum Dungeon Quest.");
++    cm.sendSimple("Can I help you?#b" + (cm.getJobId() % 10 == 0 ? "\r\n#L0#3차 전직 하기" : "") + "\r\n#L1#자쿰 던전 퀘스트 받기");
+ }
+ 
+ function action(mode, type, selection) {
+diff --git a/scripts/npc/2030013.js b/scripts/npc/2030013.js
+index 01b7c1e5..65b54c71 100644
+--- a/scripts/npc/2030013.js
++++ b/scripts/npc/2030013.js
+@@ -36,7 +36,7 @@ var expedBoss = "Zakum";
+ var expedMap = "Zakum's Altar";
+ var expedItem = 4001017;
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -61,7 +61,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {    // thanks Conrad for noticing exped leaders being able to still manage in-progress expeds
+diff --git a/scripts/npc/2040034.js b/scripts/npc/2040034.js
+index 509261aa..d2d56dae 100644
+--- a/scripts/npc/2040034.js
++++ b/scripts/npc/2040034.js
+@@ -39,7 +39,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: Dimensional Schism>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou can't go any higher because of the extremely dangerous creatures above. Would you like to collaborate with party members to complete the quest? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++            cm.sendSimple("#e#b<Party Quest: Dimensional Schism>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou can't go any higher because of the extremely dangerous creatures above. Would you like to collaborate with party members to complete the quest? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
 diff --git a/scripts/npc/2040043.js b/scripts/npc/2040043.js
 index 60024208..b43e0088 100644
 --- a/scripts/npc/2040043.js
@@ -588,6 +990,84 @@ index 60024208..b43e0088 100644
                      if (playersOnCombo == 5 || cm.getPlayer().gmLevel() > 1) {
                          var comboStr = eim.getProperty("stage" + stage + "combo");
                          if (comboStr == null) {
+diff --git a/scripts/npc/2081100.js b/scripts/npc/2081100.js
+index 9b23238c..1cdf5a9c 100644
+--- a/scripts/npc/2081100.js
++++ b/scripts/npc/2081100.js
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+             } else if (cm.getJobId() % 100 % 10 != 2) {
+                 cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+             } else {
+-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
++                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#직업 스킬 배우기#l");
+             }
+         } else if (status == 1) {
+             if (mode >= 1 && cm.getJobId() % 100 % 10 != 2) {
+diff --git a/scripts/npc/2081200.js b/scripts/npc/2081200.js
+index 2becc627..a400eb10 100644
+--- a/scripts/npc/2081200.js
++++ b/scripts/npc/2081200.js
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+             } else if (cm.getJobId() % 100 % 10 != 2) {
+                 cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+             } else {
+-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
++                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#직업 스킬 배우기#l");
+                 //cm.dispose();
+             }
+         } else if (status == 1) {
+diff --git a/scripts/npc/2081300.js b/scripts/npc/2081300.js
+index d088c26e..b5966b02 100644
+--- a/scripts/npc/2081300.js
++++ b/scripts/npc/2081300.js
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+             } else if (cm.getJobId() % 100 % 10 != 2) {
+                 cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+             } else {
+-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
++                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#직업 스킬 배우기#l");
+                 //cm.dispose();
+             }
+         } else if (status == 1) {
+diff --git a/scripts/npc/2081400.js b/scripts/npc/2081400.js
+index 9b50f646..678491a6 100644
+--- a/scripts/npc/2081400.js
++++ b/scripts/npc/2081400.js
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+             } else if (cm.getJobId() % 100 % 10 != 2) {
+                 cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+             } else {
+-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
++                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#직업 스킬 배우기#l");
+                 //cm.dispose();
+             }
+         } else if (status == 1) {
+diff --git a/scripts/npc/2081500.js b/scripts/npc/2081500.js
+index dc03ff40..96eb4dd8 100644
+--- a/scripts/npc/2081500.js
++++ b/scripts/npc/2081500.js
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+             } else if (cm.getJobId() % 100 % 10 != 2) {
+                 cm.sendYesNo("You did a marvellous job passing my test. Are you ready to advance to your 4th job?");
+             } else {
+-                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#Teach me the skills of my class.#l");
++                cm.sendSimple("If I must, I can teach you the art of your class.\r\n#b#L0#직업 스킬 배우기#l");
+                 //cm.dispose();
+             }
+         } else if (status == 1) {
+diff --git a/scripts/npc/9020000.js b/scripts/npc/9020000.js
+index 49c4ed30..3213edc8 100644
+--- a/scripts/npc/9020000.js
++++ b/scripts/npc/9020000.js
+@@ -62,7 +62,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: 1st Accompaniment>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHow about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: 1st Accompaniment>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHow about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             }
+         } else if (status == 1) {
+             if (state == 1) {
 diff --git a/scripts/npc/9020001.js b/scripts/npc/9020001.js
 index 32adc9bf..19010dee 100644
 --- a/scripts/npc/9020001.js

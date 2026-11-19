@@ -57,7 +57,7 @@ public abstract class AbstractScriptManager {
 //                }
 //
 //                enableScriptHostAccess(graalScriptEngine);
-                Reader reader = new InputStreamReader(is);
+                Reader reader = new InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8);
                 engine.eval(reader);
                 return engine;
             } catch (final ScriptException t) {
