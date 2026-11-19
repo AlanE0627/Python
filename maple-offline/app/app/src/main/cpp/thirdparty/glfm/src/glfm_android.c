@@ -1452,8 +1452,16 @@ static void glfm__onInputEvent(GLFMPlatformData *platformData) {
         if (AInputQueue_preDispatchEvent(platformData->inputQueue, event)) {
             continue;
         }
-        bool handled = glfm__onGamepadEvent(platformData, event);
         int32_t eventType = AInputEvent_getType(event);
+        // maple-offline: volume keys belong to the system (media volume)
+        if (eventType == AINPUT_EVENT_TYPE_KEY) {
+            int32_t vk = AKeyEvent_getKeyCode(event);
+            if (vk == AKEYCODE_VOLUME_UP || vk == AKEYCODE_VOLUME_DOWN || vk == AKEYCODE_VOLUME_MUTE) {
+                AInputQueue_finishEvent(platformData->inputQueue, event, 0);
+                continue;
+            }
+        }
+        bool handled = glfm__onGamepadEvent(platformData, event);
         if (handled) {
             // consumed by controller handling
         } else if (eventType == AINPUT_EVENT_TYPE_KEY) {

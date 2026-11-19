@@ -444,6 +444,31 @@ public class EventInstanceManager {
         if (!mob.getStats().isFriendly()) { //We cannot register moon bunny
             mobs.add(mob);
         }
+
+        scalePartyQuestBoss(mob);
+    }
+
+    // maple-offline: party quests get played alone here. A boss spawned in a
+    // party quest starts with HP for the players inside: 1/5 alone, 2/5 for
+    // two ... full HP from five players up. Expedition bosses (Zakum,
+    // Horntail, Pink Bean ...) keep their HP.
+    private void scalePartyQuestBoss(Monster mob) {
+        if (!mob.isBoss() || em == null) {
+            return;
+        }
+
+        String event = em.getName();
+        if (event == null || !(event.contains("PQ") || event.equals("GuildQuest"))) {
+            return;
+        }
+
+        int players = Math.max(1, getPlayerCount());
+        if (players >= 5) {
+            return;
+        }
+
+        long hp = (long) mob.getMaxHp() * players / 5;
+        mob.setStartingHp((int) Math.max(1, hp));
     }
 
     public void movePlayer(final Character chr) {

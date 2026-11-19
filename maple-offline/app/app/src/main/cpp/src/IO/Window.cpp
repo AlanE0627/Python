@@ -279,11 +279,19 @@ namespace ms {
             }
             glViewport(0, 0, dw, dh);
         }
+        // maple-offline: the leftover time has to carry over to the next
+        // frame. It was reset to a full step every frame, so every frame ran
+        // one extra update: about 1.9x game speed at 120 Hz, 1.4x at 60 Hz.
         const int64_t timestep = Constants::TIMESTEP * 1000;
-        int64_t accumulator = timestep;
+        static int64_t accumulator = 0;
         if (game.is_running()) {
             ImeBridge::poll();
             int64_t elapsed = Timer::get().stop();
+
+            // after a pause (app in background) do not replay the gap
+            if (elapsed > 250000) {
+                elapsed = timestep;
+            }
 
             // Update game with constant timestep as many times as possible.
             for (accumulator += elapsed; accumulator >= timestep;

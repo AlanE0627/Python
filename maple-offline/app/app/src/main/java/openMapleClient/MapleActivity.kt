@@ -35,6 +35,8 @@ class MapleActivity : NativeActivity() {
         }
         com.mapleserver.GameState.nativeUsed = true
         super.onCreate(savedInstanceState)
+        // volume keys change the game sound (media) volume
+        volumeControlStream = android.media.AudioManager.STREAM_MUSIC
 
         val edit = EditText(this).apply {
             alpha = 0f
