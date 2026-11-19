@@ -25,6 +25,8 @@ namespace nl::nx
 //! Pre-defined nodes to access standard MapleStory-style data.
 //! Make sure you called `load_all()` first.
 extern node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui;
+// maple-offline: small Korean UI overlay (UI_ko.nx, tools/nx_merge_ui.py --overlay); empty node when absent
+extern node uiko;
 //! Loads the pre-defined nodes from a standard setup of NX files for
 //! MapleStory.
 //! Only call this function once.

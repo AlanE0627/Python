@@ -63,7 +63,7 @@ class GameLauncherActivity : Activity() {
     // (assets/ko) and replace the English data whenever the bundled copy
     // differs (the client prefers String_ko.nx / Quest_ko.nx when present).
     private fun installKoreanData(dataDir: File) {
-        for (name in listOf("String_ko.nx", "Quest_ko.nx")) {
+        for (name in listOf("String_ko.nx", "Quest_ko.nx", "UI_ko.nx")) {
             try {
                 val dst = File(dataDir, name)
                 val size = assets.openFd("ko/$name").use { it.length }

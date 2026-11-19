@@ -52,6 +52,56 @@ UIRaceSelect::UIRaceSelect() :
     nl::node Login = nl::nx::ui["Login.img"];
     nl::node Common = Login["Common"];
     nl::node RaceSelect = Login["RaceSelect"];
+    nl::node KoRace = nl::nx::uiko["Login.img"]["RaceSelect"];
+
+    if (KoRace["BtDual"]) {
+        RaceSelect = KoRace;
+        kms_ = true;
+        sprites_.emplace_back(Common["frame"], Point<int16_t>(400, 300));
+        sprites_.emplace_back(Common["step"]["3"], Point<int16_t>(40, 0));
+
+        // card order on screen: Dual Blade, Explorers / Cygnus, Aran, Evan
+        const Point<int16_t> top_l(110, 52), top_r(404, 52);
+        const Point<int16_t> bot[3] = { Point<int16_t>(110, 276),
+                                        Point<int16_t>(306, 276),
+                                        Point<int16_t>(502, 276) };
+        race_pos_[EXPLORER] = top_r;
+        race_pos_[CYGNUSKNIGHTS] = bot[0];
+        race_pos_[ARAN] = bot[1];
+
+        buttons_[Buttons::RACE0 + EXPLORER] =
+            std::make_unique<MapleButton>(RaceSelect["BtNormal"], top_r);
+        buttons_[Buttons::RACE0 + CYGNUSKNIGHTS] =
+            std::make_unique<MapleButton>(RaceSelect["BtKnight"], bot[0]);
+        buttons_[Buttons::RACE0 + ARAN] =
+            std::make_unique<MapleButton>(RaceSelect["BtAran"], bot[1]);
+        buttons_[Buttons::KMS_DUAL] =
+            std::make_unique<MapleButton>(RaceSelect["BtDual"], top_l);
+        buttons_[Buttons::KMS_EVAN] =
+            std::make_unique<MapleButton>(RaceSelect["BtEvan"], bot[2]);
+        buttons_[Buttons::KMS_DUAL]->set_state(Button::State::DISABLED);
+        buttons_[Buttons::KMS_EVAN]->set_state(Button::State::DISABLED);
+
+        nl::node confirm = RaceSelect["confirm"];
+        confirm_bg_ = confirm["backgrnd"];
+
+        for (size_t i = 0; i < confirm_race_.size(); i++) {
+            confirm_race_[i] = confirm["race"][std::to_string(i)];
+        }
+
+        const Point<int16_t> cpos(293, 244);
+        buttons_[Buttons::CONFIRM_OK] = std::make_unique<MapleButton>(
+            confirm["BtOK"], cpos + Point<int16_t>(52, 78));
+        buttons_[Buttons::CONFIRM_CANCEL] = std::make_unique<MapleButton>(
+            confirm["BtCancel"], cpos + Point<int16_t>(111, 78));
+        buttons_[Buttons::BACK] =
+            std::make_unique<MapleButton>(Common["BtStart"], Point<int16_t>(0, 515));
+
+        open_confirm(false);
+        selected_race_ = EXPLORER;
+        dimension_ = Point<int16_t>(800, 600);
+        return;
+    }
 
     sprites_.emplace_back(Common["frame"], Point<int16_t>(400, 300));
     sprites_.emplace_back(Common["step"]["3"], Point<int16_t>(40, 0));
@@ -87,6 +137,27 @@ UIRaceSelect::UIRaceSelect() :
 void UIRaceSelect::draw(float inter) const {
     UIElement::draw_sprites(inter);
 
+    if (kms_) {
+        for (auto &[id, button] : buttons_) {
+            if (id != Buttons::CONFIRM_OK && id != Buttons::CONFIRM_CANCEL && button) {
+                button->draw(position_);
+            }
+        }
+
+        if (confirm_open_) {
+            const Point<int16_t> cpos(293, 244);
+            confirm_bg_.draw(position_ + cpos);
+            // race names: 0 Explorer, 1 Cygnus, 2 Aran, 3 Evan, 4 Dual Blade
+            const uint8_t name_idx[NUM_RACES] = { 0, 1, 2 };
+            confirm_race_[name_idx[selected_race_]].draw(
+                position_ + cpos + Point<int16_t>(70, 26));
+            buttons_.at(Buttons::CONFIRM_OK)->draw(position_);
+            buttons_.at(Buttons::CONFIRM_CANCEL)->draw(position_);
+        }
+
+        return;
+    }
+
     title_.draw(position_ + TITLE_POS);
 
     for (uint8_t i = 0; i < NUM_RACES; i++) {
@@ -102,6 +173,10 @@ void UIRaceSelect::draw(float inter) const {
 
 void UIRaceSelect::update() {
     UIElement::update();
+
+    if (kms_) {
+        return;
+    }
 
     on_animation_[selected_race_].update();
 }
@@ -142,6 +217,19 @@ Cursor::State UIRaceSelect::send_cursor(bool clicked,
 
 void UIRaceSelect::send_key(int32_t keycode, bool pressed, bool escape) {
     if (!pressed) {
+        return;
+    }
+
+    if (kms_) {
+        if (escape) {
+            if (confirm_open_) open_confirm(false); else show_charselect();
+        } else if (keycode == KeyAction::Id::RETURN) {
+            if (confirm_open_) start_creation(); else open_confirm(true);
+        } else if (!confirm_open_ && (keycode == KeyAction::Id::LEFT
+                                      || keycode == KeyAction::Id::RIGHT)) {
+            int step = keycode == KeyAction::Id::LEFT ? NUM_RACES - 1 : 1;
+            select_race((selected_race_ + step) % NUM_RACES);
+        }
         return;
     }
 
@@ -192,6 +280,24 @@ void UIRaceSelect::send_naming_result(bool nameused) {
 }
 
 Button::State UIRaceSelect::button_pressed(uint16_t buttonid) {
+    if (kms_) {
+        switch (buttonid) {
+            case Buttons::BACK:
+                if (!confirm_open_) show_charselect();
+                return Button::State::NORMAL;
+            case Buttons::CONFIRM_OK: start_creation(); return Button::State::NORMAL;
+            case Buttons::CONFIRM_CANCEL: open_confirm(false); return Button::State::NORMAL;
+            case Buttons::KMS_DUAL:
+            case Buttons::KMS_EVAN: return Button::State::DISABLED;
+            default:
+                if (!confirm_open_ && buttonid >= Buttons::RACE0 && buttonid <= Buttons::RACE2) {
+                    select_race(static_cast<uint8_t>(buttonid - Buttons::RACE0));
+                    open_confirm(true);
+                }
+                return Button::State::NORMAL;
+        }
+    }
+
     switch (buttonid) {
         case Buttons::BACK: show_charselect(); break;
         case Buttons::SELECT: start_creation(); break;
@@ -220,6 +326,11 @@ void UIRaceSelect::select_race(uint8_t race) {
     }
 
     selected_race_ = race;
+
+    if (kms_) {
+        return;
+    }
+
     on_animation_[race].reset();
 
     // v83: the grey picture of the selected group is hidden ("pressed" is
@@ -227,6 +338,20 @@ void UIRaceSelect::select_race(uint8_t race) {
     for (uint8_t i = 0; i < NUM_RACES; i++) {
         buttons_[Buttons::RACE0 + i]->set_state(
             i == race ? Button::State::PRESSED : Button::State::NORMAL);
+    }
+}
+
+void UIRaceSelect::open_confirm(bool open) {
+    confirm_open_ = open;
+
+    // while the box is open only its buttons take input
+    for (auto &[id, button] : buttons_) {
+        if (!button) continue;
+        bool is_confirm = id == Buttons::CONFIRM_OK || id == Buttons::CONFIRM_CANCEL;
+
+        if (is_confirm) {
+            button->set_active(open);
+        }
     }
 }
 

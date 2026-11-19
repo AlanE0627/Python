@@ -2,7 +2,7 @@
 """maple-offline: build UI_ko.nx = base UI.nx with chosen top-level imgs
 replaced by imgs read from a KMS client's Data/UI folder.
 
-usage: nx_merge_ui.py <base UI.nx> <out UI_ko.nx> <Data/UI dir> <Img.img> [...]
+usage: nx_merge_ui.py <base UI.nx | --overlay> <out UI_ko.nx> <Data/UI dir> <Img.img | Img.img:Section | Back/x.img=path> [...]
 Output is for the user's own device; never commit it."""
 import os, sys, struct, mmap
 import lz4.block
@@ -142,10 +142,14 @@ def write(out, root):
 
 def main():
     base, out, uidir = sys.argv[1:4]
-    imgs = [a for a in sys.argv[4:] if '=' not in a]
+    subs = [a for a in sys.argv[4:] if ':' in a]     # Login.img:RaceSelect (one section only)
+    imgs = [a for a in sys.argv[4:] if '=' not in a and ':' not in a]
     extras = [a for a in sys.argv[4:] if '=' in a]   # Back/login.img=<path>
-    b = Base(base)
-    root = from_base(b, 0)
+    if base == '--overlay':
+        root = ['', [], 0, None]          # only the parts given below
+    else:
+        b = Base(base)
+        root = from_base(b, 0)
     if extras:
         # MapRes.img/<Back|Obj>/<name>.img: map back/obj overrides read by the client
         res = ['MapRes.img', [], 0, None]
@@ -159,6 +163,18 @@ def main():
             print('extra', rel)
         res[1] = list(groups.values())
         root[1] = [c for c in root[1] if c[0] != 'MapRes.img'] + [res]
+    for sub in subs:
+        img, sect = sub.split(':', 1)
+        data = open(os.path.join(uidir, img), 'rb').read()
+        tree = wzimg.parse_img(data, KEY)
+        if sect not in tree:
+            print('missing', sub); continue
+        new = from_aria(data, sect, tree[sect], tree, [sect])
+        holder = next((c for c in root[1] if c[0] == img), None)
+        if holder is None:
+            holder = [img, [], 0, None]; root[1].append(holder)
+        holder[1] = [c for c in holder[1] if c[0] != sect] + [new]
+        print('replaced section', sub)
     for img in imgs:
         data = open(os.path.join(uidir, img), 'rb').read()
         tree = wzimg.parse_img(data, KEY)

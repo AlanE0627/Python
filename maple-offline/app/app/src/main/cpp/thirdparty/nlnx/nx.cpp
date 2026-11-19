@@ -47,7 +47,7 @@ node add_file(std::string name)
     files.emplace_back(new file(filePath + "/" + name));
     return *files.back();
 }
-node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui;
+node base, character, effect, etc, item, map, mapPretty, mapLatest, map001, mob, morph, npc, quest, reactor, skill, sound, string, tamingmob, ui, uiko;
 void load_all(GLFMDisplay *pApp)
 {
     if (exists("Base.nx", pApp)) {
@@ -71,8 +71,11 @@ void load_all(GLFMDisplay *pApp)
         // maple-offline: Korean names (built by tools/nx_ko_patch.py) when present
         string = add_file(exists("String_ko.nx", pApp) ? "String_ko.nx" : "String.nx");
         tamingmob = add_file("TamingMob.nx");
-        // maple-offline: Korean UI (tools/nx_merge_ui.py) when present
-        ui = add_file(exists("UI_ko.nx", pApp) ? "UI_ko.nx" : "UI.nx");
+        ui = add_file("UI.nx");
+        // maple-offline: Korean UI overlay (tools/nx_merge_ui.py --overlay) when present
+        if (exists("UI_ko.nx", pApp)) {
+            uiko = add_file("UI_ko.nx");
+        }
     } else if (exists("Data.nx", pApp)) {
         base = add_file("Data.nx");
         character = base["Character"];

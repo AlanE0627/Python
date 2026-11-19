@@ -30,7 +30,7 @@ Background::Background(const nl::node &src) {
     std::string bs = src["bS"] + ".img";
 
     // maple-offline: Korean UI pack may carry its own login backs (UI_ko.nx MapRes.img)
-    nl::node over = nl::nx::ui["MapRes.img"]["Back"][bs];
+    nl::node over = nl::nx::uiko["MapRes.img"]["Back"][bs];
     nl::node backimg = over ? over : backsrc[bs];
 
     animated_ = src["ani"].get_bool();

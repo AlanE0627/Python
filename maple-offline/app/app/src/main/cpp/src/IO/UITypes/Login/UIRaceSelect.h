@@ -61,7 +61,17 @@ private:
     // Same order as the v83 buttons, left to right.
     enum Race : uint8_t { EXPLORER, CYGNUSKNIGHTS, ARAN, NUM_RACES };
 
-    enum Buttons : uint16_t { BACK, SELECT, RACE0, RACE1, RACE2 };
+    enum Buttons : uint16_t { BACK, SELECT, RACE0, RACE1, RACE2,
+                              KMS_DUAL, KMS_EVAN, CONFIRM_OK, CONFIRM_CANCEL };
+
+    // KMS 1.2.95 layout (Login.img/RaceSelect has BtDual): five cards, the
+    // races this v83 server cannot create (Dual Blade, Evan) shown disabled,
+    // and a confirm box before creation.
+    bool kms_ = false;
+    bool confirm_open_ = false;
+    Texture confirm_bg_;
+    std::array<Texture, 5> confirm_race_;
+    void open_confirm(bool open);
 
     std::array<Animation, NUM_RACES> on_animation_;
     std::array<Texture, NUM_RACES> description_;
