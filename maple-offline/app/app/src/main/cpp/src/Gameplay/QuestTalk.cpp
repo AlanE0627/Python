@@ -1,6 +1,8 @@
 #include "QuestTalk.h"
 
+#include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -192,7 +194,21 @@ bool open(int32_t npcid, int32_t oid, bool scripted) {
         return false;
     }
 
-    std::string text = std::string(Lang::QUEST_MENU) + "\r\n";
+    // The original client opens the quest list with one of the NPC's own
+    // lines (String/Npc.img d0, d1, ...); the generic prompt is only the
+    // fallback for NPCs that have none.
+    std::vector<std::string> lines;
+    for (nl::node c : nl::nx::string["Npc.img"][std::to_string(npcid)]) {
+        const std::string &k = c.name();
+        if (k.size() >= 2 && k[0] == 'd' && std::isdigit(static_cast<unsigned char>(k[1]))) {
+            std::string v = c;
+            if (!v.empty()) lines.push_back(v);
+        }
+    }
+    std::string opening = lines.empty()
+            ? std::string(Lang::QUEST_MENU)
+            : lines[static_cast<size_t>(std::rand()) % lines.size()];
+    std::string text = opening + "\r\n";
     std::vector<std::pair<int16_t, bool>> options;  // qid, complete?
 
     auto name_of = [](int16_t qid) {

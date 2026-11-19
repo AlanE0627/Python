@@ -214,8 +214,14 @@ def main():
         if base_img is None:
             print('no base for', img); continue
         count = [0]
+        # images the client places by centre or by their own origin: any size
+        # works as long as the origin comes along with the picture
+        FREE = ('Quest/Tab/', 'Quest/reward', 'UserList/Tab/')
+        def free(path):
+            p = '/'.join(path)
+            return any(p.startswith(f) for f in FREE)
         def size_ok(path, old_wh, new_wh):
-            if old_wh == new_wh:
+            if old_wh == new_wh or free(path):
                 return True
             # tab and button labels: small images placed by their top-left
             # corner; a few pixels of difference does not move anything
@@ -223,12 +229,15 @@ def main():
             return (label and abs(old_wh[0] - new_wh[0]) <= 16
                     and abs(old_wh[1] - new_wh[1]) <= 6)
 
+        rejects = []
         def swap(vn, kn, path=()):
             kids = {c[0]: c for c in vn[1]}
             for k, v in kn.items():
                 c = kids.get(k)
                 if c is None:
                     continue
+                if v.type == 'canvas' and c[2] == 5 and not size_ok(path + (k,), (c[3][2], c[3][3]), tuple(v.value[:2])):
+                    rejects.append(('/'.join(path + (k,)), (c[3][2], c[3][3]), tuple(v.value[:2])))
                 if v.type == 'canvas' and c[2] == 5 and size_ok(path + (k,), (c[3][2], c[3][3]), tuple(v.value[:2])):
                     try:
                         w, h, px = wzimg.canvas_pixels(data, v, KEY)
@@ -237,11 +246,17 @@ def main():
                     comp = lz4.block.compress(px, store_size=False)
                     c[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
                     count[0] += 1
+                    if free(path + (k,)) and 'origin' in v:
+                        for oc in c[1]:
+                            if oc[0] == 'origin' and oc[2] == 4:
+                                oc[3] = struct.pack('<ii', *v['origin'].value)
                 if len(v):
                     swap(c, v, path + (k,))
         swap(base_img, tree)
         root[1] = [c for c in root[1] if c[0] != img] + [base_img]
         print('swapped', img, count[0], 'canvases')
+        if os.environ.get('SWAP_REJECTS'):
+            for r in rejects: print('  reject', img, *r)
     for sub in subs:
         img, sect = sub.split(':', 1)
         data, tree = read_img(uidir, img)
