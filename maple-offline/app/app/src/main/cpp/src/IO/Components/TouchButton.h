@@ -32,6 +32,9 @@ public:
 
     TouchButton(Point<int16_t> position, ActionType action_type, GLFMKeyCode bind_key, const std::string &text);
 
+    // maple-offline: square of the given size (logical pixels)
+    TouchButton(Point<int16_t> position, int16_t size, GLFMKeyCode bind_key, const std::string &text);
+
     void draw() const;
 
     void update();
@@ -49,5 +52,7 @@ private:
     ActionType action_type_;
     Text text_;
     int16_t bind_touch_id_;
+    int16_t size_ = 100;
+    bool held_ = false;
 };
 }  // namespace ms

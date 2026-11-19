@@ -14,6 +14,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "PlayerHandlers.h"
+#include "../../Data/ItemData.h"
 #include <array>
 #include "../../Gameplay/PartyState.h"
 #include <unordered_map>
@@ -433,6 +434,20 @@ void PartyOperationHandler::handle(InPacket &recv) const {
             party.leader = recv.read_int();
             break;
         default: break;
+    }
+}
+
+void MonsterBookCardHandler::handle(InPacket &recv) const {
+    bool added = recv.read_bool();
+    int32_t cardid = recv.read_int();
+    int32_t level = recv.read_int();
+
+    std::string name = ItemData::get(cardid).get_name();
+
+    if (added) {
+        notice("몬스터 카드 획득: " + name + " (" + std::to_string(level) + "/5)");
+    } else {
+        notice("이미 5장을 모은 카드입니다: " + name);
     }
 }
 

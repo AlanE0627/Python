@@ -17,6 +17,8 @@
 #include <nlnx/nx.hpp>
 
 #include "VirtualJoyStick.h"
+
+#include <cmath>
 #include "Singleton.h"
 #include "KeyAction.h"
 #include "Stage.h"
@@ -34,6 +36,22 @@ namespace ms {
         background_.draw(position_);
     }
 
+    void VirtualJoyStick::hold(int32_t key) {
+        if (key == held_key_) {
+            return;
+        }
+
+        if (held_key_ != 0) {
+            UI::get().send_key(static_cast<GLFMKeyCode>(held_key_), false);
+        }
+
+        held_key_ = key;
+
+        if (held_key_ != 0) {
+            UI::get().send_key(static_cast<GLFMKeyCode>(held_key_), true);
+        }
+    }
+
     void VirtualJoyStick::update() {
         const std::unordered_map<int16_t, TouchInfo> &touch_phase_map = UI::get().get_touch_phase();
         auto it = touch_phase_map.find(bind_touch_id_);
@@ -41,23 +59,35 @@ namespace ms {
             GLFMTouchPhase current_phase = it->second.phase;
             if (current_phase == GLFMTouchPhaseBegan ||
                 current_phase == GLFMTouchPhaseMoved) {
-                if (angle_ < 135.0 && angle_ >= 45.0) {
-                    UI::get().send_key(GLFMKeyCodeArrowDown, true);
-                } else if (angle_ < 225.0 && angle_ >= 135.0) {
-                    UI::get().send_key(GLFMKeyCodeArrowLeft, true);
-                } else if (angle_ < 325.0 && angle_ >= 225.0) {
-                    UI::get().send_key(GLFMKeyCodeArrowUp, true);
-                } else {
-                    UI::get().send_key(GLFMKeyCodeArrowRight, true);
+                // follow the thumb even when it slides past the rim
+                int16_t dx = it->second.relative_pos.x() - position_.x();
+                int16_t dy = it->second.relative_pos.y() - position_.y();
+                distance_ = std::sqrt(static_cast<double>(dx) * dx + static_cast<double>(dy) * dy);
+                angle_ = atan2(dy, dx) * 180.0 / M_PI;
+
+                if (angle_ < 0) {
+                    angle_ += 360.0;
                 }
-            } else if (current_phase == GLFMTouchPhaseEnded) {
+
+                if (distance_ < radius_ * 0.25) {
+                    hold(0);
+                } else if (angle_ < 135.0 && angle_ >= 45.0) {
+                    hold(GLFMKeyCodeArrowDown);
+                } else if (angle_ < 225.0 && angle_ >= 135.0) {
+                    hold(GLFMKeyCodeArrowLeft);
+                } else if (angle_ < 315.0 && angle_ >= 225.0) {
+                    hold(GLFMKeyCodeArrowUp);
+                } else {
+                    hold(GLFMKeyCodeArrowRight);
+                }
+            } else if (current_phase == GLFMTouchPhaseEnded
+                       || current_phase == GLFMTouchPhaseCancelled) {
                 UI::get().remove_touch_phase(bind_touch_id_);
                 bind_touch_id_ = -1;
-                UI::get().send_key(GLFMKeyCodeArrowDown, false);
-                UI::get().send_key(GLFMKeyCodeArrowLeft, false);
-                UI::get().send_key(GLFMKeyCodeArrowUp, false);
-                UI::get().send_key(GLFMKeyCodeArrowRight, false);
+                hold(0);
             }
+        } else if (held_key_ != 0) {
+            hold(0);
         }
     }
 

@@ -1357,8 +1357,8 @@ static int32_t glfm__gamepadKey(int32_t k) {
     switch (k) {
         case AKEYCODE_BUTTON_A: return GLFMKeyCodeAltLeft;      // jump
         case AKEYCODE_BUTTON_X: return GLFMKeyCodeControlLeft;  // attack
-        case AKEYCODE_BUTTON_B: return GLFMKeyCodeShiftLeft;
-        case AKEYCODE_BUTTON_Y: return GLFMKeyCodeSpace;
+        case AKEYCODE_BUTTON_B: return GLFMKeyCodeZ;            // pick up
+        case AKEYCODE_BUTTON_Y: return GLFMKeyCodeSpace;        // talk to NPC
         case AKEYCODE_BUTTON_L1: return GLFMKeyCodeInsert;
         case AKEYCODE_BUTTON_R1: return GLFMKeyCodeHome;
         case AKEYCODE_BUTTON_L2: return GLFMKeyCodeDelete;
@@ -1366,7 +1366,7 @@ static int32_t glfm__gamepadKey(int32_t k) {
         case AKEYCODE_BUTTON_THUMBL: return GLFMKeyCodePageUp;
         case AKEYCODE_BUTTON_THUMBR: return GLFMKeyCodePageDown;
         case AKEYCODE_BUTTON_START: return GLFMKeyCodeEscape;
-        case AKEYCODE_BUTTON_SELECT: return GLFMKeyCodeEnter;
+        case AKEYCODE_BUTTON_SELECT: return GLFMKeyCodeI;       // inventory
         default: return -1;
     }
 }

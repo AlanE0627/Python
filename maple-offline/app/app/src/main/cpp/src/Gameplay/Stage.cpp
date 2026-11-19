@@ -347,6 +347,9 @@ void Stage::send_key(KeyType::Id type, int32_t action, bool down) {
                     }
 
                     case KeyAction::Id::PICKUP: check_drops(); break;
+                    case KeyAction::Id::INTERACT_HARVEST:
+                        npcs_.talk_nearest(player_.get_position());
+                        break;
                 }
             }
 

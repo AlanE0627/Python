@@ -16,6 +16,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "MapNpcs.h"
 
+#include <cstdlib>
+
 #include "../Net/Packets/NpcInteractionPackets.h"
 #include "Npc.h"
 #include "../QuestTalk.h"
@@ -71,6 +73,50 @@ MapObjects *MapNpcs::get_npcs() {
     return &npcs_;
 }
 
+void MapNpcs::talk_to(Npc *npc) {
+    // maple-offline: quests at this NPC come first (v83 order)
+    if (QuestTalk::open(npc->get_id(), npc->get_oid(), npc->isscripted())) {
+        return;
+    }
+
+    npc->talk([](int id, int msgtype, int b0, int b1, int speaker, std::string str) {
+        UI::get().emplace<UINpcTalk>();
+        if (auto npctalk = UI::get().get_element<UINpcTalk>()) {
+            npctalk->get().change_text(id, msgtype, b0, b1, speaker, str);
+        }
+    });
+
+    fn_talk_to_npc(npc->get_oid());
+}
+
+bool MapNpcs::talk_nearest(Point<int16_t> position) {
+    Npc *best = nullptr;
+    int32_t best_dist = 0;
+
+    for (auto &map_object : npcs_) {
+        Npc *npc = static_cast<Npc *>(map_object.second.get());
+
+        if (!npc || !npc->is_active()) {
+            continue;
+        }
+
+        Point<int16_t> p = npc->get_position();
+        int32_t dx = std::abs(p.x() - position.x());
+        int32_t dy = std::abs(p.y() - position.y());
+
+        if (dx <= 150 && dy <= 100 && (!best || dx < best_dist)) {
+            best = npc;
+            best_dist = dx;
+        }
+    }
+
+    if (best) {
+        talk_to(best);
+    }
+
+    return best != nullptr;
+}
+
 Cursor::State MapNpcs::send_cursor(bool pressed,
                                    Point<int16_t> position,
                                    Point<int16_t> viewpos) {
@@ -79,29 +125,7 @@ Cursor::State MapNpcs::send_cursor(bool pressed,
 
         if (npc && npc->is_active() && npc->inrange(position, viewpos)) {
             if (pressed) {
-                // maple-offline: quests at this NPC come first (v83 order)
-                if (QuestTalk::open(npc->get_id(), npc->get_oid(), npc->isscripted())) {
-                    return Cursor::State::IDLE;
-                }
-
-                npc->talk([](int id,
-                             int msgtype,
-                             int b0,
-                             int b1,
-                             int speaker,
-                             std::string str) {
-                    UI::get().emplace<UINpcTalk>();
-                    if (auto npctalk = UI::get().get_element<UINpcTalk>()) {
-                        npctalk->get()
-                            .change_text(id, msgtype, b0, b1, speaker, str);
-                    }
-                });
-
-#ifdef MS_DESKTOP_DEBUG
-                std::fprintf(stderr, "[dbg] talk oid %d\n", npc->get_oid());
-#endif
-                fn_talk_to_npc(npc->get_oid());
-
+                talk_to(npc);
                 return Cursor::State::IDLE;
             }
             return Cursor::State::CAN_CLICK;

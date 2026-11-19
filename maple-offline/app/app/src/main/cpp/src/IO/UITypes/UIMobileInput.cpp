@@ -26,24 +26,29 @@
 extern "C" int maple_gamepad_active;
 
 namespace ms {
+    // maple-offline: wide-screen layout above the status bar (logical
+    // 1300x600; the status bar starts at y ~529). Stick on the left thumb;
+    // attack / jump / pick-up and four skill keys on the right thumb. The
+    // skill buttons send Ins / Home / PgUp / Del, the classic v83 skill keys,
+    // so skills are bound to them in the key config window; a controller's
+    // L1 / R1 / L2 / R2 send the same keys.
     UIMobileInput::UIMobileInput() :
-    joystick_(Point<int16_t>(250, 550), 130) {
-        touch_buttons_[MobileButtons::ButtonJump] = std::make_unique<TouchButton>(Point<int16_t>(1050, 550),
-                                                                          TouchButton::ActionType::Jump, "JUMP");
-        touch_buttons_[MobileButtons::ButtonNormal0] = std::make_unique<TouchButton>(Point<int16_t>(1050, 400),
-                                                                                  TouchButton::ActionType::Default,GLFMKeyCode0, "0");
-        touch_buttons_[MobileButtons::ButtonNormal1] = std::make_unique<TouchButton>(Point<int16_t>(1050, 250),
-                                                                                    TouchButton::ActionType::Default,GLFMKeyCode1, "1");
-        touch_buttons_[MobileButtons::ButtonNormal2] = std::make_unique<TouchButton>(Point<int16_t>(1050, 100),
-                                                                                     TouchButton::ActionType::Default,GLFMKeyCode2, "2");
-        touch_buttons_[MobileButtons::ButtonNormal3] = std::make_unique<TouchButton>(Point<int16_t>(1200, 100),
-                                                                                     TouchButton::ActionType::Default,GLFMKeyCode3, "3");
-        touch_buttons_[MobileButtons::ButtonNormal4] = std::make_unique<TouchButton>(Point<int16_t>(1200, 250),
-                                                                                     TouchButton::ActionType::Default,GLFMKeyCode4, "4");
-        touch_buttons_[MobileButtons::ButtonNormal5] = std::make_unique<TouchButton>(Point<int16_t>(1200, 400),
-                                                                                     TouchButton::ActionType::Default,GLFMKeyCode5, "5");
-        touch_buttons_[MobileButtons::ButtonNormal6] = std::make_unique<TouchButton>(Point<int16_t>(1200, 550),
-                                                                                     TouchButton::ActionType::Default,GLFMKeyCode6, "6");
+    joystick_(Point<int16_t>(140, 430), 90) {
+        const int16_t s = 80;
+        touch_buttons_[MobileButtons::ButtonNormal0] =
+                std::make_unique<TouchButton>(Point<int16_t>(930, 440), s, GLFMKeyCodeInsert, "Ins");
+        touch_buttons_[MobileButtons::ButtonNormal1] =
+                std::make_unique<TouchButton>(Point<int16_t>(1020, 440), s, GLFMKeyCodeHome, "Home");
+        touch_buttons_[MobileButtons::ButtonJump] =
+                std::make_unique<TouchButton>(Point<int16_t>(1110, 440), s, GLFMKeyCodeAltLeft, "점프");
+        touch_buttons_[MobileButtons::ButtonNormal2] =
+                std::make_unique<TouchButton>(Point<int16_t>(1200, 440), s, GLFMKeyCodeControlLeft, "공격");
+        touch_buttons_[MobileButtons::ButtonNormal3] =
+                std::make_unique<TouchButton>(Point<int16_t>(1020, 350), s, GLFMKeyCodePageUp, "PgUp");
+        touch_buttons_[MobileButtons::ButtonNormal4] =
+                std::make_unique<TouchButton>(Point<int16_t>(1110, 350), s, GLFMKeyCodeDelete, "Del");
+        touch_buttons_[MobileButtons::ButtonNormal5] =
+                std::make_unique<TouchButton>(Point<int16_t>(1200, 350), s, GLFMKeyCodeZ, "줍기");
     }
 
     void UIMobileInput::draw() const {

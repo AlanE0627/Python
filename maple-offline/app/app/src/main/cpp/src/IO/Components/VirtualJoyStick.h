@@ -39,5 +39,12 @@ private:
     int16_t radius_;
     int16_t bind_touch_id_;
     double angle_;
+    double distance_ = 0.0;
+
+    // arrow key currently held by the stick (GLFMKeyCodeUnknown when none);
+    // only changes are sent so key commands (Aran) see one press per move
+    int32_t held_key_ = 0;
+
+    void hold(int32_t key);
 };
 }  // namespace ms

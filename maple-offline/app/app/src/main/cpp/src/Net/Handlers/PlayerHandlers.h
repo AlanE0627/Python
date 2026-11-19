@@ -116,4 +116,9 @@ class ShowComboHandler : public PacketHandler {
 class PartyOperationHandler : public PacketHandler {
     void handle(InPacket &recv) const override;
 };
+// Monster book card picked up
+// Opcode: MONSTER_BOOK_SET_CARD(83)
+class MonsterBookCardHandler : public PacketHandler {
+    void handle(InPacket &recv) const override;
+};
 }  // namespace ms

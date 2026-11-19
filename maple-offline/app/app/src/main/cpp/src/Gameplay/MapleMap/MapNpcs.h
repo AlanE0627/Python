@@ -22,6 +22,8 @@
 #include "MapObjects.h"
 
 namespace ms {
+class Npc;
+
 class MapNpcs {
 public:
     // Draw all NPCs on a layer.
@@ -39,6 +41,9 @@ public:
     // Remove all NPCs.
     void clear();
 
+    // NPC chat key (v83 Space): talk to the closest NPC beside the player
+    bool talk_nearest(Point<int16_t> position);
+
     // Returns a reference to the MapObjects object.
     MapObjects *get_npcs();
 
@@ -48,6 +53,8 @@ public:
                               Point<int16_t> viewpos);
 
 private:
+    void talk_to(Npc *npc);
+
     MapObjects npcs_;
 
     std::queue<NpcSpawn> spawns_;

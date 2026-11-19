@@ -44,9 +44,21 @@ namespace ms {
         bind_touch_id_ = -1;
     }
 
+    TouchButton::TouchButton(Point<int16_t> position, int16_t size, GLFMKeyCode bind_key,
+                             const std::string &text) :
+            position_(position),
+            background_(size, size, Color::Name::BLACK, 0.4f),
+            bind_key_(bind_key),
+            action_type_(ActionType::Default),
+            text_(Text::Font::A12B, Text::Alignment::CENTER, Color::Name::WHITE),
+            size_(size) {
+        text_.change_text(text);
+        bind_touch_id_ = -1;
+    }
+
     void TouchButton::draw() const {
         background_.draw(position_);
-        text_.draw(position_ + Point<int16_t>(50, 50));
+        text_.draw(position_ + Point<int16_t>(size_ / 2, size_ / 2 - 8));
     }
 
     void TouchButton::update() {
@@ -62,10 +74,12 @@ namespace ms {
 
                 } else if (action_type_ == ActionType::Skill) {
 
-                } else {
+                } else if (!held_) {
+                    held_ = true;
                     UI::get().send_key(bind_key_, true);
                 }
-            } else if (current_phase == GLFMTouchPhaseEnded) {
+            } else if (current_phase == GLFMTouchPhaseEnded
+                       || current_phase == GLFMTouchPhaseCancelled) {
                 UI::get().remove_touch_phase(bind_touch_id_);
                 bind_touch_id_ = -1;
                 if (action_type_ == ActionType::Jump) {
@@ -75,6 +89,7 @@ namespace ms {
                 } else if (action_type_ == ActionType::Skill) {
 
                 } else {
+                    held_ = false;
                     UI::get().send_key(bind_key_, false);
                 }
             }
@@ -83,9 +98,9 @@ namespace ms {
 
     bool TouchButton::set_state(TouchInfo touchInfo) {
         if (touchInfo.relative_pos.x() > position_.x() &&
-            touchInfo.relative_pos.x() < (position_.x() + 100) &&
+            touchInfo.relative_pos.x() < (position_.x() + size_) &&
             touchInfo.relative_pos.y() > position_.y() &&
-            touchInfo.relative_pos.y() < (position_.y() + 100)) {
+            touchInfo.relative_pos.y() < (position_.y() + size_)) {
             return true;
         }
         return false;
