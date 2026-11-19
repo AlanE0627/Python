@@ -517,6 +517,77 @@ index 362ee89f..88743270 100644
  var minLevel = 50, maxLevel = 255;
  var entryMap = 280030000;
  var exitMap = 211042400;
+diff --git a/scripts/npc/2013001.js b/scripts/npc/2013001.js
+index 98a2c4df..e794f694 100644
+--- a/scripts/npc/2013001.js
++++ b/scripts/npc/2013001.js
+@@ -153,7 +153,26 @@ function action(mode, type, selection) {
+                         players.push(z);
+                         total += z;
+                     }
+-                    if (total != 3) {
++                    // maple-offline: with fewer than 3 members, every member
++                    // must stand on a platform that is part of the answer
++                    var members = eim.getPlayerCount();
++                    if (members < 3 && total == members) {
++                        var soloOk = true;
++                        for (var i = 0; i < 3; i++) {
++                            if (players[i] > parseInt(eim.getProperty("stage4_" + i))) {
++                                soloOk = false;
++                            }
++                        }
++                        if (soloOk) {
++                            cm.sendOk("You found the right combination! A box has appeared on the top of this map, go retrieve the statue piece from it!");
++                            cm.getMap().getReactorByName("stone4").forceHitReactor(1);
++                            eim.giveEventPlayersExp(3500);
++                            clearStage(4, eim);
++                        } else {
++                            eim.showWrongEffect();
++                            cm.sendOk("All of the platforms have the wrong amount of players.");
++                        }
++                    } else if (total != 3) {
+                         cm.sendOk("There needs to be exactly 3 players on these platforms.");
+                     } else {
+                         var num_correct = 0;
+diff --git a/scripts/npc/2040043.js b/scripts/npc/2040043.js
+index 60024208..b43e0088 100644
+--- a/scripts/npc/2040043.js
++++ b/scripts/npc/2040043.js
+@@ -125,6 +125,34 @@ function action(mode, type, selection) {
+                         }
+                     }
+ 
++                    // maple-offline: with fewer than 5 members every member
++                    // must stand on a box of the combination
++                    if (party.size() < 5 && playersOnCombo == party.size()) {
++                        var soloCombo = eim.getProperty("stage" + stage + "combo");
++                        if (soloCombo == null) {
++                            soloCombo = generateCombo();
++                            eim.setProperty("stage" + stage + "combo", soloCombo);
++                        }
++
++                        var soloSplit = soloCombo.split(',');
++                        var soloOk = true;
++                        for (var k = 0; k < objset.length; k++) {
++                            if (objset[k] == 1 && parseInt(soloSplit[k]) != 1) {
++                                soloOk = false;
++                            }
++                        }
++
++                        if (soloOk) {
++                            eim.setProperty("statusStg" + stage, 1);
++                            clearStage(stage, eim, curMap);
++                        } else {
++                            eim.showWrongEffect();
++                        }
++
++                        cm.dispose();
++                        return;
++                    }
++
+                     if (playersOnCombo == 5 || cm.getPlayer().gmLevel() > 1) {
+                         var comboStr = eim.getProperty("stage" + stage + "combo");
+                         if (comboStr == null) {
 diff --git a/scripts/npc/9020001.js b/scripts/npc/9020001.js
 index 32adc9bf..19010dee 100644
 --- a/scripts/npc/9020001.js

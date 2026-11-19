@@ -686,9 +686,9 @@ bool UIItemInventory::can_wear_equip(int16_t slot) const {
         default: break;
     }
 
-    const std::string jobname = stats.get_jobname();
+    int32_t gmjob = stats.get_stat(MapleStat::Id::JOB);
 
-    if (jobname == "GM" || jobname == "SuperGM") {
+    if (gmjob == 900 || gmjob == 910) {
         return true;
     }
 

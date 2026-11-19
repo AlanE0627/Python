@@ -86,56 +86,71 @@ Job::Level Job::get_level() const {
 
 std::string Job::get_name(uint16_t jid) const {
     switch (jid) {
-        case 0: return "Beginner";
-        case 100: return "Swordsman";
-        case 110: return "Fighter";
-        case 111: return "Crusader";
-        case 112: return "Hero";
-        case 120: return "Page";
-        case 121: return "White Knight";
-        case 122: return "Paladin";
-        case 130: return "Spearman";
-        case 131: return "Dragon Knight";
-        case 132: return "Dark Knight";
-        case 200: return "Magician";
-        case 210: return "Wizard (F/P)";
-        case 211: return "Mage (F/P)";
-        case 212: return "Archmage (F/P)";
-        case 220: return "Wizard (I/L)";
-        case 221: return "Mage (I/L)";
-        case 222: return "Archmage (I/L)";
-        case 230: return "Cleric";
-        case 231: return "Priest";
-        case 232: return "Bishop";
-        case 300: return "Archer";
-        case 310: return "Hunter";
-        case 311: return "Ranger";
-        case 312: return "Bowmaster";
-        case 320: return "Crossbowman";
-        case 321: return "Sniper";
-        case 322: return "Marksman";
-        case 400: return "Rogue";
-        case 410: return "Assassin";
-        case 411: return "Hermit";
-        case 412: return "Nightlord";
-        case 420: return "Bandit";
-        case 421: return "Chief Bandit";
-        case 422: return "Shadower";
-        case 500: return "Pirate";
-        case 510: return "Brawler";
-        case 511: return "Marauder";
-        case 512: return "Buccaneer";
-        case 520: return "Gunslinger";
-        case 521: return "Outlaw";
-        case 522: return "Corsair";
-        case 1000: return "Noblesse";
-        case 2000:
+        case 0: return "초보자";
+        case 100: return "검사";
+        case 110: return "파이터";
+        case 111: return "크루세이더";
+        case 112: return "히어로";
+        case 120: return "페이지";
+        case 121: return "나이트";
+        case 122: return "팔라딘";
+        case 130: return "스피어맨";
+        case 131: return "용기사";
+        case 132: return "다크나이트";
+        case 200: return "매지션";
+        case 210: return "위자드(불,독)";
+        case 211: return "메이지(불,독)";
+        case 212: return "아크메이지(불,독)";
+        case 220: return "위자드(썬,콜)";
+        case 221: return "메이지(썬,콜)";
+        case 222: return "아크메이지(썬,콜)";
+        case 230: return "클레릭";
+        case 231: return "프리스트";
+        case 232: return "비숍";
+        case 300: return "아처";
+        case 310: return "헌터";
+        case 311: return "레인저";
+        case 312: return "보우마스터";
+        case 320: return "사수";
+        case 321: return "저격수";
+        case 322: return "신궁";
+        case 400: return "로그";
+        case 410: return "어쌔신";
+        case 411: return "허밋";
+        case 412: return "나이트로드";
+        case 420: return "시프";
+        case 421: return "시프마스터";
+        case 422: return "섀도어";
+        case 500: return "해적";
+        case 510: return "인파이터";
+        case 511: return "버커니어";
+        case 512: return "바이퍼";
+        case 520: return "건슬링거";
+        case 521: return "발키리";
+        case 522: return "캡틴";
+        case 1000: return "노블레스";
+        case 900: return "운영자";
+        case 910: return "슈퍼 운영자";
+        case 1100:
+        case 1110:
+        case 1111: return "소울마스터";
+        case 1200:
+        case 1210:
+        case 1211: return "플레임위자드";
+        case 1300:
+        case 1310:
+        case 1311: return "윈드브레이커";
+        case 1400:
+        case 1410:
+        case 1411: return "나이트워커";
+        case 1500:
+        case 1510:
+        case 1511: return "스트라이커";
+        case 2000: return "레전드";
         case 2100:
         case 2110:
         case 2111:
-        case 2112: return "Aran";
-        case 900: return "GM";
-        case 910: return "SuperGM";
+        case 2112: return "아란";
         default: return "";
     }
 }
