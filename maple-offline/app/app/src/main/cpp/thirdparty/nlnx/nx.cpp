@@ -71,7 +71,8 @@ void load_all(GLFMDisplay *pApp)
         // maple-offline: Korean names (built by tools/nx_ko_patch.py) when present
         string = add_file(exists("String_ko.nx", pApp) ? "String_ko.nx" : "String.nx");
         tamingmob = add_file("TamingMob.nx");
-        ui = add_file("UI.nx");
+        // maple-offline: Korean UI (tools/nx_merge_ui.py) when present
+        ui = add_file(exists("UI_ko.nx", pApp) ? "UI_ko.nx" : "UI.nx");
     } else if (exists("Data.nx", pApp)) {
         base = add_file("Data.nx");
         character = base["Character"];

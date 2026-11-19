@@ -19,8 +19,11 @@
 
 namespace ms {
 Obj::Obj(const nl::node &src) {
-    animation_ = Animation(nl::nx::map["Obj"][src["oS"] + ".img"][src["l0"]]
-                                      [src["l1"]][src["l2"]]);
+    std::string os = src["oS"] + ".img";
+    // maple-offline: Korean UI pack may carry its own login objects (UI_ko.nx MapRes.img)
+    nl::node over = nl::nx::ui["MapRes.img"]["Obj"][os];
+    nl::node objimg = over ? over : nl::nx::map["Obj"][os];
+    animation_ = Animation(objimg[src["l0"]][src["l1"]][src["l2"]]);
     pos_ = Point<int16_t>(src["x"], src["y"]);
     flip_ = src["f"].get_bool();
     z_ = src["z"];

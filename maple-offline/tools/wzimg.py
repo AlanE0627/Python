@@ -164,3 +164,37 @@ def detect_key(data):
         except Exception:
             pass
     return None
+
+def canvas_pixels(data, node, key):
+    """Return (w, h, BGRA8888 bytes) for a canvas node."""
+    w, h, fmt, off, ln = node.value
+    raw = data[off:off + ln]
+    if raw[:2] in (b'\x78\x9c', b'\x78\xda', b'\x78\x01', b'\x78\x5e'):
+        z = raw
+    else:
+        out = bytearray(); p = 0
+        while p + 4 <= len(raw):
+            bl = struct.unpack_from('<i', raw, p)[0]; p += 4
+            if bl <= 0 or p + bl > len(raw):
+                break
+            blk = raw[p:p + bl]; p += bl
+            out += bytes(a ^ b for a, b in zip(blk, key[:bl]))
+        z = bytes(out)
+    pix = zlib.decompressobj().decompress(z)
+    if fmt == 2:
+        return w, h, pix[:w * h * 4]
+    if fmt == 1:  # BGRA4444 -> BGRA8888
+        o = bytearray(w * h * 4)
+        for i in range(w * h):
+            lo = pix[2 * i]; hi = pix[2 * i + 1]
+            b = lo & 15; g = lo >> 4; r = hi & 15; a = hi >> 4
+            o[4*i] = b * 17; o[4*i+1] = g * 17; o[4*i+2] = r * 17; o[4*i+3] = a * 17
+        return w, h, bytes(o)
+    if fmt == 513:  # RGB565
+        o = bytearray(w * h * 4)
+        for i in range(w * h):
+            v = pix[2*i] | (pix[2*i+1] << 8)
+            r = (v >> 11) & 31; g = (v >> 5) & 63; b = v & 31
+            o[4*i] = b * 255 // 31; o[4*i+1] = g * 255 // 63; o[4*i+2] = r * 255 // 31; o[4*i+3] = 255
+        return w, h, bytes(o)
+    raise ValueError('canvas format %d not supported' % fmt)

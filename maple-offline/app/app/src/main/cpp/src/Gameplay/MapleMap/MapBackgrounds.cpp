@@ -27,10 +27,14 @@ Background::Background(const nl::node &src) {
     HOFFSET = VHEIGHT / 2;
 
     nl::node backsrc = nl::nx::map["Back"];
+    std::string bs = src["bS"] + ".img";
+
+    // maple-offline: Korean UI pack may carry its own login backs (UI_ko.nx MapRes.img)
+    nl::node over = nl::nx::ui["MapRes.img"]["Back"][bs];
+    nl::node backimg = over ? over : backsrc[bs];
 
     animated_ = src["ani"].get_bool();
-    animation_ =
-        backsrc[src["bS"] + ".img"][animated_ ? "ani" : "back"][src["no"]];
+    animation_ = backimg[animated_ ? "ani" : "back"][src["no"]];
     opacity_ = src["a"];
     flipped_ = src["f"].get_bool();
     cx_ = src["cx"];
