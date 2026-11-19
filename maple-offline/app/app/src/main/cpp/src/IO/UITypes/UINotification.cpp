@@ -46,7 +46,7 @@ UINotification::UINotification(std::string message) :
     message_ = Text(Text::Font::A11M,
                     Text::Alignment::CENTER,
                     Color::Name::WHITE,
-                    "Trade request from '" + message + '\'',
+                    message + "님이 교환을 신청했습니다.",
                     200);
 }
 

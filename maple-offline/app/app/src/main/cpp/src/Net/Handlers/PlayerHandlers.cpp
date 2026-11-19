@@ -492,31 +492,30 @@ void FameResponseHandler::handle(InPacket &recv) const {
             auto char_name = recv.read_string();
             int8_t mode = recv.read_byte();
             auto new_fame = recv.read_ushort();
-            std::string mode_str = mode == 1 ? "famed " : "defamed ";
+            std::string mode_str = mode == 1 ? "올렸습니다." : "내렸습니다.";
             recv.skip_byte();
-            message = "You " + mode_str + char_name + '.';
+            message = char_name + "님의 인기도를 " + mode_str;
         } break;
         case FameResponseHandler::Result::SUCCESS_RECV: {
             auto from_char_name = recv.read_string();
             int8_t mode = recv.read_byte();
-            std::string mode_str = mode == 1 ? "fame " : "defame ";
-            message =
-                "You received " + mode_str + "from " + from_char_name + '.';
+            std::string mode_str = mode == 1 ? "올렸습니다." : "내렸습니다.";
+            message = from_char_name + "님이 인기도를 " + mode_str;
         } break;
         case FameResponseHandler::Result::ALREADY_FAMED_TODAY:
-            message = "You can't raise or drop fame anymore today.";
+            message = "오늘은 더 이상 인기도를 올리거나 내릴 수 없습니다.";
             break;
         case FameResponseHandler::Result::FAMED_CHAR_TOO_RECENTLY:
-            message = "You have famed this character too recently.";
+            message = "이 캐릭터는 최근에 이미 인기도를 올리거나 내렸습니다.";
             break;
         case FameResponseHandler::Result::TOO_LOW_LEVEL:
-            message = "You must be at least level 15 to fame someone.";
+            message = "레벨 15 이상부터 인기도를 올리거나 내릴 수 있습니다.";
             break;
         case FameResponseHandler::Result::INCORRECT_USERNAME:
-            message = "Incorrect user.";
+            message = "캐릭터를 찾을 수 없습니다.";
             break;
         case FameResponseHandler::Result::UNEXPECTED_ERROR:
-            message = "An unexpected error occurred.";
+            message = "알 수 없는 오류가 발생했습니다.";
             break;
         default: break;
     }

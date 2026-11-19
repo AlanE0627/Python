@@ -201,7 +201,7 @@ UIEnterNumber::UIEnterNumber(std::string message,
     numfield = Textfield(Text::Font::A11M,
                          Text::Alignment::LEFT,
                          Color::Name::BLACK,
-                         Rectangle<int16_t>(20, 246, belowtext, belowtext + 18),
+                         Rectangle<int16_t>(26, 246, belowtext, belowtext + 18),
                          10);
     numfield.change_text(std::to_string(quantity));
 

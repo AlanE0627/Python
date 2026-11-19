@@ -49,6 +49,9 @@ namespace ms {
                 std::make_unique<TouchButton>(Point<int16_t>(1110, 350), s, GLFMKeyCodeDelete, "Del");
         touch_buttons_[MobileButtons::ButtonNormal5] =
                 std::make_unique<TouchButton>(Point<int16_t>(1200, 350), s, GLFMKeyCodeZ, "줍기");
+        // monster book has no window button in v83; it is the B key
+        touch_buttons_[MobileButtons::ButtonNormal6] =
+                std::make_unique<TouchButton>(Point<int16_t>(1205, 270), 70, GLFMKeyCodeB, "몬스터북");
     }
 
     void UIMobileInput::draw() const {

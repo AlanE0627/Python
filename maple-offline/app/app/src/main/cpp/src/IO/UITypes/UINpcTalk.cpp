@@ -140,6 +140,12 @@ namespace ms {
             }
             slider_.draw(position_);
         } else {
+            if (has_input_) {
+                ColorBox(304, 20, Color::Name::WHITE, 1.0f)
+                    .draw(DrawArgument(position_ + Point<int16_t>(168, height_ + 15)));
+                input_.draw(position_);
+            }
+
             int16_t init_height = 19;
             for (auto &element: content_.text_content_) {
                 element.draw(position_ + Point<int16_t>(166, init_height));
@@ -159,8 +165,44 @@ namespace ms {
         }
     }
 
+    void UINpcTalk::set_input_default(const std::string &text) {
+        if (has_input_) {
+            input_.change_text(text);
+        }
+    }
+
+    void UINpcTalk::submit_input() {
+        if (!has_input_) {
+            return;
+        }
+
+        std::string text = input_.get_text();
+
+        has_input_ = false;
+        input_.set_state(Textfield::State::DISABLED);
+        deactivate();
+
+        if (raw_type_ == 3) {
+            int32_t number = 0;
+
+            try {
+                number = std::stoi(text.empty() ? "0" : text);
+            } catch (...) {
+                number = 0;
+            }
+
+            NpcTalkNumberPacket(number).dispatch();
+        } else {
+            NpcTalkMorePacket(text).dispatch();
+        }
+    }
+
     void UINpcTalk::update() {
         UIElement::update();
+
+        if (has_input_) {
+            input_.update(position_);
+        }
 
         // TODO: Need to think of a new way to show text gradually when open NPC dialog
 //        if (draw_text_) {
@@ -278,17 +320,15 @@ namespace ms {
                 }
                 break;
             case TalkType::SEND_GET_TEXT:
-                // TODO: What is this?
-                break;
             case TalkType::SEND_GET_NUMBER:
-                // Type = 3
                 switch (buttonid) {
                     case Buttons::CLOSE:
-                        respond(type_, 0);
+                        input_.set_state(Textfield::State::DISABLED);
+                        respond(raw_type_, 0);
                         break;
                     case Buttons::OK:
-                        respond(type_, 1);
-                        break;
+                        submit_input();
+                        return Button::State::NORMAL;
                 }
                 break;
             case TalkType::SEND_SIMPLE:
@@ -329,6 +369,15 @@ namespace ms {
                     return Cursor::State::IDLE;
                 }
             }
+        }
+
+        if (has_input_ && clicked
+            && Rectangle<int16_t>(position_ + Point<int16_t>(168, height_ + 15),
+                                  position_ + Point<int16_t>(472, height_ + 35))
+                   .contains(cursorpos)) {
+            input_.set_state(Textfield::State::FOCUSED);
+
+            return Cursor::State::CLICKING;
         }
 
         Cursor::State estate = UIElement::send_cursor(clicked, cursorpos);
@@ -428,6 +477,10 @@ namespace ms {
                 }
             } else if (value == 4) {
                 return TalkType::SEND_SIMPLE;
+            } else if (value == 2) {
+                return TalkType::SEND_GET_TEXT;
+            } else if (value == 3) {
+                return TalkType::SEND_GET_NUMBER;
             }
             return static_cast<TalkType>(value);
         }
@@ -449,6 +502,7 @@ namespace ms {
                                 int8_t speakerbyte,
                                 const std::string &tx) {
         type_ = get_by_value(msgtype, style_b0, style_b1);
+        raw_type_ = msgtype;
 
         timestep_ = 0;
         // maple-offline: gradual text is disabled (see update()), so the
@@ -562,9 +616,26 @@ namespace ms {
                 break;
             case TalkType::SEND_GET_TEXT:
             case TalkType::SEND_GET_NUMBER:
+                buttons_[Buttons::OK]->set_position(Point<int16_t>(469, y_cord));
+                buttons_[Buttons::OK]->set_active(true);
+                break;
             case TalkType::SEND_SIMPLE:
             default:
                 break;
+        }
+
+        has_input_ = type_ == TalkType::SEND_GET_TEXT || type_ == TalkType::SEND_GET_NUMBER;
+
+        if (has_input_) {
+            input_ = Textfield(Text::Font::A13M,
+                               Text::Alignment::LEFT,
+                               Color::Name::BLACK,
+                               Rectangle<int16_t>(172, 470, height_ + 16, height_ + 34),
+                               type_ == TalkType::SEND_GET_NUMBER ? 10 : 24);
+            input_.set_enter_callback([this](const std::string &) { submit_input(); });
+            input_.set_state(Textfield::State::FOCUSED);
+        } else {
+            input_.set_state(Textfield::State::DISABLED);
         }
 
         position_ = Point<int16_t>(400 - top_.width() / 2, 240 - height_ / 2);

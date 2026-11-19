@@ -390,7 +390,7 @@ void ShowItemGainInChatHandler::handle(InPacket &recv) const {
 
             std::string name = idata.get_name();
             std::string sign = (qty < 0) ? "-" : "+";
-            std::string message = "Gained an item: " + name + " (" + sign
+            std::string message = "아이템을 얻었습니다: " + name + " (" + sign
                                   + std::to_string(qty) + ")";
 
             if (auto chatbar = UI::get().get_element<UIChatBar>()) {

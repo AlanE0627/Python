@@ -46,6 +46,16 @@ public:
     }
 };
 
+// maple-offline: answer to an NPC number prompt (msgtype 3)
+class NpcTalkNumberPacket : public OutPacket {
+public:
+    NpcTalkNumberPacket(int32_t number) : OutPacket(OutPacket::Opcode::NPC_TALK_MORE) {
+        write_byte(3);
+        write_byte(1);
+        write_int(number);
+    }
+};
+
 // maple-offline: gives up a quest that is in progress
 // Opcode: QUEST_ACTION(107), action 3 = forfeit
 class ForfeitQuestPacket : public OutPacket {

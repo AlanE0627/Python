@@ -37,8 +37,16 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
     uint8_t style_b0 = 0;
     uint8_t style_b1 = 0;
 
+    std::string input_default;
+
     if (recv.length() > 0) {
-        if (msgtype == 0) {
+        if (msgtype == 2) {
+            // getText: default text, then max / min length
+            input_default = recv.read_string();
+        } else if (msgtype == 3 && recv.length() >= 4) {
+            // getNumber: default, min, max
+            input_default = std::to_string(recv.read_int());
+        } else if (msgtype == 0) {
             // {b0, b1}
             // {0, 1} = next
             // {1, 0} = prev
@@ -55,6 +63,10 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
     if (auto npctalk = UI::get().get_element<UINpcTalk>()) {
         npctalk->get()
             .change_text(npcid, msgtype, style_b0, style_b1, speaker, text);
+
+        if (msgtype == 2 || msgtype == 3) {
+            npctalk->get().set_input_default(input_default);
+        }
     }
 }
 

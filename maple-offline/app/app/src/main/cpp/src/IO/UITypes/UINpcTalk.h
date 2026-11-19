@@ -18,6 +18,7 @@
 #include <functional>
 
 #include "../Components/Slider.h"
+#include "../Components/Textfield.h"
 #include "../Graphics/Text.h"
 #include "../UIElement.h"
 #include "TextButton.h"
@@ -80,6 +81,9 @@ public:
     using LocalResponder = std::function<void(int8_t action, int32_t selection)>;
     void set_local(LocalResponder responder);
 
+    // NPC asks for text (msgtype 2) or a number (msgtype 3): initial value
+    void set_input_default(const std::string &text);
+
 protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
@@ -94,6 +98,12 @@ private:
 
     void respond(int8_t type, int8_t action);
     void respond(int32_t selection);
+
+    void submit_input();
+
+    Textfield input_;
+    bool has_input_ = false;
+    int8_t raw_type_ = 0;
 
     LocalResponder local_;
     int16_t key_sel_ = 0;

@@ -903,11 +903,10 @@ UIItemInventory::ItemIcon::ItemIcon(const UIItemInventory &parent,
 }
 
 void UIItemInventory::ItemIcon::drop_on_stage() const {
-    const std::string dropmessage = "How many will you drop?";
+    const std::string dropmessage = "몇 개를 버리시겠습니까?";
     const std::string untradablemessage =
-        "This item can't be taken back once thrown away.\\nWill you still drop "
-        "it?";
-    const std::string cashmessage = "You can't drop this item.";
+        "이 아이템은 버리면 다시 주울 수 없습니다.\\n그래도 버리시겠습니까?";
+    const std::string cashmessage = "버릴 수 없는 아이템입니다.";
 
     if (cash_item_) {
         UI::get().emplace<UIOk>(cashmessage, [](bool) {});
