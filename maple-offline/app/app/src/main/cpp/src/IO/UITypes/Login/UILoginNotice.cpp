@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UILoginNotice.h"
 
+#include "../../../Constants.h"
+
 #include <nlnx/nx.hpp>
 #include <utility>
 
@@ -60,8 +62,11 @@ UILoginNotice::UILoginNotice(uint16_t message,
                                           Point<int16_t>(100, 106));
     }
 
-    position_ = Point<int16_t>(275, 209);
     dimension_ = Texture(backgrnd).get_dimensions();
+    // maple-offline: centred on the (wide) screen
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 UILoginNotice::UILoginNotice(uint16_t message,
@@ -117,8 +122,11 @@ UIQuitConfirm::UIQuitConfirm() {
     buttons_[Buttons::BT_CANCEL] =
         std::make_unique<MapleButton>(notice["BtNo"], Point<int16_t>(130, 106));
 
-    position_ = Point<int16_t>(275, 209);
     dimension_ = Texture(backgrnd).get_dimensions();
+    // maple-offline: centred on the (wide) screen
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 void UIQuitConfirm::send_key(int32_t keycode, bool pressed, bool escape) {
@@ -202,8 +210,11 @@ UIClassConfirm::UIClassConfirm(uint8_t selected_class,
                                           Point<int16_t>(137, 107));
     }
 
-    position_ = Point<int16_t>(286, 189);
     dimension_ = Texture(backgrnd).get_dimensions();
+    // maple-offline: centred on the (wide) screen
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 Cursor::State UIClassConfirm::send_cursor(bool clicked,
@@ -273,8 +284,11 @@ UIKeySelect::UIKeySelect(std::function<void(bool)> oh, bool l) :
         buttons_[Buttons::CLOSE]->set_active(false);
     }
 
-    position_ = Point<int16_t>(181, 145);
     dimension_ = Texture(backgrnd).get_dimensions();
+    // maple-offline: centred on the (wide) screen
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 void UIKeySelect::send_key(int32_t keycode, bool pressed, bool escape) {
@@ -327,8 +341,11 @@ UIKeyConfirm::UIKeyConfirm(bool alternate, std::function<void()> oh, bool l) :
 
     buttons_[Buttons::OK] = std::make_unique<MapleButton>(alert["btOk"]);
 
-    position_ = Point<int16_t>(276, 229);
     dimension_ = Texture(background).get_dimensions();
+    // maple-offline: centred on the (wide) screen
+    position_ = Point<int16_t>(
+            (Constants::Constants::get().get_viewwidth() - dimension_.x()) / 2,
+            (Constants::Constants::get().get_viewheight() - dimension_.y()) / 2);
 }
 
 void UIKeyConfirm::send_key(int32_t keycode, bool pressed, bool escape) {

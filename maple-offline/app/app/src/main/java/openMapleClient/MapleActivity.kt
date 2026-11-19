@@ -94,6 +94,22 @@ class MapleActivity : NativeActivity() {
         }
     }
 
+    // Called from native code when the player confirms quitting the game.
+    @Suppress("unused")
+    fun quitGame() {
+        Thread {
+            try {
+                Server.getInstance().saveAllCharacters()
+            } catch (e: Exception) {
+                android.util.Log.w("maple-offline", "save on quit failed", e)
+            }
+            runOnUiThread {
+                finishAndRemoveTask()
+                Runtime.getRuntime().exit(0)
+            }
+        }.start()
+    }
+
     // Called from native code when no text field is focused any more.
     @Suppress("unused")
     fun hideTextInput() {

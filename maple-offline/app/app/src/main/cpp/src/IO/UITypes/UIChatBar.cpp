@@ -88,7 +88,7 @@ UIChatBar::UIChatBar() : UIElement(Point<int16_t>(0, 0), Point<int16_t>(570, 30)
     chatfield_ = Textfield(Text::Font::A12M,
                            Text::Alignment::LEFT,
                            Color::Name::BLACK,
-                           Rectangle<int16_t>(Point<int16_t>(90, 7), Point<int16_t>(556, 25)),
+                           Rectangle<int16_t>(Point<int16_t>(90, 9), Point<int16_t>(556, 27)),
                            0);
     chatfield_.set_state(Textfield::State::DISABLED);
 
@@ -155,7 +155,7 @@ void UIChatBar::draw(float inter) const {
     }
 
     target_box_.draw(position_ + Point<int16_t>(5, 8));
-    target_label_.draw(position_ + Point<int16_t>(45, 9));
+    target_label_.draw(position_ + Point<int16_t>(45, 7));
 
     chatfield_.draw(position_);
 

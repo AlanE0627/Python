@@ -365,6 +365,8 @@ namespace ms {
         // maple-offline: dynamic glyph cache
         FT_Face faces_[Text::Font::NUM_FONTS] = {};
         FT_Face fallback_faces_[Text::Font::NUM_FONTS] = {};
+        Point<int16_t> font_cal_[Text::Font::NUM_FONTS];
+        void calibrate_fonts(AAssetManager *assetManager);
         static const GLshort FONT_REGION = 1536;
         GLshort dyn_y0_ = 0;
         GLshort dyn_x_ = 0;

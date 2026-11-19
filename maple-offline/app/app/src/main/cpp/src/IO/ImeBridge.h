@@ -10,4 +10,6 @@ void hide();
 // Apply text / Enter received from the Java side; call once per frame on the
 // game thread.
 void poll();
+// Ask the activity to save and close the app (game menu quit).
+void quit_app();
 }  // namespace ms::ImeBridge

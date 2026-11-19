@@ -302,8 +302,8 @@ void UINewChar::draw(float inter) const {
             Point<int16_t> row = position_ + board_pos_ + rows_off_ + Point<int16_t>(0, r * 18);
 
             row_tex_[r].draw(row);
-            // maple-offline: value text vertically centred in the 17 px row
-            row_text_[r].draw(row + Point<int16_t>(129, -2));
+            // value centred in the 17 px row (HeavenClient's +1 sat on the line)
+            row_text_[r].draw(row + Point<int16_t>(129, -3));
         }
 
         // Controller cursor: highlight the active row.

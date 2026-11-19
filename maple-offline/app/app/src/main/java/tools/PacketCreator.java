@@ -139,7 +139,7 @@ public class PacketCreator {
 
     private static void addCharStats(OutPacket p, Character chr) {
         p.writeInt(chr.getId()); // character id
-        p.writeFixedString(StringUtil.getRightPaddedStr(chr.getName(), '\0', 13));
+        p.writePaddedString(chr.getName(), 13);
         p.writeByte(chr.getGender()); // gender (0 = male, 1 = female)
         p.writeByte(chr.getSkinColor().getId()); // skin color
         p.writeInt(chr.getFace()); // face
@@ -385,7 +385,7 @@ public class PacketCreator {
         addExpirationTime(p, item.getExpiration());
         if (isPet) {
             Pet pet = item.getPet();
-            p.writeFixedString(StringUtil.getRightPaddedStr(pet.getName(), '\0', 13));
+            p.writePaddedString(pet.getName(), 13);
             p.writeByte(pet.getLevel());
             p.writeShort(pet.getTameness());
             p.writeByte(pet.getFullness());
@@ -3790,7 +3790,7 @@ public class PacketCreator {
             p.writeInt(partychar.getId());
         }
         for (PartyCharacter partychar : partymembers) {
-            p.writeFixedString(getRightPaddedStr(partychar.getName(), '\0', 13));
+            p.writePaddedString(partychar.getName(), 13);
         }
         for (PartyCharacter partychar : partymembers) {
             p.writeInt(partychar.getJobId());
@@ -4059,10 +4059,10 @@ public class PacketCreator {
         for (BuddylistEntry buddy : buddylist) {
             if (buddy.isVisible()) {
                 p.writeInt(buddy.getCharacterId()); // cid
-                p.writeFixedString(getRightPaddedStr(buddy.getName(), '\0', 13));
+                p.writePaddedString(buddy.getName(), 13);
                 p.writeByte(0); // opposite status
                 p.writeInt(buddy.getChannel() - 1);
-                p.writeFixedString(getRightPaddedStr(buddy.getGroup(), '\0', 13));
+                p.writePaddedString(buddy.getGroup(), 13);
                 p.writeInt(0);//mapid?
             }
         }
@@ -4084,7 +4084,7 @@ public class PacketCreator {
         p.writeInt(chrIdFrom);
         p.writeString(nameFrom);
         p.writeInt(chrIdFrom);
-        p.writeFixedString(getRightPaddedStr(nameFrom, '\0', 11));
+        p.writePaddedString(nameFrom, 11);
         p.writeByte(0x09);
         p.writeByte(0xf0);
         p.writeByte(0x01);
@@ -6725,7 +6725,7 @@ public class PacketCreator {
         p.writeShort(chr.getCrushRings().size());
         for (Ring ring : chr.getCrushRings()) {
             p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(getRightPaddedStr(ring.getPartnerName(), '\0', 13));
+            p.writePaddedString(ring.getPartnerName(), 13);
             p.writeInt(ring.getRingId());
             p.writeInt(0);
             p.writeInt(ring.getPartnerRingId());
@@ -6734,7 +6734,7 @@ public class PacketCreator {
         p.writeShort(chr.getFriendshipRings().size());
         for (Ring ring : chr.getFriendshipRings()) {
             p.writeInt(ring.getPartnerChrId());
-            p.writeFixedString(getRightPaddedStr(ring.getPartnerName(), '\0', 13));
+            p.writePaddedString(ring.getPartnerName(), 13);
             p.writeInt(ring.getRingId());
             p.writeInt(0);
             p.writeInt(ring.getPartnerRingId());
@@ -6757,8 +6757,8 @@ public class PacketCreator {
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
                 p.writeInt(ItemId.WEDDING_RING_MOONSTONE); // Engagement Ring's Outcome (doesn't matter for engagement)
             }
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? chr.getName() : Character.getNameById(chr.getPartnerId()), '\0', 13));
-            p.writeFixedString(StringUtil.getRightPaddedStr(chr.getGender() == 0 ? Character.getNameById(chr.getPartnerId()) : chr.getName(), '\0', 13));
+            p.writePaddedString(chr.getGender() == 0 ? chr.getName() : Character.getNameById(chr.getPartnerId()), 13);
+            p.writePaddedString(chr.getGender() == 0 ? Character.getNameById(chr.getPartnerId()) : chr.getName(), 13);
         } else {
             p.writeShort(0);
         }
@@ -6921,9 +6921,9 @@ public class PacketCreator {
             p.writeInt(item.getSN());
             p.writeShort(item.getQuantity());
         }
-        p.writeFixedString(StringUtil.getRightPaddedStr(item.getGiftFrom(), '\0', 13));
+        p.writePaddedString(item.getGiftFrom(), 13);
         if (isGift) {
-            p.writeFixedString(StringUtil.getRightPaddedStr(giftMessage, '\0', 73));
+            p.writePaddedString(giftMessage, 73);
             return;
         }
         addExpirationTime(p, item.getExpiration());

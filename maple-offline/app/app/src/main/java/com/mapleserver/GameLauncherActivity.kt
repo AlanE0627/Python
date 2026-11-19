@@ -64,8 +64,10 @@ class GameLauncherActivity : Activity() {
         val log = File(filesDir, "server.log")
         if (log.exists()) {
             val lines = try {
-                log.readLines().filter { it.contains(" WARN ") || it.contains(" ERROR ") ||
-                        it.contains("Exception") }.takeLast(25)
+                log.readLines().filter { (it.contains(" WARN ") || it.contains(" ERROR ") ||
+                        it.contains("Exception")) &&
+                        // harmless on phones: netty picks a random id without a MAC
+                        !it.contains("MacAddressUtil") }.takeLast(25)
             } catch (e: Exception) { emptyList() }
             log.renameTo(File(filesDir, "server_prev.log"))
             if (lines.isNotEmpty()) {

@@ -86,12 +86,11 @@ UIWorldSelect::UIWorldSelect() :
     kms_ = static_cast<bool>(login["Title"]["signboard"]);
     if (kms_) {
         panel_tl_ = Point<int16_t>(218, 198);
-        // board: brown frame up to x 8 / y 38, ivory inside; the world name
-        // sits on the ivory with a margin, the channel grid below it
-        ch_off_ = Point<int16_t>(22, 76);
+        // channel cells of the board grid: first cell x 19, y 89, 66x28 pitch
+        ch_off_ = Point<int16_t>(22, 92);
         ch_step_ = Point<int16_t>(66, 28);
         ch_cols_ = 5;
-        wname_off_ = Point<int16_t>(22, 46);
+        wname_off_ = Point<int16_t>(8, 8);
         go_off_ = Point<int16_t>(229, 15);
         ch_box_ = Point<int16_t>(60, 21);
         channel_src_pos_ = panel_tl_;   // chBackgrn origin is (0,0)
@@ -501,8 +500,10 @@ void UIWorldSelect::set_region(uint8_t /*regionid*/) {
         Point<int16_t> wpos(static_cast<int16_t>(200 + 30 * i), 120);
         if (static_cast<bool>(nl::nx::ui_img("Login.img")["Title"]["signboard"])) {
             // KMS: grid on the world board, 6 per row
-            wpos = Point<int16_t>(static_cast<int16_t>(125 + 97 * (i % 6)),
-                                  static_cast<int16_t>(48 + 26 * (i / 6)));
+            // maple-offline: world buttons sit on the ivory of the top board,
+            // clear of its brown frame (was 125,48: on the frame)
+            wpos = Point<int16_t>(static_cast<int16_t>(147 + 97 * (i % 6)),
+                                  static_cast<int16_t>(52 + 26 * (i / 6)));
         }
         buttons_[Buttons::BT_WORLD0 + i] = std::make_unique<MapleButton>(world_src_[world], wpos);
         buttons_[Buttons::BT_WORLD0 + i]->set_active(false);

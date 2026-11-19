@@ -196,6 +196,48 @@ def label_color(krow, data):
                 best = p
     return best[:3] if best else (60, 60, 110)
 
+def stat_labels(vimg, ktree, data):
+    """v83 CHARACTER STAT background with the KMS Korean row labels
+    (이름/직업/레벨/...) pasted over the English ones. Rows are found by the
+    pink/green label cells; the v83 JOB cell is taller, its extra rows get the
+    last clean row of the KMS cell."""
+    from PIL import Image
+    stat = next((c for c in vimg[1] if c[0] == 'Stat'), None)
+    if stat is None:
+        return 0
+    bg = next((c for c in stat[1] if c[0] == 'backgrnd' and c[2] == 5), None)
+    if bg is None:
+        return 0
+    v = _canvas_img(bg)
+    kw, kh, kpx = wzimg.canvas_pixels(data, ktree['Stat']['backgrnd'], KEY)
+    k = Image.frombytes('RGBA', (kw, kh), kpx, 'raw', 'BGRA')
+    def runs(img):
+        px = img.load(); out = []; cur = None; st = 0
+        for y in range(img.height):
+            r, g, b, a = px[10, y]
+            t = 'P' if (r > 180 and g < 120 and b > 90) else ('G' if (r > 150 and g > 170 and b < 110) else None)
+            if t != cur:
+                if cur: out.append((cur, st, y - 1))
+                cur, st = t, y
+        return out
+    vr, kr = runs(v), runs(k)
+    if len(vr) != len(kr):
+        print('  stat labels: row mismatch', len(vr), len(kr)); return 0
+    vp, kp = v.load(), k.load()
+    for (vt, vs, ve), (kt, ks, ke) in zip(vr, kr):
+        if vt != kt:
+            return 0
+        kn = ke - ks + 1
+        for y in range(ve - vs + 1):
+            sy = ks + min(y, kn - 1)
+            for x in range(9, 55):
+                vp[x, vs + y] = kp[x, sy]
+    w, h = v.size
+    px = v.tobytes('raw', 'BGRA')
+    comp = lz4.block.compress(px, store_size=False)
+    bg[3] = ('bb', struct.pack('<I', len(comp)) + comp, w, h)
+    return len(vr)
+
 def from_aria(data, name, node, root, path):
     t = node.type
     n = [name, [], 0, None]
@@ -397,6 +439,8 @@ def main():
                 if len(v):
                     swap(c, v, path + (k,))
         swap(base_img, tree)
+        if img == 'UIWindow.img':
+            print('  stat labels', stat_labels(base_img, tree, data))
         root[1] = [c for c in root[1] if c[0] != img] + [base_img]
         print('swapped', img, count[0], 'canvases')
         if os.environ.get('SWAP_REJECTS'):

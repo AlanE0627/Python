@@ -106,6 +106,12 @@ void poll() {
     }
 }
 
+void quit_app() {
+#ifdef __ANDROID__
+    call_activity("quitGame", "()V", nullptr);
+#endif
+}
+
 void receive_text(const std::string &text) {
     std::lock_guard<std::mutex> g(lock_);
     pending_text_ = text;

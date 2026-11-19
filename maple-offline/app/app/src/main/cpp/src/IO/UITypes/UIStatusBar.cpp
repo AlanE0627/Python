@@ -157,7 +157,11 @@ void UIStatusBar::draw_numbers(const std::string &text, Point<int16_t> center) c
     int16_t width = 0;
 
     for (char c : mapped) {
-        width += numbers_.getw(c);
+        width += numbers_.getw(c) + 1;
+    }
+
+    if (width > 0) {
+        width -= 1;
     }
 
     numbers_.draw(mapped, DrawArgument(center - Point<int16_t>(width / 2, 3)));

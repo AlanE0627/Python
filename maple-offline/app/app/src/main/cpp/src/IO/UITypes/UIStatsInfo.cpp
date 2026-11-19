@@ -59,7 +59,7 @@ UIStatsInfo::UIStatsInfo(const CharStats &st) :
     buttons_[BT_DETAIL] = std::make_unique<MapleButton>(Stat["BtDetail"], Point<int16_t>(120, 324));
 
     const int16_t rows[StatLabel::NUM_LABELS] = {
-        33, 50, 81, 99, 117, 135, 153, 171,  // NAME..FAME
+        33, 51, 79, 97, 115, 133, 151, 169,  // NAME..FAME (cell tops)
         0,                                    // AP (centred box)
         245, 263, 281, 299,                   // STR..LUK
         8, 26, 44, 62, 80, 98, 116, 134, 152  // detail panel
@@ -69,12 +69,12 @@ UIStatsInfo::UIStatsInfo(const CharStats &st) :
         bool detail = i >= StatLabel::ATTACK;
 
         stat_labels_[i] = Text(Text::Font::A11M, Text::Alignment::LEFT, Color::Name::EMPEROR);
-        stat_offsets_[i] = detail ? Point<int16_t>(DETAIL_X + 80, rows[i] - 2)
-                                  : Point<int16_t>(VALUE_X, rows[i] - 2);
+        stat_offsets_[i] = detail ? Point<int16_t>(DETAIL_X + 80, rows[i] - 4)
+                                  : Point<int16_t>(VALUE_X, rows[i] - 4);
     }
 
     stat_labels_[AP] = Text(Text::Font::A11M, Text::Alignment::CENTER, Color::Name::EMPEROR);
-    stat_offsets_[AP] = Point<int16_t>(75, 214);
+    stat_offsets_[AP] = Point<int16_t>(75, 211);
 
     show_detail_ = false;
     has_ap_ = true;

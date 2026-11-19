@@ -209,8 +209,10 @@ void UICharSelect::draw(float inter) const {
     version_.draw(position_ + Point<int16_t>(707, 1));
 
     world_plaque_.draw(position_ + Point<int16_t>(196, 0));
-    world_label_.draw(position_ + Point<int16_t>(196 + 30, 4));
-    channel_label_.draw(position_ + Point<int16_t>(196 + 72, 4));
+    // plaque (93x35): slot x 6-54 / y 2-24 for the world, "CH." at x 58-67
+    // y 9-13; text glyphs start ~9 px below the draw point
+    world_label_.draw(position_ + Point<int16_t>(196 + 35, 0));
+    channel_label_.draw(position_ + Point<int16_t>(196 + 70, -1));
 
     for (int i = 0; i < PAGESIZE_; i++) {
         size_t index = i + selected_page * PAGESIZE_;

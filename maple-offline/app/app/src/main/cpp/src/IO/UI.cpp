@@ -15,6 +15,7 @@
 //	You should have received a copy of the GNU Affero General Public License
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UI.h"
+#include "ImeBridge.h"
 
 #include <optional>
 #include <utility>
@@ -99,6 +100,9 @@ namespace ms {
 
     void UI::quit() {
         quitted_ = true;
+        // maple-offline: the Android app has no window to close; ask the
+        // activity to save and end the process
+        ImeBridge::quit_app();
     }
 
     bool UI::not_quitted() const {

@@ -199,8 +199,13 @@ namespace ms {
             return Error::Code::FONT_PATH;
         }
 
-        const char *FONT_NORMAL_STR = FONT_NORMAL.c_str();
-        const char *FONT_BOLD_STR = FONT_BOLD.c_str();
+        // maple-offline: one face for Hangul, Latin and digits (Pretendard,
+        // SIL OFL 1.1, same tone as Malgun Gothic) so every script shares one
+        // baseline; the saved Roboto setting from older builds is ignored
+        (void) FONT_NORMAL;
+        (void) FONT_BOLD;
+        const char *FONT_NORMAL_STR = "Pretendard-Regular.ttf";
+        const char *FONT_BOLD_STR = "Pretendard-Bold.ttf";
         AAssetManager *assetManager = ((ANativeActivity *) glfmGetAndroidActivity(
                 pApp))->assetManager;
 
@@ -214,6 +219,8 @@ namespace ms {
         add_font(assetManager, FONT_NORMAL_STR, Text::Font::A18M, 0, 18);
 
         font_ymax += font_border.y();
+
+        calibrate_fonts(assetManager);
 
         // maple-offline: Hangul fallback faces (NanumGothic, SIL OFL 1.1)
         const Text::Font bold_fonts[] = {Text::Font::A11B, Text::Font::A12B, Text::Font::A13B,
@@ -379,6 +386,66 @@ namespace ms {
         return true;
     }
 
+    // maple-offline: the UI coordinates (HeavenClient + ours) were placed
+    // for Roboto metrics. Per font size, move the glyphs of the single face we
+    // use now (Pretendard) so its capital 'H' sits exactly where Roboto's did:
+    // same vertical centre, same left edge. One correction per size for all
+    // screens; Hangul shares the face, so it lines up with Latin too.
+    void GraphicsGL::calibrate_fonts(AAssetManager *assetManager) {
+        const FT_UInt sizes[Text::Font::NUM_FONTS] = {11, 11, 12, 12, 13, 13, 15, 18};
+        const bool bold[Text::Font::NUM_FONTS] = {false, true, false, true, false, true, true, false};
+
+        for (int f = 0; f < Text::Font::NUM_FONTS; f++) {
+            font_cal_[f] = Point<int16_t>(0, 0);
+            FT_Face ref = load_face(assetManager, bold[f] ? "Roboto-Bold.ttf" : "Roboto-Regular.ttf", sizes[f]);
+
+            if (!ref) {
+                continue;
+            }
+
+            GLshort ref_h = 0;
+            for (uint32_t c = 32; c < 256; c++) {
+                if (!FT_Load_Char(ref, c, FT_LOAD_RENDER) && ref->glyph->bitmap.rows > ref_h) {
+                    ref_h = static_cast<GLshort>(ref->glyph->bitmap.rows);
+                }
+            }
+            int ref_line = static_cast<int>(ref_h * 1.35 + 1);
+
+            // horizontal: Latin-1 glyphs take Roboto's advance (the layouts
+            // were sized for it); the glyph is centred in the width it gains
+            // or loses, so strings keep their old length and centre
+            for (uint32_t c = 33; c < 256; c++) {
+                if (FT_Load_Char(ref, c, FT_LOAD_DEFAULT)) {
+                    continue;
+                }
+                GLshort ref_ax = static_cast<GLshort>(ref->glyph->advance.x >> 6);
+                Font::Char &ch = fonts_[f].chars[c];
+                if (ref_ax > 0 && ch.ax > 0) {
+                    GLshort diff = ref_ax - ch.ax;
+                    ch.ax = ref_ax;
+                    ch.bl = static_cast<GLshort>(ch.bl + diff / 2);
+                }
+            }
+            if (!FT_Load_Char(ref, ' ', FT_LOAD_DEFAULT)) {
+                fonts_[f].chars[32].ax = static_cast<GLshort>(ref->glyph->advance.x >> 6);
+            }
+
+            if (FT_Load_Char(ref, 'H', FT_LOAD_RENDER)) {
+                FT_Done_Face(ref);
+                continue;
+            }
+            double ref_mid = ref_line - ref->glyph->bitmap_top + ref->glyph->bitmap.rows / 2.0;
+            int ref_left = ref->glyph->bitmap_left;
+            FT_Done_Face(ref);
+
+            const Font::Char &h = fonts_[f].chars[static_cast<int>('H')];
+            double new_mid = fonts_[f].linespace() - h.bt + h.bh / 2.0;
+
+            (void) ref_left;
+            font_cal_[f] = Point<int16_t>(0, static_cast<int16_t>(std::lround(ref_mid - new_mid)));
+        }
+    }
+
     FT_Face GraphicsGL::load_face(AAssetManager *assetManager, const char *name, FT_UInt pixelh) {
         AAsset *file = AAssetManager_open(assetManager, name, AASSET_MODE_BUFFER);
 
@@ -419,7 +486,8 @@ namespace ms {
                       || (c >= 0xAC00 && c <= 0xD7AF);
         FT_Face face = faces_[font.id];
 
-        if (hangul || !face || FT_Get_Char_Index(face, c) == 0) {
+        (void) hangul;
+        if (!face || FT_Get_Char_Index(face, c) == 0) {
             face = fallback_faces_[font.id];
         }
 
@@ -1253,7 +1321,7 @@ namespace ms {
                 for (const Text::Layout::Line &line: layout) {
                     GLshort left = x + line.position.x() - 1;
                     GLshort right = left + w + 3;
-                    GLshort top = y + line.position.y() - font.linespace() + 6;
+                    GLshort top = y + line.position.y() - font.linespace() + 6 + font_cal_[id].y();
                     GLshort bottom = top + h - 2;
                     Color ntcolor = Color(0.0f, 0.0f, 0.0f, 0.6f);
 
@@ -1305,8 +1373,8 @@ namespace ms {
                     auto c = text[pos];
                     const Font::Char &ch = glyph(font, c);
 
-                    GLshort char_x = x + ax + ch.bl;
-                    GLshort char_y = y + ay - ch.bt;
+                    GLshort char_x = x + ax + ch.bl + font_cal_[id].x();
+                    GLshort char_y = y + ay - ch.bt + font_cal_[id].y();
                     GLshort char_width = ch.bw;
                     GLshort char_height = ch.bh;
                     GLshort char_bottom = char_y + char_height;
