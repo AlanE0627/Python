@@ -603,6 +603,19 @@ index 95a7f8e5..d9a15426 100644
                  }
              }
          } else if (status == 2) {
+diff --git a/scripts/npc/1012112.js b/scripts/npc/1012112.js
+index 607625d3..63b483d8 100644
+--- a/scripts/npc/1012112.js
++++ b/scripts/npc/1012112.js
+@@ -59,7 +59,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Primrose Hill>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nI'm Tory. Inside here is a beautiful hill where the primrose blooms. There's a tiger that lives in the hill, Growlie, and he seems to be looking for something to eat. Would you like to head over to the hill of primrose and join forces with your party members to help Growlie out?#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.\r\n#L3#I would like to redeem an instance hat.");
++                cm.sendSimple("#e#b<Party Quest: Primrose Hill>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nI'm Tory. Inside here is a beautiful hill where the primrose blooms. There's a tiger that lives in the hill, Growlie, and he seems to be looking for something to eat. Would you like to head over to the hill of primrose and join forces with your party members to help Growlie out?#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기\r\n#L3#I would like to redeem an instance hat.");
+             } else if (status == 1) {
+                 if (selection == 0) {
+                     if (cm.getParty() == null) {
 diff --git a/scripts/npc/1022000.js b/scripts/npc/1022000.js
 index 65bbb799..9ab19af6 100644
 --- a/scripts/npc/1022000.js
@@ -733,6 +746,19 @@ index a3bdc194..84a3dabd 100644
  }
  
  function action(mode, type, selection) {
+diff --git a/scripts/npc/1052013.js b/scripts/npc/1052013.js
+index 4289447b..4e36992b 100644
+--- a/scripts/npc/1052013.js
++++ b/scripts/npc/1052013.js
+@@ -103,7 +103,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Premium Road - " + levels[selection] + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nThe #p1052014# operates differently than the common ones. They do not use mesos or gachapon tickets, rather #rERASERS#k, that can be obtained by completing the missions held on the Premium Road. To go there, you must find partners and attend to a Party Quest. When teamed up and ready, have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: Premium Road - " + levels[selection] + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nThe #p1052014# operates differently than the common ones. They do not use mesos or gachapon tickets, rather #rERASERS#k, that can be obtained by completing the missions held on the Premium Road. To go there, you must find partners and attend to a Party Quest. When teamed up and ready, have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             } else if (status == 2) {
+                 if (selection == 0) {
+                     if (cm.getParty() == null) {
 diff --git a/scripts/npc/1052016.js b/scripts/npc/1052016.js
 index 72aa8396..9e81ed6a 100644
 --- a/scripts/npc/1052016.js
@@ -752,6 +778,28 @@ index 72aa8396..9e81ed6a 100644
              }
              cm.sendSimple(selStr);
          } else if (status == 2) {
+diff --git a/scripts/npc/1061014.js b/scripts/npc/1061014.js
+index bc78e031..6d6ca021 100644
+--- a/scripts/npc/1061014.js
++++ b/scripts/npc/1061014.js
+@@ -34,7 +34,7 @@ var expedName = "Balrog";
+ var expedBoss = "Balrog";
+ var expedMap = "Balrog's Tomb";
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -59,7 +59,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l\r\n\#L3#I would like to see info about this expedition...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l\r\n\#L3#I would like to see info about this expedition...#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
 diff --git a/scripts/npc/1061100.js b/scripts/npc/1061100.js
 index 076ef93c..35dd08c7 100644
 --- a/scripts/npc/1061100.js
@@ -990,6 +1038,19 @@ index 60024208..b43e0088 100644
                      if (playersOnCombo == 5 || cm.getPlayer().gmLevel() > 1) {
                          var comboStr = eim.getProperty("stage" + stage + "combo");
                          if (comboStr == null) {
+diff --git a/scripts/npc/2041023.js b/scripts/npc/2041023.js
+index 67078a96..c9e8aee9 100644
+--- a/scripts/npc/2041023.js
++++ b/scripts/npc/2041023.js
+@@ -67,7 +67,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: Elemental Thanatos>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou are looking for Elemental Thanatos, right? If you team up with another mage, with the opposite elemental affinity as yours, you guys will be able to overcome them. As a leader, talk to me when you feel ready to go.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++            cm.sendSimple("#e#b<Party Quest: Elemental Thanatos>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou are looking for Elemental Thanatos, right? If you team up with another mage, with the opposite elemental affinity as yours, you guys will be able to overcome them. As a leader, talk to me when you feel ready to go.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
 diff --git a/scripts/npc/2081100.js b/scripts/npc/2081100.js
 index 9b23238c..1cdf5a9c 100644
 --- a/scripts/npc/2081100.js
@@ -1055,6 +1116,144 @@ index dc03ff40..96eb4dd8 100644
                  //cm.dispose();
              }
          } else if (status == 1) {
+diff --git a/scripts/npc/2083004.js b/scripts/npc/2083004.js
+index 6523026d..8c602492 100644
+--- a/scripts/npc/2083004.js
++++ b/scripts/npc/2083004.js
+@@ -34,7 +34,7 @@ const exped = ExpeditionType.HORNTAIL;
+ var expedName = "Horntail";
+ var expedBoss = "mighty Horntail";
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -59,7 +59,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
+diff --git a/scripts/npc/2094000.js b/scripts/npc/2094000.js
+index ef89bf18..5688bb01 100644
+--- a/scripts/npc/2094000.js
++++ b/scripts/npc/2094000.js
+@@ -58,7 +58,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: Pirate Ship>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHelp! My son has been kidnapped and is bound on the hands of the fearful #rLord Pirate#k. I need your help... Would you please assemble or join a team to save him? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++            cm.sendSimple("#e#b<Party Quest: Pirate Ship>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHelp! My son has been kidnapped and is bound on the hands of the fearful #rLord Pirate#k. I need your help... Would you please assemble or join a team to save him? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
+diff --git a/scripts/npc/2095000.js b/scripts/npc/2095000.js
+index 150fe03a..1bf16528 100644
+--- a/scripts/npc/2095000.js
++++ b/scripts/npc/2095000.js
+@@ -55,7 +55,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Save Delli>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nAh, #r#p1095000##k sent you here? Is she worried about me? ... I'm terribly sorry to hear that, but I can't really go back just yet, some monsters are under the Black Mage's influence, and it's up to me to liberate them! ... It seems you're not going to accept that either, huh? Would you like to collaborate with party members to help me? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: Save Delli>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nAh, #r#p1095000##k sent you here? Is she worried about me? ... I'm terribly sorry to hear that, but I can't really go back just yet, some monsters are under the Black Mage's influence, and it's up to me to liberate them! ... It seems you're not going to accept that either, huh? Would you like to collaborate with party members to help me? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             } else {
+                 cm.sendYesNo("The mission succeeded, thanks for escorting me! I can lead you to #b#m120000104##k, are you ready?");
+             }
+diff --git a/scripts/npc/2112003.js b/scripts/npc/2112003.js
+index 088edc85..82778fb3 100644
+--- a/scripts/npc/2112003.js
++++ b/scripts/npc/2112003.js
+@@ -66,7 +66,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Romeo and Juliet>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nMy beloved Romeo has been kidnapped! Although he is Zenumist's, I can't stand by and just see him suffer just because of this foolish clash. I need you and your colleagues help to save him! Please, help us!! Please have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: Romeo and Juliet>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nMy beloved Romeo has been kidnapped! Although he is Zenumist's, I can't stand by and just see him suffer just because of this foolish clash. I need you and your colleagues help to save him! Please, help us!! Please have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             } else if (status == 1) {
+                 if (selection == 0) {
+                     if (cm.getParty() == null) {
+diff --git a/scripts/npc/2112004.js b/scripts/npc/2112004.js
+index 0bdc9d56..b955e28e 100644
+--- a/scripts/npc/2112004.js
++++ b/scripts/npc/2112004.js
+@@ -66,7 +66,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Romeo and Juliet>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nMy beloved Juliet has been kidnapped! Although she is Alcadno's, I can't stand by and just see her suffer just because of this foolish clash. I need you and your colleagues help to save her! Please, help us!! Please have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: Romeo and Juliet>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nMy beloved Juliet has been kidnapped! Although she is Alcadno's, I can't stand by and just see her suffer just because of this foolish clash. I need you and your colleagues help to save her! Please, help us!! Please have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             } else if (status == 1) {
+                 if (selection == 0) {
+                     if (cm.getParty() == null) {
+diff --git a/scripts/npc/2133000.js b/scripts/npc/2133000.js
+index 8e1ec76f..e0d65472 100644
+--- a/scripts/npc/2133000.js
++++ b/scripts/npc/2133000.js
+@@ -58,7 +58,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: Forest of Poison Haze>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble or join a team to solve the puzzles of the #bForest of Poison Haze#k? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.\r\n#L3#I would like to reclaim a prize.");
++            cm.sendSimple("#e#b<Party Quest: Forest of Poison Haze>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble or join a team to solve the puzzles of the #bForest of Poison Haze#k? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기\r\n#L3#보상 다시 받기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
+diff --git a/scripts/npc/2141000.js b/scripts/npc/2141000.js
+index e1642512..57453e4d 100644
+--- a/scripts/npc/2141000.js
++++ b/scripts/npc/2141000.js
+@@ -9,8 +9,9 @@ function start() {
+ 
+ function action(mode, type, selection) {
+     if (mode == 1) {
+-        cm.removeNpc(270050100, 2141000);
+-        cm.forceStartReactor(270050100, 2709000);
++        // maple-offline: Pink Bean is already spawned by PinkBeanBattle
++        // setup; removeNpc/forceStartReactor do not exist in this server.
++        cm.getPlayer().getMap().destroyNPC(2141000);
+     }
+     cm.dispose();
+ 
+diff --git a/scripts/npc/2141001.js b/scripts/npc/2141001.js
+index 3789604f..5f495d09 100644
+--- a/scripts/npc/2141001.js
++++ b/scripts/npc/2141001.js
+@@ -37,7 +37,7 @@ var expedName = "Twilight of the Gods";
+ var expedBoss = "Pink Bean";
+ var expedMap = "Twilight of Gods";
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -62,7 +62,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
+diff --git a/scripts/npc/9000037.js b/scripts/npc/9000037.js
+index aca404f8..02b20fd6 100644
+--- a/scripts/npc/9000037.js
++++ b/scripts/npc/9000037.js
+@@ -127,7 +127,7 @@ function action(mode, type, selection) {
+                     return;
+                 }
+ 
+-                cm.sendSimple("#e#b<Party Quest: Boss Rush>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to collaborate with party members to complete the expedition, or are you brave enough to take it on all by yourself? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++                cm.sendSimple("#e#b<Party Quest: Boss Rush>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to collaborate with party members to complete the expedition, or are you brave enough to take it on all by yourself? Have your #bparty leader#k talk to me or make yourself a party.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+             }
+         } else if (status == 1) {
+             if (state == 3) {
 diff --git a/scripts/npc/9020000.js b/scripts/npc/9020000.js
 index 49c4ed30..3213edc8 100644
 --- a/scripts/npc/9020000.js
@@ -1108,6 +1307,111 @@ index 32adc9bf..19010dee 100644
                      } else {
                          cm.sendNext("I'm sorry, but you are short on the number of passes. You need to give me the right number of passes; it should be the number of members of your party minus the leader, in this case the total of " + numpasses + " to clear the stage. Tell your party members to solve the questions, gather up the passes, and give them to you.");
                      }
+diff --git a/scripts/npc/9105004.js b/scripts/npc/9105004.js
+index 82e5db8c..9fce3ebf 100644
+--- a/scripts/npc/9105004.js
++++ b/scripts/npc/9105004.js
+@@ -71,7 +71,7 @@ function recruitPqAction(mode, type, selection) {
+             return;
+         }
+ 
+-        cm.sendSimple("#e#b<Party Quest: Holiday>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHow about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++        cm.sendSimple("#e#b<Party Quest: Holiday>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nHow about you and your party members collectively beating a quest? Here you'll find obstacles and problems where you won't be able to beat it without great teamwork. If you want to try it, please tell the #bleader of your party#k to talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+     } else if (status == 1) {
+         if (selection == 0) {
+             if (cm.getParty() == null) {
+diff --git a/scripts/npc/9120201.js b/scripts/npc/9120201.js
+index 6ada64e3..616753ab 100644
+--- a/scripts/npc/9120201.js
++++ b/scripts/npc/9120201.js
+@@ -35,7 +35,7 @@ var expedBoss = "The Boss";
+ var expedMap = "Nightmarish Last Days";
+ var expedItem = 4000138;
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -60,7 +60,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
+diff --git a/scripts/npc/9201048.js b/scripts/npc/9201048.js
+index 8c1335ca..f0ba5812 100644
+--- a/scripts/npc/9201048.js
++++ b/scripts/npc/9201048.js
+@@ -58,7 +58,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: Amorian Challenge>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nIf you're brave enough to attempt the Amorian Challenge, join with others like you and let your #bparty leader#k talk to me. If a party filled with whole married couples register to the challenge, better prizes awaits there.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++            cm.sendSimple("#e#b<Party Quest: Amorian Challenge>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nIf you're brave enough to attempt the Amorian Challenge, join with others like you and let your #bparty leader#k talk to me. If a party filled with whole married couples register to the challenge, better prizes awaits there.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
+diff --git a/scripts/npc/9201113.js b/scripts/npc/9201113.js
+index 7f2c26e9..6d247768 100644
+--- a/scripts/npc/9201113.js
++++ b/scripts/npc/9201113.js
+@@ -31,7 +31,7 @@ var player;
+ var em;
+ const ExpeditionType = Java.type('server.expeditions.ExpeditionType');
+ var cwkpq = ExpeditionType.CWKPQ;
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -56,7 +56,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to take attempt Crimsonwood Keep Party Quest!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Party Quest: Crimsonwood Keep>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to attempt the #rCrimsonwood Keep Party Quest#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Party Quest: Crimsonwood Keep>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to attempt the #rCrimsonwood Keep Party Quest#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
+diff --git a/scripts/npc/9220018.js b/scripts/npc/9220018.js
+index 2bbfe5a6..621d4c95 100644
+--- a/scripts/npc/9220018.js
++++ b/scripts/npc/9220018.js
+@@ -57,7 +57,7 @@ function action(mode, type, selection) {
+                 return;
+             }
+ 
+-            cm.sendSimple("#e#b<Party Quest: MV's Lair>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou can't go any further because of the extremely dangerous creatures lying ahead. Would you like to collaborate with party members to complete the quest? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#I want to participate in the party quest.\r\n#L1#I would like to " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "disable" : "enable") + " Party Search.\r\n#L2#I would like to hear more details.");
++            cm.sendSimple("#e#b<Party Quest: MV's Lair>\r\n#k#n" + em.getProperty("party") + "\r\n\r\nYou can't go any further because of the extremely dangerous creatures lying ahead. Would you like to collaborate with party members to complete the quest? If so, please have your #bparty leader#k talk to me.#b\r\n#L0#파티 퀘스트 참가\r\n#L1#파티 찾기 알림 " + (cm.getPlayer().isRecvPartySearchInviteEnabled() ? "끄기" : "켜기") + "\r\n#L2#설명 듣기");
+         } else if (status == 1) {
+             if (selection == 0) {
+                 if (cm.getParty() == null) {
+diff --git a/scripts/npc/9270047.js b/scripts/npc/9270047.js
+index f54e4d75..7f0ff288 100644
+--- a/scripts/npc/9270047.js
++++ b/scripts/npc/9270047.js
+@@ -36,7 +36,7 @@ var expedBoss = "Scarlion and Targa";
+ var expedMap = "Spooky World";
+ var expedItem = 4032246;
+ 
+-var list = "What would you like to do?#b\r\n\r\n#L1#View current Expedition members#l\r\n#L2#Start the fight!#l\r\n#L3#Stop the expedition.#l";
++var list = "무엇을 할까요?#b\r\n\r\n#L1#원정대원 보기#l\r\n#L2#전투 시작#l\r\n#L3#원정대 해산#l";
+ 
+ function start() {
+     action(1, 0, 0);
+@@ -61,7 +61,7 @@ function action(mode, type, selection) {
+                 cm.sendOk("You do not meet the criteria to battle " + expedBoss + "!");
+                 cm.dispose();
+             } else if (expedition == null) { //Start an expedition
+-                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#Lets get this going!#l\r\n\#L2#No, I think I'll wait a bit...#l");
++                cm.sendSimple("#e#b<Expedition: " + expedName + ">\r\n#k#n" + em.getProperty("party") + "\r\n\r\nWould you like to assemble a team to take on #r" + expedBoss + "#k?\r\n#b#L1#원정대 만들기#l\r\n\#L2#나중에 하기#l");
+                 status = 1;
+             } else if (expedition.isLeader(player)) { //If you're the leader, manage the exped
+                 if (expedition.isInProgress()) {
 diff --git a/src/main/java/client/Character.java b/src/main/java/client/Character.java
 index 64aef3f8..c5d478ff 100644
 --- a/src/main/java/client/Character.java
