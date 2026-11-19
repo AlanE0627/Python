@@ -484,8 +484,16 @@ void UIWorldSelect::set_region(uint8_t /*regionid*/) {
     worlds_background_ = nl::node();
     world_src_pos_ = Point<int16_t>(0, 0);
 
+    // KMS 1.2.95 world art is numbered by KMS worlds (0 = Extreme); the
+    // single offline world uses the Khaini art, as on the KMS world screen.
+    bool kms = static_cast<bool>(nl::nx::ui_img("Login.img")["Title"]["signboard"]);
+
     for (size_t i = Buttons::BT_WORLD0; i <= Buttons::BT_WORLD4; i++) {
         std::string world = std::to_string(world_map_[i]);
+        if (kms) {
+            static const char *const kms_art[] = { "3", "1", "2", "4", "5" };
+            world = kms_art[i - Buttons::BT_WORLD0];
+        }
         world_textures_.emplace_back(world_select_["world"][world]);
         recommended_world_textures_.emplace_back(world_select_["world"][world]);
         Point<int16_t> wpos(static_cast<int16_t>(200 + 30 * i), 120);

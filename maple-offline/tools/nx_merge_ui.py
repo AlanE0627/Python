@@ -164,6 +164,16 @@ def main():
         KEY = wzimg.keystream(wzimg.IVS['KMS_OLD'], 0x100000)
         WZ = wzimg.WzFile(uidir, KEY)
     subs = [a for a in sys.argv[4:] if ':' in a]     # Login.img:RaceSelect (one section only)
+    # Img.img!A,B : take the KMS img but keep the base (v83) sections A, B
+    drops = {}
+    args = []
+    for a in sys.argv[4:]:
+        if '!' in a and '=' not in a:
+            img, secs = a.split('!', 1)
+            drops[img] = set(secs.split(','))
+            a = img
+        args.append(a)
+    sys.argv[4:] = args
     imgs = [a for a in sys.argv[4:] if '=' not in a and ':' not in a]
     extras = [a for a in sys.argv[4:] if '=' in a]   # Back/login.img=<path>
     if base.startswith('--overlay'):
@@ -203,6 +213,7 @@ def main():
     for img in imgs:
         data, tree = read_img(uidir, img)
         new = from_aria(data, img, tree, tree, [])
+        new[1] = [c for c in new[1] if c[0] not in drops.get(img, ())]
         old = next((c for c in root[1] if c[0] == img), None)
         if old is None and b is not None:
             # overlay: still keep v83-only sections of this img (deep merge)
