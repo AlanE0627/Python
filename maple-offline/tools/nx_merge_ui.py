@@ -10,6 +10,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import wzimg
 
 KEY = wzimg.keystream(wzimg.IVS['KMS'], 0x100000)
+WZ = None  # packed UI.wz source (KMS 1.2.95) when the "dir" argument ends with .wz
+
+def read_img(uidir, img):
+    """(data, tree) for a top-level img, from a Data/UI folder or a packed UI.wz."""
+    if WZ is not None:
+        return WZ.d, WZ.img(img)
+    data = open(os.path.join(uidir, img), 'rb').read()
+    return data, wzimg.parse_img(data, KEY)
 
 class Base:
     def __init__(self, path):
@@ -141,7 +149,11 @@ def write(out, root):
     print('nodes', len(order), 'strings', len(slist), 'bitmaps', len(bitmaps), 'audio', len(audios))
 
 def main():
+    global WZ, KEY
     base, out, uidir = sys.argv[1:4]
+    if uidir.endswith('.wz'):
+        KEY = wzimg.keystream(wzimg.IVS['KMS_OLD'], 0x100000)
+        WZ = wzimg.WzFile(uidir, KEY)
     subs = [a for a in sys.argv[4:] if ':' in a]     # Login.img:RaceSelect (one section only)
     imgs = [a for a in sys.argv[4:] if '=' not in a and ':' not in a]
     extras = [a for a in sys.argv[4:] if '=' in a]   # Back/login.img=<path>
@@ -165,8 +177,7 @@ def main():
         root[1] = [c for c in root[1] if c[0] != 'MapRes.img'] + [res]
     for sub in subs:
         img, sect = sub.split(':', 1)
-        data = open(os.path.join(uidir, img), 'rb').read()
-        tree = wzimg.parse_img(data, KEY)
+        data, tree = read_img(uidir, img)
         if sect not in tree:
             print('missing', sub); continue
         new = from_aria(data, sect, tree[sect], tree, [sect])
@@ -176,8 +187,7 @@ def main():
         holder[1] = [c for c in holder[1] if c[0] != sect] + [new]
         print('replaced section', sub)
     for img in imgs:
-        data = open(os.path.join(uidir, img), 'rb').read()
-        tree = wzimg.parse_img(data, KEY)
+        data, tree = read_img(uidir, img)
         new = from_aria(data, img, tree, tree, [])
         old = next((c for c in root[1] if c[0] == img), None)
         if old is not None:

@@ -5,7 +5,7 @@ import struct, zlib
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 USERKEY = bytes([0x13,0,0,0,0x08,0,0,0,0x06,0,0,0,0xB4,0,0,0,0x1B,0,0,0,0x0F,0,0,0,0x33,0,0,0,0x52,0,0,0])
-IVS = {'GMS': bytes.fromhex('4D23C72B'), 'KMS': bytes.fromhex('B97D63E9'), 'NONE': bytes(4)}
+IVS = {'GMS': bytes.fromhex('4D23C72B'), 'KMS': bytes.fromhex('B97D63E9'), 'KMS_OLD': bytes.fromhex('2E2B3301'), 'NONE': bytes(4)}
 
 def keystream(iv, n):
     if iv == bytes(4):
@@ -165,6 +165,13 @@ def detect_key(data):
             pass
     return None
 
+_KMS_KEY = None
+def _kms_key():
+    global _KMS_KEY
+    if _KMS_KEY is None:
+        _KMS_KEY = keystream(IVS['KMS'], 0x100000)
+    return _KMS_KEY
+
 def canvas_pixels(data, node, key):
     """Return (w, h, BGRA8888 bytes) for a canvas node."""
     w, h, fmt, off, ln = node.value
@@ -172,14 +179,20 @@ def canvas_pixels(data, node, key):
     if raw[:2] in (b'\x78\x9c', b'\x78\xda', b'\x78\x01', b'\x78\x5e'):
         z = raw
     else:
-        out = bytearray(); p = 0
-        while p + 4 <= len(raw):
-            bl = struct.unpack_from('<i', raw, p)[0]; p += 4
-            if bl <= 0 or p + bl > len(raw):
+        # block-encrypted; the image key can differ from the string key
+        # (KMS 1.2.95 strings use 2E2B3301, its images B97D63E9)
+        z = b''
+        for k in (key, _kms_key()):
+            out = bytearray(); p = 0
+            while p + 4 <= len(raw):
+                bl = struct.unpack_from('<i', raw, p)[0]; p += 4
+                if bl <= 0 or p + bl > len(raw):
+                    break
+                blk = raw[p:p + bl]; p += bl
+                out += bytes(a ^ b for a, b in zip(blk, k[:bl]))
+            z = bytes(out)
+            if z[:1] == b'\x78':
                 break
-            blk = raw[p:p + bl]; p += bl
-            out += bytes(a ^ b for a, b in zip(blk, key[:bl]))
-        z = bytes(out)
     pix = zlib.decompressobj().decompress(z)
     if fmt == 2:
         return w, h, pix[:w * h * 4]

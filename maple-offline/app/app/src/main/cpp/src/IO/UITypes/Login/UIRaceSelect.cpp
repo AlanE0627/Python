@@ -60,11 +60,25 @@ UIRaceSelect::UIRaceSelect() :
         sprites_.emplace_back(Common["frame"], Point<int16_t>(400, 300));
         sprites_.emplace_back(Common["step"]["3"], Point<int16_t>(40, 0));
 
-        // card order on screen: Dual Blade, Explorers / Cygnus, Aran, Evan
-        const Point<int16_t> top_l(110, 52), top_r(404, 52);
-        const Point<int16_t> bot[3] = { Point<int16_t>(110, 276),
-                                        Point<int16_t>(306, 276),
-                                        Point<int16_t>(502, 276) };
+        // dim layer behind the cards (60% black in KMS 1.2.95)
+        sprites_.emplace_back(RaceSelect["backgrnd"], Point<int16_t>(0, 0));
+
+        // card order on screen: Dual Blade, Explorers / Cygnus, Aran, Evan.
+        // KMS 1.2.95 cards carry a glow margin (354x247 / 234x247); later
+        // builds use tighter 286x216 / 188x217 cards.
+        bool wide = Texture(RaceSelect["BtNormal"]["normal"]["0"]).width() > 300;
+        Point<int16_t> top_l(110, 52), top_r(404, 52);
+        Point<int16_t> bot[3] = { Point<int16_t>(110, 276),
+                                  Point<int16_t>(306, 276),
+                                  Point<int16_t>(502, 276) };
+
+        if (wide) {
+            top_l = Point<int16_t>(42, 38);
+            top_r = Point<int16_t>(404, 38);
+            bot[0] = Point<int16_t>(41, 288);
+            bot[1] = Point<int16_t>(283, 288);
+            bot[2] = Point<int16_t>(525, 288);
+        }
         race_pos_[EXPLORER] = top_r;
         race_pos_[CYGNUSKNIGHTS] = bot[0];
         race_pos_[ARAN] = bot[1];

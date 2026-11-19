@@ -17,10 +17,19 @@ import wzimg
 from nx_ko_patch import NX, finish
 
 KEY = wzimg.keystream(wzimg.IVS['KMS'], 0x40000)
+WZ = None   # packed .wz source (KMS 1.2.95 client), else a Data/ img folder
 
 def load_img(path):
+    if WZ is not None:
+        name = os.path.basename(path)
+        return WZ.img(name) if name in WZ.entries else None
     d = open(path, 'rb').read()
     return wzimg.parse_img(d, KEY)
+
+def exists(path):
+    if WZ is not None:
+        return os.path.basename(path) in WZ.entries
+    return os.path.exists(path)
 
 def strings_of(nx, idx, prefix, out):
     name, first, cnt, typ = nx.node(idx)
@@ -40,7 +49,10 @@ def aria_strings(node, prefix, out):
 SKILL_LEVEL = re.compile(r'^h\d*$')
 
 def main():
+    global WZ
     mode, src, dst, datadir = sys.argv[1:5]
+    if datadir.endswith('.wz'):
+        WZ = wzimg.WzFile(datadir, wzimg.keystream(wzimg.IVS['KMS_OLD'], 0x100000))
     shutil.copyfile(src, dst)
     nx = NX(dst)
     new_strings, patches, counts = [], [], {}
@@ -52,7 +64,7 @@ def main():
     if mode == 'string':
         for img, idx in root.items():
             p = os.path.join(datadir, img)
-            if not os.path.exists(p):
+            if not exists(p):
                 continue
             kv = {}; aria_strings(load_img(p), (), kv)
             mine = {}; strings_of(nx, idx, (), mine)
@@ -63,9 +75,17 @@ def main():
                 if t:
                     put(nidx, t, img)
     else:
-        qdir = os.path.join(datadir, 'QuestData')
         aria = {}
-        for f in os.listdir(qdir):
+        if WZ is not None:
+            # packed layout: QuestInfo.img/<id>, Say.img/<id>
+            qi = WZ.img('QuestInfo.img'); sy = WZ.img('Say.img')
+            for qid in set(qi) | set(sy):
+                n = wzimg.Node('dir')
+                if qid in qi: n['QuestInfo'] = qi[qid]
+                if qid in sy: n['Say'] = sy[qid]
+                aria[qid] = n
+        qdir = os.path.join(datadir, 'QuestData')
+        for f in (os.listdir(qdir) if WZ is None else []):
             if f.endswith('.img'):
                 try:
                     aria[f[:-4]] = load_img(os.path.join(qdir, f))
