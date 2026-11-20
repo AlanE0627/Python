@@ -54,6 +54,10 @@ public:
 
     bool is_menu_active();
 
+    // maple-offline: the MENU popup or the SHORTCUT (quick slot) panel is
+    // open; both sit under the touch buttons, which hide meanwhile
+    bool is_popup_open() const { return menu_active_ || quickslot_active_; }
+
 protected:
     Button::State button_pressed(uint16_t buttonid) override;
 

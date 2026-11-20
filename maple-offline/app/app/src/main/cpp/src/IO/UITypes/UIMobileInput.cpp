@@ -19,6 +19,7 @@
 #include "../Data/ItemData.h"
 #include "StringHandling.h"
 #include "UIMobileInput.h"
+#include "UIStatusBar.h"
 #include "UI.h"
 #include "TouchButton.h"
 #include "UIStateGame.h"
@@ -54,9 +55,23 @@ namespace ms {
                 std::make_unique<TouchButton>(Point<int16_t>(1205, 270), 70, GLFMKeyCodeB, "몬스터북");
     }
 
+    namespace {
+        // the game's MENU popup or quick slot panel is open over the buttons
+        bool status_popup_open() {
+            if (auto statusbar = UI::get().get_element<UIStatusBar>()) {
+                return statusbar->get().is_popup_open();
+            }
+
+            return false;
+        }
+    }
+
     void UIMobileInput::draw() const {
-        // maple-offline: hide the touch overlay while a controller is in use.
+        // maple-offline: hide the touch overlay while a controller is in use,
+        // and while the MENU popup / quick slot panel is open so taps reach
+        // the menu instead of the touch buttons under it.
         if (maple_gamepad_active) return;
+        if (status_popup_open()) return;
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             joystick_.draw();
             for (const auto &iter: touch_buttons_) {
@@ -71,7 +86,11 @@ namespace ms {
         if (maple_gamepad_active) return;
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             const std::unordered_map<int16_t, TouchInfo> &touch_phase_map = UI::get().get_touch_phase();
+            // while a popup is open no new touch binds to a button or the
+            // stick; touches already held still run to their release below
+            bool hidden = status_popup_open();
             for (const auto &iter: touch_buttons_) {
+                if (hidden) break;
                 if (TouchButton *button = iter.second.get()) {
                     for (const auto &touch_phase: touch_phase_map) {
                         if (button->set_state(touch_phase.second))
@@ -81,6 +100,7 @@ namespace ms {
             }
 
             for (const auto &touch_phase: touch_phase_map) {
+                if (hidden) break;
                 if (joystick_.set_state(touch_phase.second)) {
                     joystick_.bind_touch_id(touch_phase.first);
                 }
