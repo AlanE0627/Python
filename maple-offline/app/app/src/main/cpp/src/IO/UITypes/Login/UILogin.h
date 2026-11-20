@@ -64,5 +64,9 @@ private:
     BoolPair<Texture> checkbox_;
 
     bool saveid_;
+
+    // maple-offline: single-player, the login fills itself in and goes
+    int16_t auto_login_wait_ = 40;
+    bool auto_login_done_ = false;
 };
 }  // namespace ms

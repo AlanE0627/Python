@@ -29,7 +29,9 @@ public class ChannelServer extends AbstractServer {
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelServerInitializer(world, channel, context));
 
-        this.nettyChannel = bootstrap.bind(port).syncUninterruptibly().channel();
+        // maple-offline: the game is on this phone only; nothing else on the
+        // network can reach the server (logins take any password)
+        this.nettyChannel = bootstrap.bind("127.0.0.1", port).syncUninterruptibly().channel();
     }
 
     @Override

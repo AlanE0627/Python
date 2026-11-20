@@ -185,6 +185,16 @@ void UILogin::update() {
 
     account_.update(position_);
     password_.update(position_);
+
+    // maple-offline: no login needed in the single-player build. The bundled
+    // server accepts any password (and registers the account on first use),
+    // so log in as Alan as soon as the screen is up.
+    if (!auto_login_done_ && !getenv("MS_NO_AUTOLOGIN") && --auto_login_wait_ <= 0) {
+        auto_login_done_ = true;
+        account_.change_text("Alan");
+        password_.change_text("offline");
+        login();
+    }
 }
 
 void UILogin::login() {

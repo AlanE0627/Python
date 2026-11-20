@@ -684,8 +684,9 @@ public class Client extends ChannelInboundHandlerAdapter {
                     // thanks GabrielSin for detecting some no-bcrypt inconsistencies here
                     loginok = (tos == 0) ? (!YamlConfig.config.server.BCRYPT_MIGRATION ? 23 : -23) : (!YamlConfig.config.server.BCRYPT_MIGRATION ? 0 : -10); // migrate to bcrypt
                 } else {
-                    loggedIn = false;
-                    loginok = 4;
+                    // maple-offline: single-player build, the login screen
+                    // fills itself in; any password opens the account
+                    loginok = 0;
                 }
             } else {
                 accId = -3;

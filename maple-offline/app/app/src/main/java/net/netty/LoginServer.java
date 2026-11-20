@@ -25,7 +25,8 @@ public class LoginServer extends AbstractServer {
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new LoginServerInitializer(Server.getInstance().getContext()));
 
-        this.channel = bootstrap.bind(port).syncUninterruptibly().channel();
+        // maple-offline: phone-only server (logins take any password)
+        this.channel = bootstrap.bind("127.0.0.1", port).syncUninterruptibly().channel();
     }
 
     @Override
