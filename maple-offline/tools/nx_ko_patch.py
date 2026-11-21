@@ -60,7 +60,57 @@ def load(dirpath, kind):
     return out
 
 
+def overrides_main(src, dst, path):
+    """Second pass: set names from a hand-made table {npc|mob: {id: name}, map: {id: {name, streetName}}}."""
+    shutil.copyfile(src, dst)
+    nx = NX(dst)
+    ov = json.load(open(path, encoding='utf8'))
+    new_strings, patches, counts = [], [], {}
+
+    def set_string(node_idx, text):
+        if node_idx is None or not text or nx.node(node_idx)[3] != 3:
+            return False
+        patches.append((node_idx, nx.sc + len(new_strings)))
+        new_strings.append(text)
+        return True
+
+    for img, key in (('Npc.img', 'npc'), ('Mob.img', 'mob')):
+        base = nx.child(0, img)
+        table = ov.get(key, {})
+        for k, c in (nx.children(base).items() if base is not None else []):
+            if k in table and set_string(nx.child(c, 'name'), table[k]):
+                counts[key] = counts.get(key, 0) + 1
+    items = ov.get('item', {})
+
+    def item_node(c, k):
+        if k in items and set_string(nx.child(c, 'name'), items[k]):
+            counts['item'] = counts.get('item', 0) + 1
+
+    for img in ('Consume.img', 'Ins.img', 'Cash.img', 'Pet.img'):
+        base = nx.child(0, img)
+        for k, c in (nx.children(base).items() if base is not None else []):
+            item_node(c, k)
+    etc = nx.child(nx.child(0, 'Etc.img'), 'Etc')
+    for k, c in (nx.children(etc).items() if etc is not None else []):
+        item_node(c, k)
+    eqp = nx.child(nx.child(0, 'Eqp.img'), 'Eqp')
+    for cat, cnode in (nx.children(eqp).items() if eqp is not None else []):
+        for k, c in nx.children(cnode).items():
+            item_node(c, k)
+    mapimg = nx.child(0, 'Map.img')
+    table = ov.get('map', {})
+    for region, rnode in (nx.children(mapimg).items() if mapimg is not None else []):
+        for k, c in nx.children(rnode).items():
+            if k in table:
+                if set_string(nx.child(c, 'mapName'), table[k].get('name')):
+                    counts['map'] = counts.get('map', 0) + 1
+                set_string(nx.child(c, 'streetName'), table[k].get('streetName'))
+    finish(nx, dst, new_strings, patches, counts)
+
+
 def main():
+    if sys.argv[1] == '--overrides':
+        return overrides_main(*sys.argv[2:5])
     quest_mode = sys.argv[1] == '--quest'
     args = sys.argv[2:5] if quest_mode else sys.argv[1:4]
     src, dst, i18n = args
