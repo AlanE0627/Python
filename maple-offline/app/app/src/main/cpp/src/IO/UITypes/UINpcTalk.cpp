@@ -346,7 +346,8 @@ namespace ms {
                         respond(type_, -1);
                         break;
                     case Buttons::OK:
-                        respond(type_, 1);
+                        // last page of a sendPrev: OK acts as End Chat, as there is no next page
+                        respond(type_, -1);
                         break;
                     case Buttons::PREV:
                         respond(type_, 0);

@@ -486,17 +486,21 @@ public class EventInstanceManager {
     public void changedMap(final Character chr, final int mapId) {
         try {
             invokeScriptFunction("changedMap", EventInstanceManager.this, chr, mapId);
-        } catch (ScriptException | NoSuchMethodException ex) {
+        } catch (NoSuchMethodException ex) {
+            // optional hook: most event scripts do not define it
+        } catch (ScriptException ex) {
             log.error("changedMap error", ex);
-        } // optional
+        }
     }
 
     public void afterChangedMap(final Character chr, final int mapId) {
         try {
             invokeScriptFunction("afterChangedMap", EventInstanceManager.this, chr, mapId);
-        } catch (ScriptException | NoSuchMethodException ex) {
+        } catch (NoSuchMethodException ex) {
+            // optional hook: most event scripts do not define it
+        } catch (ScriptException ex) {
             log.error("afterChangedMap error", ex);
-        } // optional
+        }
     }
 
     public synchronized void changedLeader(final PartyCharacter ldr) {

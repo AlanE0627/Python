@@ -121,7 +121,7 @@ public final class Explorer implements Runnable {
     private static List<int[]> answers(Dialog d) {
         List<int[]> a = new ArrayList<>();
         switch (d.msgtype) {
-            case 0 -> a.add(new int[]{1, 0, -1});                     // next / ok
+            case 0 -> a.add(d.b0 == 1 && d.b1 == 0 ? new int[]{-1, 0, -1} : new int[]{1, 0, -1});  // prev-only page: OK = end chat
             case 1 -> { a.add(new int[]{1, 1, -1}); a.add(new int[]{0, 1, -1}); }  // yes, no
             case 12 -> { a.add(new int[]{1, 12, -1}); a.add(new int[]{0, 12, -1}); }
             case 4, 14 -> { for (int o : d.options) a.add(new int[]{1, d.msgtype, o}); }
