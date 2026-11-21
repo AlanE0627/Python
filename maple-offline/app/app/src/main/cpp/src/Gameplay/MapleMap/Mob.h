@@ -104,6 +104,10 @@ public:
     // Apply damage to the mob.
     void apply_damage(int32_t damage, bool toleft);
 
+    // maple-offline: a hit of the player's own attack is on its way (shown at
+    // the swing's hit frame); a kill from the server waits for it
+    void add_pending_hit();
+
     // Create a touch damage attack to the player
     MobAttack create_touch_attack() const;
 
@@ -227,6 +231,8 @@ private:
     int8_t effect_;
     int8_t team_;
     bool dying_;
+    int16_t pending_hits_ = 0;
+    int16_t deferred_kill_ = -1;
     bool dead_;
     bool control_;
     bool aggro_;

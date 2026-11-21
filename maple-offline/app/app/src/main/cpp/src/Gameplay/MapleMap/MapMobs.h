@@ -59,6 +59,8 @@ public:
                      uint8_t mobcount);
 
     // Applies damage to a mob.
+    void add_pending_hit(int32_t oid);
+
     void apply_damage(int32_t oid,
                       int32_t damage,
                       bool toleft,

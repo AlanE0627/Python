@@ -483,6 +483,7 @@ void Combat::extract_effects(const Char &user,
                         result.toleft, oid,    move.get_id()
                     };
 
+                    mobs_.add_pending_hit(oid);
                     bullet_effects_.emplace(user.get_attackdelay(i),
                                             std::move(effect),
                                             bullet,
@@ -513,6 +514,7 @@ void Combat::extract_effects(const Char &user,
                 size_t i = 0;
 
                 for (auto &number : numbers) {
+                    mobs_.add_pending_hit(oid);
                     damage_effects_.emplace(user.get_attackdelay(i),
                                             attack_user,
                                             number,

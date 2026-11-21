@@ -110,6 +110,12 @@ void MapMobs::send_attack(AttackResult &result,
     }
 }
 
+void MapMobs::add_pending_hit(int32_t oid) {
+    if (auto mob = mobs_.get<Mob>(oid)) {
+        mob->get().add_pending_hit();
+    }
+}
+
 void MapMobs::apply_damage(int32_t oid,
                            int32_t damage,
                            bool toleft,

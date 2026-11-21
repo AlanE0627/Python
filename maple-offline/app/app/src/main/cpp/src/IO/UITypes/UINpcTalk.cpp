@@ -234,7 +234,11 @@ namespace ms {
             local_ = nullptr;
             cb(action, -1);
         } else {
-            fn_npc_talk_more(type, action);
+            // the server wants the dialog's own msgtype back (0 for the
+            // next/prev/ok pages), not this client's TalkType value: scripts
+            // read "mode == 0 && type > 0" as declining and end the talk
+            (void) type;
+            fn_npc_talk_more(raw_type_, action);
         }
     }
 
@@ -274,6 +278,20 @@ namespace ms {
                     case Buttons::NEXT:
                     case Buttons::OK:
                         respond(type_, 1);
+                        break;
+                }
+                break;
+            case TalkType::SEND_PREV:
+                // Type = 0, previous page and OK (sendPrev)
+                switch (buttonid) {
+                    case Buttons::CLOSE:
+                        respond(type_, -1);
+                        break;
+                    case Buttons::OK:
+                        respond(type_, 1);
+                        break;
+                    case Buttons::PREV:
+                        respond(type_, 0);
                         break;
                 }
                 break;
@@ -600,6 +618,8 @@ namespace ms {
             case TalkType::SEND_PREV:
                 buttons_[Buttons::PREV]->set_position(Point<int16_t>(367, y_cord));
                 buttons_[Buttons::PREV]->set_active(true);
+                buttons_[Buttons::OK]->set_position(Point<int16_t>(469, y_cord));
+                buttons_[Buttons::OK]->set_active(true);
                 break;
             case TalkType::SEND_NEXT_PREV:
                 buttons_[Buttons::NEXT]->set_position(

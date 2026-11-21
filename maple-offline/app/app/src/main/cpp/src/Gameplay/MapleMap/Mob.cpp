@@ -162,6 +162,12 @@ void Mob::set_stance(Stance newstance) {
 }
 
 int8_t Mob::update(const Physics &physics) {
+    if (deferred_kill_ > 0 && --deferred_kill_ == 0) {
+        deferred_kill_ = -1;
+        pending_hits_ = 0;
+        kill(1);
+    }
+
     if (!active_) {
         return phobj_.fhlayer;
     }
@@ -457,7 +463,18 @@ Point<int16_t> Mob::get_head_position(Point<int16_t> position) const {
     return position;
 }
 
+void Mob::add_pending_hit() {
+    pending_hits_++;
+}
+
 void Mob::kill(int8_t animation) {
+    // the local server answers before the swing reaches the monster: let the
+    // queued hits land first (at most about one second)
+    if (animation == 1 && pending_hits_ > 0) {
+        deferred_kill_ = 125;
+        return;
+    }
+
     switch (animation) {
         case 0: deactivate(); break;
         case 1:
@@ -623,6 +640,16 @@ std::pair<int32_t, bool> Mob::next_damage(double mindamage,
 }
 
 void Mob::apply_damage(int32_t damage, bool toleft) {
+    if (pending_hits_ > 0) {
+        pending_hits_--;
+    }
+
+    // the server's kill was held back for this hit: die now, as it lands
+    if (deferred_kill_ >= 0 && pending_hits_ == 0) {
+        deferred_kill_ = -1;
+        dying_ = true;
+    }
+
     hit_sound_.play();
 
     if (dying_ && stance_ != Stance::DIE) {
