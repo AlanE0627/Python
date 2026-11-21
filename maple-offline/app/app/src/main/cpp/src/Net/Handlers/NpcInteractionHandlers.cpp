@@ -32,7 +32,13 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
     int8_t msgtype = recv.read_byte();  // 0 - textonly, 1 - yes/no, 4 -
                                         // selection, 12 - accept/decline
     int8_t speaker = recv.read_byte();
+
+    if (msgtype == 14) {
+        recv.skip_int();  // dimensional mirror: an int before the text
+    }
+
     std::string text = recv.read_string();
+    std::vector<int32_t> styles;
 
     uint8_t style_b0 = 0;
     uint8_t style_b1 = 0;
@@ -46,6 +52,13 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
         } else if (msgtype == 3 && recv.length() >= 4) {
             // getNumber: default, min, max
             input_default = std::to_string(recv.read_int());
+        } else if (msgtype == 7) {
+            // style choice: count, then the hair / face / skin ids
+            uint8_t count = recv.read_ubyte();
+
+            for (uint8_t i = 0; i < count && recv.length() >= 4; i++) {
+                styles.push_back(recv.read_int());
+            }
         } else if (msgtype == 0) {
             // {b0, b1}
             // {0, 1} = next
@@ -66,6 +79,10 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
 
         if (msgtype == 2 || msgtype == 3) {
             npctalk->get().set_input_default(input_default);
+        }
+
+        if (msgtype == 7) {
+            npctalk->get().set_styles(std::move(styles));
         }
     }
 }

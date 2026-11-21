@@ -46,6 +46,18 @@ public:
     }
 };
 
+// maple-offline: answer with a selection to an NPC dialog that is not a
+// plain list (style choice msgtype 7, dimensional mirror msgtype 14)
+class NpcTalkSelectPacket : public OutPacket {
+public:
+    NpcTalkSelectPacket(int8_t lastmsg, int32_t selection) :
+        OutPacket(OutPacket::Opcode::NPC_TALK_MORE) {
+        write_byte(lastmsg);
+        write_byte(1);
+        write_int(selection);
+    }
+};
+
 // maple-offline: answer to an NPC number prompt (msgtype 3)
 class NpcTalkNumberPacket : public OutPacket {
 public:

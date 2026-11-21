@@ -121,7 +121,11 @@ namespace ms {
         Point<int16_t> center_pos =
                 speaker_pos + Point<int16_t>(nametag_.width() / 2, 0);
 
-        speaker_.draw(DrawArgument(center_pos, true));
+        if (type_ == TalkType::SEND_STYLE && !styles_.empty()) {
+            style_look_.draw(DrawArgument(center_pos), inter);
+        } else {
+            speaker_.draw(DrawArgument(center_pos, true));
+        }
         nametag_.draw(speaker_pos);
         name_.draw(center_pos + Point<int16_t>(0, -4));
 
@@ -165,6 +169,30 @@ namespace ms {
         }
     }
 
+    void UINpcTalk::set_styles(std::vector<int32_t> styles) {
+        styles_ = std::move(styles);
+        style_index_ = 0;
+        show_style();
+    }
+
+    void UINpcTalk::show_style() {
+        style_look_ = Stage::get().get_player().get_look();
+
+        if (style_index_ >= styles_.size()) {
+            return;
+        }
+
+        int32_t id = styles_[style_index_];
+
+        if (id >= 30000) {
+            style_look_.set_hair(id);
+        } else if (id >= 20000) {
+            style_look_.set_face(id);
+        } else {
+            style_look_.set_body(id);
+        }
+    }
+
     void UINpcTalk::set_input_default(const std::string &text) {
         if (has_input_) {
             input_.change_text(text);
@@ -202,6 +230,10 @@ namespace ms {
 
         if (has_input_) {
             input_.update(position_);
+        }
+
+        if (type_ == TalkType::SEND_STYLE && !styles_.empty()) {
+            style_look_.update(Constants::TIMESTEP);
         }
 
         // TODO: Need to think of a new way to show text gradually when open NPC dialog
@@ -250,12 +282,38 @@ namespace ms {
             LocalResponder cb = std::move(local_);
             local_ = nullptr;
             cb(1, selection);
+        } else if (raw_type_ != 4) {
+            NpcTalkSelectPacket(raw_type_, selection).dispatch();
         } else {
             fn_npc_talk_more(selection);
         }
     }
 
     Button::State UINpcTalk::button_pressed(uint16_t buttonid) {
+        // style choice: the arrows flip the preview, OK picks it
+        if (type_ == TalkType::SEND_STYLE && !styles_.empty()) {
+            switch (buttonid) {
+                case Buttons::PREV:
+                    style_index_ = (style_index_ + styles_.size() - 1) % styles_.size();
+                    show_style();
+                    return Button::State::NORMAL;
+                case Buttons::NEXT:
+                    style_index_ = (style_index_ + 1) % styles_.size();
+                    show_style();
+                    return Button::State::NORMAL;
+                case Buttons::OK:
+                    deactivate();
+                    NpcTalkSelectPacket(7, static_cast<int32_t>(style_index_)).dispatch();
+                    return Button::State::NORMAL;
+                case Buttons::CLOSE:
+                    deactivate();
+                    fn_npc_talk_more(raw_type_, static_cast<int8_t>(0));
+                    return Button::State::NORMAL;
+                default:
+                    return Button::State::NORMAL;
+            }
+        }
+
         deactivate();
 
         // maple-offline: drop the option buttons first; a local responder
@@ -362,6 +420,9 @@ namespace ms {
                 }
                 break;
             default:
+                // a dialog type this client does not draw: OK goes on, the
+                // close button ends it, so the server never stays waiting
+                respond(type_, buttonid == Buttons::CLOSE ? -1 : 1);
                 break;
         }
 
@@ -499,6 +560,11 @@ namespace ms {
                 return TalkType::SEND_GET_TEXT;
             } else if (value == 3) {
                 return TalkType::SEND_GET_NUMBER;
+            } else if (value == 7) {
+                return TalkType::SEND_STYLE;
+            } else if (value == 14) {
+                // dimensional mirror: a #L list like sendSimple
+                return TalkType::SEND_SIMPLE;
             }
             return static_cast<TalkType>(value);
         }
@@ -639,8 +705,21 @@ namespace ms {
                 buttons_[Buttons::OK]->set_position(Point<int16_t>(469, y_cord));
                 buttons_[Buttons::OK]->set_active(true);
                 break;
+            case TalkType::SEND_STYLE:
+                buttons_[Buttons::PREV]->set_position(Point<int16_t>(305, y_cord));
+                buttons_[Buttons::PREV]->set_active(true);
+                buttons_[Buttons::NEXT]->set_position(Point<int16_t>(387, y_cord));
+                buttons_[Buttons::NEXT]->set_active(true);
+                buttons_[Buttons::OK]->set_position(Point<int16_t>(469, y_cord));
+                buttons_[Buttons::OK]->set_active(true);
+                styles_.clear();
+                style_index_ = 0;
+                break;
             case TalkType::SEND_SIMPLE:
+                break;
             default:
+                buttons_[Buttons::OK]->set_position(Point<int16_t>(469, y_cord));
+                buttons_[Buttons::OK]->set_active(true);
                 break;
         }
 

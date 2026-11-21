@@ -19,6 +19,7 @@
 
 #include "../Components/Slider.h"
 #include "../Components/Textfield.h"
+#include "../../Character/Look/CharLook.h"
 #include "../Graphics/Text.h"
 #include "../UIElement.h"
 #include "TextButton.h"
@@ -39,6 +40,7 @@ public:
         SEND_PREV,
         SEND_GET_TEXT,
         SEND_GET_NUMBER,
+        SEND_STYLE,
         LENGTH
     };
 
@@ -84,6 +86,9 @@ public:
     // NPC asks for text (msgtype 2) or a number (msgtype 3): initial value
     void set_input_default(const std::string &text);
 
+    // style choice (msgtype 7): hair / face / skin ids to preview and pick
+    void set_styles(std::vector<int32_t> styles);
+
 protected:
     Button::State button_pressed(uint16_t buttonid) override;
 
@@ -103,6 +108,11 @@ private:
 
     Textfield input_;
     bool has_input_ = false;
+    std::vector<int32_t> styles_;
+    size_t style_index_ = 0;
+    CharLook style_look_;
+
+    void show_style();
     int8_t raw_type_ = 0;
 
     LocalResponder local_;
