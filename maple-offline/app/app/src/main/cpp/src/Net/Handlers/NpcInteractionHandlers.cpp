@@ -15,6 +15,8 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "NpcInteractionHandlers.h"
 #include <vector>
+#include <cstdlib>
+#include <nlnx/nx.hpp>
 #include "Helpers/ItemParser.h"
 #include "../../IO/UITypes/UITrunk.h"
 
@@ -68,6 +70,31 @@ void NpcDialogueHandler::handle(InPacket &recv) const {
             style_b0 = recv.read_ubyte();
             style_b1 = recv.read_ubyte();
         }
+    }
+
+    // maple-offline: an NPC without a script. Its own lines from String
+    // Npc.img (d0, d1 ... then n0, n1 ...), one at random; an NPC with no line
+    // at all gets a plain greeting
+    if (text == "#npcdefault#") {
+        nl::node src = nl::nx::string["Npc.img"][std::to_string(npcid)];
+        std::vector<std::string> lines;
+
+        for (const char *prefix : { "d", "n" }) {
+            for (int i = 0; i < 20; i++) {
+                std::string line = src[prefix + std::to_string(i)];
+
+                if (!line.empty()) {
+                    lines.push_back(line);
+                }
+            }
+
+            if (!lines.empty()) {
+                break;
+            }
+        }
+
+        text = lines.empty() ? std::string("안녕하세요.")
+                             : lines[static_cast<size_t>(std::rand()) % lines.size()];
     }
 
     UI::get().emplace<UINpcTalk>();

@@ -264,7 +264,7 @@ void UISkillBook::draw(float alpha) const {
 
     book_icon_.draw(position_ + Point<int16_t>(9, 86));
     book_text_.draw(position_ + Point<int16_t>(105, 62));
-    sp_label_.draw(position_ + Point<int16_t>(110, 265));
+    sp_label_.draw(position_ + Point<int16_t>(107, 261));
 
     for (size_t i = 0; i < ROWS_; i++) {
         Point<int16_t> pos = position_ + SKILL_OFFSET_ + Point<int16_t>(0, i * ROW_HEIGHT_);

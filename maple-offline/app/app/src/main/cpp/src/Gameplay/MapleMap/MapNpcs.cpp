@@ -79,13 +79,8 @@ void MapNpcs::talk_to(Npc *npc) {
         return;
     }
 
-    npc->talk([](int id, int msgtype, int b0, int b1, int speaker, std::string str) {
-        UI::get().emplace<UINpcTalk>();
-        if (auto npctalk = UI::get().get_element<UINpcTalk>()) {
-            npctalk->get().change_text(id, msgtype, b0, b1, speaker, str);
-        }
-    });
-
+    // the server answers every NPC now (its script, a shop, or the NPC's own
+    // default line), so nothing is shown locally here
     fn_talk_to_npc(npc->get_oid());
 }
 

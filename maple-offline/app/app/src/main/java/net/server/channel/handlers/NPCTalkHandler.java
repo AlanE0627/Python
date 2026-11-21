@@ -74,7 +74,10 @@ public final class NPCTalkHandler extends AbstractPacketHandler {
                     boolean hasNpcScript = NPCScriptManager.getInstance().start(c, npc.getId(), oid, null);
                     if (!hasNpcScript) {
                         if (!npc.hasShop()) {
-                            log.warn("NPC {} ({}) is not coded", npc.getName(), npc.getId());
+                            // maple-offline: no script here; the client shows the
+                            // NPC's own default line (Korean String data) instead
+                            // of this marker, so every NPC answers a click
+                            c.sendPacket(PacketCreator.getNPCTalk(npc.getId(), (byte) 0, "#npcdefault#", "00 00", (byte) 0));
                             return;
                         } else if (c.getPlayer().getShop() != null) {
                             c.sendPacket(PacketCreator.enableActions());
