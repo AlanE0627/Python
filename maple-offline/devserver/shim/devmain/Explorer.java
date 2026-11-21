@@ -138,6 +138,25 @@ public final class Explorer implements Runnable {
         if (chr == null) { realErr.println("[explore] nobody logged in"); return; }
         Client c = chr.getClient();
         String kind = arg[0];
+        if (kind.equals("clearinv")) {   // dev only: empty equip/use/etc so reward items fit
+            for (client.inventory.InventoryType t : new client.inventory.InventoryType[]{client.inventory.InventoryType.EQUIP, client.inventory.InventoryType.USE, client.inventory.InventoryType.ETC, client.inventory.InventoryType.SETUP}) {
+                client.inventory.Inventory inv = chr.getInventory(t);
+                for (client.inventory.Item it : new java.util.ArrayList<>(inv.list())) {
+                    inv.removeSlot(it.getPosition());
+                }
+            }
+            realErr.println("[explore] clearinv");
+            return;
+        }
+        if (kind.equals("setchar")) {   // setchar job level str dex int luk (dev test character state)
+            chr.setJob(client.Job.getById(Integer.parseInt(arg[1])));
+            chr.setLevel(Integer.parseInt(arg[2]));
+            java.lang.reflect.Method m = client.AbstractCharacterObject.class.getDeclaredMethod("updateStrDexIntLuk", int.class, int.class, int.class, int.class, int.class);
+            m.setAccessible(true);
+            m.invoke(chr, Integer.parseInt(arg[3]), Integer.parseInt(arg[4]), Integer.parseInt(arg[5]), Integer.parseInt(arg[6]), -1);
+            realErr.println("[explore] setchar " + String.join(" ", arg));
+            return;
+        }
         int id = Integer.parseInt(arg[1]);
         int npc = arg.length > 2 ? Integer.parseInt(arg[2]) : id;
         Files.createDirectories(Paths.get("/tmp/explore"));
