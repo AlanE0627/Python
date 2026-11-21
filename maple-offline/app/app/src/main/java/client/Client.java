@@ -1467,7 +1467,14 @@ public class Client extends ChannelInboundHandlerAdapter {
     // maple-offline: dev testing tap on outgoing packets (unused in the app)
     public static volatile java.util.function.BiConsumer<Client, Packet> packetTap;
 
+    private final java.util.concurrent.atomic.AtomicLong sentPacketCount = new java.util.concurrent.atomic.AtomicLong();
+
+    public long getSentPacketCount() {
+        return sentPacketCount.get();
+    }
+
     public void sendPacket(Packet packet) {
+        sentPacketCount.incrementAndGet();
         java.util.function.BiConsumer<Client, Packet> tap = packetTap;
         if (tap != null) {
             tap.accept(this, packet);

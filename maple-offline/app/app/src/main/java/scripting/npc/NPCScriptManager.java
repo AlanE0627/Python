@@ -108,6 +108,15 @@ public class NPCScriptManager extends AbstractScriptManager {
         } catch (final Exception e) {
             log.error("Error starting NPC script: {}", npc, e);
             dispose(c);
+            sendFallbackTalk(c, npc);
+        }
+    }
+
+    /** A script that cannot run in the current context still answers the click with a default line. */
+    private static void sendFallbackTalk(Client c, int npc) {
+        try {
+            c.sendPacket(tools.PacketCreator.getNPCTalk(npc, (byte) 0, "#npcdefault#", "00 00", (byte) 0));
+        } catch (Exception ignored) {
         }
     }
 
@@ -142,6 +151,7 @@ public class NPCScriptManager extends AbstractScriptManager {
                 Invocable iv = (Invocable) engine;
                 scripts.put(c, iv);
                 c.setClickedNPC();
+                long sentBefore = c.getSentPacketCount();
                 try {
                     iv.invokeFunction("start");
                 } catch (final NoSuchMethodException nsme) {
@@ -151,6 +161,11 @@ public class NPCScriptManager extends AbstractScriptManager {
                         log.error("invoke start script error", nsma);
                     }
                 }
+                // a script that has nothing to say here (wrong map, missing event) must not leave the click silent
+                if (!itemScript && cms.get(c) == cm && c.getSentPacketCount() == sentBefore) {
+                    dispose(c);
+                    sendFallbackTalk(c, npc);
+                }
             } else {
                 c.sendPacket(PacketCreator.enableActions());
             }
@@ -158,6 +173,7 @@ public class NPCScriptManager extends AbstractScriptManager {
         } catch (Exception e) {
             log.error("Error starting NPC script: {}", npc, e);
             dispose(c);
+            sendFallbackTalk(c, npc);
 
             return false;
         }
@@ -170,10 +186,15 @@ public class NPCScriptManager extends AbstractScriptManager {
                 c.setClickedNPC();
                 iv.invokeFunction("action", mode, type, selection);
             } catch (ScriptException | NoSuchMethodException t) {
+                int npcId = -1;
                 if (getCM(c) != null) {
-                    log.error("Error performing NPC script action for npc: {}", getCM(c).getNpc(), t);
+                    npcId = getCM(c).getNpc();
+                    log.error("Error performing NPC script action for npc: {}", npcId, t);
                 }
                 dispose(c);
+                if (npcId > 0) {
+                    sendFallbackTalk(c, npcId);
+                }
             }
         }
     }
