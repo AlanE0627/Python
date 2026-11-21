@@ -465,7 +465,7 @@ struct PosCHARINFO : public Configuration::PointEntry {
 
 // The default type of UIMiniMap
 struct MiniMapType : public Configuration::ByteEntry {
-    MiniMapType() : ByteEntry("MiniMapType", "0") {}
+    MiniMapType() : ByteEntry("MiniMapType", "1") {}
 };
 
 // Whether to use a simple version of UIMiniMap

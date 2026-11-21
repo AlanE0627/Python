@@ -85,6 +85,9 @@ private:
     int8_t type_;
     int8_t user_type_;
     bool simple_mode_;
+    bool tap_down_ = false;
+    Text header_text_;
+    Point<int16_t> tap_start_;
     bool big_map_;
     bool has_map_;
     int16_t scale_;

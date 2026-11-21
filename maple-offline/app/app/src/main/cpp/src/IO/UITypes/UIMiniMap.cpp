@@ -35,6 +35,11 @@ UIMiniMap::UIMiniMap(const CharStats &stats) :
     selected_ = -1;
 
     type_ = Setting<MiniMapType>::get().load();
+    // maple-offline: older builds saved the collapsed bar with no way to
+    // open it; start with the map shown
+    if (type_ == Type::MIN) {
+        type_ = Type::NORMAL;
+    }
     user_type_ = type_;
     // maple-offline: v83 has a single minimap style (UIWindow.img/MiniMap:
     // Min / MinMap / MaxMap frames and the world-map button).
@@ -68,6 +73,9 @@ UIMiniMap::UIMiniMap(const CharStats &stats) :
         Text(Text::Font::A12B, Text::Alignment::LEFT, Color::Name::WHITE);
     combined_text_ =
         Text(Text::Font::A12M, Text::Alignment::LEFT, Color::Name::WHITE);
+    // v83 normal / big minimap: the map name in the white header strip
+    header_text_ =
+        Text(Text::Font::A12B, Text::Alignment::LEFT, Color::Name::BLACK);
 
     marker_ = nl::nx::mapLatest["MapHelper.img"]["minimap"];
 
@@ -106,6 +114,8 @@ void UIMiniMap::draw(float alpha) const {
                 draw_npclist(normal_dimensions_, alpha);
             }
         }
+
+        header_text_.draw(position_ + Point<int16_t>(8, 3));
     } else {
         for (const auto &sprite : max_sprites_) {
             sprite.draw(position_, alpha);
@@ -205,6 +215,31 @@ void UIMiniMap::remove_cursor() {
 }
 
 Cursor::State UIMiniMap::send_cursor(bool clicked, Point<int16_t> cursorpos) {
+    // maple-offline: v83 has no size buttons on the minimap (only the world
+    // map button); a tap on it that is not a drag cycles small / normal / big
+    // as the minimap key does
+    Point<int16_t> rel = cursorpos - position_;
+    bool on_button = false;
+
+    for (auto &b : buttons_) {
+        if (b.second->is_active() && b.second->bounds(position_).contains(cursorpos)) {
+            on_button = true;
+        }
+    }
+
+    if (clicked && !tap_down_ && !on_button && rel.x() >= 0 && rel.y() >= 0
+        && rel.x() < dimension_.x() && rel.y() < dimension_.y()) {
+        tap_down_ = true;
+        tap_start_ = cursorpos;
+    } else if (!clicked && tap_down_) {
+        tap_down_ = false;
+        Point<int16_t> moved = cursorpos - tap_start_;
+
+        if (std::abs(moved.x()) < 6 && std::abs(moved.y()) < 6) {
+            send_key(0, true, false);
+        }
+    }
+
     Cursor::State dstate = UIDragElement::send_cursor(clicked, cursorpos);
 
     if (dragged_) {
@@ -390,22 +425,12 @@ void UIMiniMap::toggle_buttons() {
             buttons_[Buttons::BT_MAX]->set_state(Button::State::DISABLED);
         }
 
-        bt_min_x = combined_text_width_ + 11;
-
-        buttons_[Buttons::BT_MIN]->set_position(
-            Point<int16_t>(bt_min_x, BTN_MIN_Y_));
-
-        bt_min_x += bt_min_width_;
-
-        buttons_[Buttons::BT_MAX]->set_position(
-            Point<int16_t>(bt_min_x, BTN_MIN_Y_));
-
-        bt_min_x += bt_max_width_;
+        bt_min_x = 7 + combined_text_width_ + 8;
 
         buttons_[Buttons::BT_MAP]->set_position(
             Point<int16_t>(bt_min_x, BTN_MIN_Y_));
 
-        min_dimensions_ = Point<int16_t>(bt_min_x + bt_map_width_ + 7, 20);
+        min_dimensions_ = Point<int16_t>(bt_min_x + bt_map_width_ + 4, 20);
 
         update_dimensions();
 
@@ -481,6 +506,7 @@ void UIMiniMap::toggle_buttons() {
 void UIMiniMap::update_text() {
     NxHelper::Map::MapInfo map_info = NxHelper::Map::get_map_info_by_id(mapid_);
     combined_text_.change_text(map_info.full_name);
+    header_text_.change_text(map_info.full_name);
     region_text_.change_text(map_info.name);
     town_text_.change_text(map_info.street_name);
 }
@@ -558,16 +584,17 @@ void UIMiniMap::update_canvas() {
     int16_t min_c_stretch = combined_text_width_ + 18 + bt_min_width_
                             + bt_max_width_ + bt_map_width_ - 128;
 
-    // Min sprites queue
-    min_sprites_.emplace_back(
-        Min[Center],
-        DrawArgument(WINDOW_UL_POS_ + Point<int16_t>(CENTER_START_X_, 0),
-                     Point<int16_t>(min_c_stretch, 0)));
+    // Min sprites queue. maple-offline: v83 Min is w (8) + c (1, stretched)
+    // + e (4); the bar holds the map name and the world map button
+    (void) min_c_stretch;
+    int16_t min_w = 7 + combined_text_width_ + 8 + bt_map_width_ + 4;
+    int16_t min_mid = std::max<int16_t>(1, min_w - 12);
     min_sprites_.emplace_back(Min[Left], DrawArgument(WINDOW_UL_POS_));
     min_sprites_.emplace_back(
-        Min[Right],
-        DrawArgument(WINDOW_UL_POS_
-                     + Point<int16_t>(min_c_stretch + CENTER_START_X_, 0)));
+        Min[Center],
+        DrawArgument(WINDOW_UL_POS_ + Point<int16_t>(8, 0), Point<int16_t>(min_mid, 0)));
+    min_sprites_.emplace_back(
+        Min[Right], DrawArgument(WINDOW_UL_POS_ + Point<int16_t>(8 + min_mid, 0)));
 
     // maple-offline: v83 nine-slice frames (UIWindow.img/MiniMap/MinMap and
     // MaxMap: 6 px sides, top 29 / 72, bottom 14 / 15, 1x1 centre).

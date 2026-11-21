@@ -479,6 +479,14 @@ namespace ms {
             return true;
         }
 
+        // the MENU popup / quick slot panel is open: the touch buttons are
+        // hidden, so taps on their spots go to the menu
+        if (auto statusbar = get_element<UIStatusBar>()) {
+            if (statusbar->get().is_popup_open()) {
+                return true;
+            }
+        }
+
         if (UI::get().get_state_type() == typeid(UIStateGame)) {
             VirtualJoyStick joyStick = mobile_input_.getVirtualJoyStick();
             for (const auto &touch_phase: touch_phase_) {
