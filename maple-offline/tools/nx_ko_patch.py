@@ -61,7 +61,7 @@ def load(dirpath, kind):
 
 
 def overrides_main(src, dst, path):
-    """Second pass: set names from a hand-made table {npc|mob: {id: name}, map: {id: {name, streetName}}}."""
+    """Second pass: set names from a hand-made table {npc|mob: {id: name}, map: {id: {name, streetName}}, item: {id: name}, npcfield: {id: {field: text}}}."""
     shutil.copyfile(src, dst)
     nx = NX(dst)
     ov = json.load(open(path, encoding='utf8'))
@@ -80,6 +80,12 @@ def overrides_main(src, dst, path):
         for k, c in (nx.children(base).items() if base is not None else []):
             if k in table and set_string(nx.child(c, 'name'), table[k]):
                 counts[key] = counts.get(key, 0) + 1
+    fields = ov.get('npcfield', {})
+    base = nx.child(0, 'Npc.img')
+    for k, c in (nx.children(base).items() if base is not None and fields else []):
+        for f, text in fields.get(k, {}).items():
+            if set_string(nx.child(c, f), text):
+                counts['npcfield'] = counts.get('npcfield', 0) + 1
     items = ov.get('item', {})
 
     def item_node(c, k):
