@@ -1464,7 +1464,14 @@ public class Client extends ChannelInboundHandlerAdapter {
         }
     }
 
+    // maple-offline: dev testing tap on outgoing packets (unused in the app)
+    public static volatile java.util.function.BiConsumer<Client, Packet> packetTap;
+
     public void sendPacket(Packet packet) {
+        java.util.function.BiConsumer<Client, Packet> tap = packetTap;
+        if (tap != null) {
+            tap.accept(this, packet);
+        }
         announcerLock.lock();
         try {
             ioChannel.writeAndFlush(packet);

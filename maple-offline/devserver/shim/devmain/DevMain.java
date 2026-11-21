@@ -12,6 +12,7 @@ public final class DevMain {
         Context ctx = new Context(assets, new File(base, "files"), new File(base, "db"));
         Files.copy(new File(assets, "config.yaml").toPath(), new File(ctx.getFilesDir(), "config.yaml").toPath(),
                    StandardCopyOption.REPLACE_EXISTING);
+        Explorer.install();
         net.server.Server.getInstance(ctx);
         net.server.Server.main(new String[0]);
         System.err.println("[dev] server main returned");
