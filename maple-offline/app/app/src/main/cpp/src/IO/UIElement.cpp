@@ -15,6 +15,9 @@
 //	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "UIElement.h"
 
+#include <cstdio>
+#include <cstdlib>
+
 #include "../Audio/Audio.h"
 
 namespace ms {
@@ -97,6 +100,16 @@ void UIElement::remove_cursor() {
 
 Cursor::State UIElement::send_cursor(bool down, Point<int16_t> pos) {
     Cursor::State ret = down ? Cursor::State::CLICKING : Cursor::State::IDLE;
+
+    static const bool debug_buttons = getenv("MS_DEBUG_BTN") != nullptr;
+    if (debug_buttons && down) {
+        for (auto &b : buttons_) {
+            if (b.second->is_active()) {
+                auto r = b.second->bounds(position_);
+                fprintf(stderr, "[btn] %d (%d,%d)-(%d,%d) state %d click %d,%d\n", b.first, r.left(), r.top(), r.right(), r.bottom(), (int) b.second->get_state(), pos.x(), pos.y());
+            }
+        }
+    }
 
     for (auto &btit : buttons_) {
         if (btit.second->is_active()

@@ -57,6 +57,9 @@ public abstract class AbstractScriptManager {
 //                }
 //
 //                enableScriptHostAccess(graalScriptEngine);
+                // Rhino on Android has the top-level "android" package name;
+                // a PC run of this server (dev testing) gets the same name here
+                engine.eval("if (typeof android === 'undefined') { var android = Packages.android; }");
                 Reader reader = new InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8);
                 engine.eval(reader);
                 return engine;
