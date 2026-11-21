@@ -148,12 +148,35 @@ public final class Explorer implements Runnable {
             realErr.println("[explore] clearinv");
             return;
         }
+        if (kind.equals("warp")) {   // warp mapId
+            chr.changeMap(Integer.parseInt(arg[1]));
+            realErr.println("[explore] warp " + arg[1]);
+            return;
+        }
         if (kind.equals("qforce")) {   // qforce questId [0=reset|1=start|2=complete]
             int q = Integer.parseInt(arg[1]);
             int st = arg.length > 2 ? Integer.parseInt(arg[2]) : 2;
             server.quest.Quest qq = server.quest.Quest.getInstance(q);
             if (st == 0) qq.reset(chr); else if (st == 1) qq.forceStart(chr, 0); else qq.forceComplete(chr, 0);
             realErr.println("[explore] qforce " + q + " " + st);
+            return;
+        }
+        if (kind.equals("qcheck")) {   // qcheck questId npc [fame] -> canStart / canComplete
+            int q = Integer.parseInt(arg[1]);
+            int npc = arg.length > 2 ? Integer.parseInt(arg[2]) : 0;
+            if (arg.length > 3) chr.setFame(Integer.parseInt(arg[3]));
+            server.quest.Quest qq = server.quest.Quest.getInstance(q);
+            for (String fn : new String[]{"startReqs", "completeReqs"}) {
+                java.lang.reflect.Field f = server.quest.Quest.class.getDeclaredField(fn);
+                f.setAccessible(true);
+                StringBuilder sb = new StringBuilder();
+                for (Object o : ((java.util.Map<?, ?>) f.get(qq)).entrySet()) {
+                    java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                    sb.append(e.getKey()).append('=').append(((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc)).append(' ');
+                }
+                realErr.println("[explore] qcheck " + q + " " + fn + ": " + sb);
+            }
+            realErr.println("[explore] qcheck " + q + " start=" + qq.canStart(chr, npc) + " complete=" + qq.canComplete(chr, npc));
             return;
         }
         if (kind.equals("setchar")) {   // setchar job level str dex int luk (dev test character state)
