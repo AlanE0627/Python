@@ -194,7 +194,10 @@ def main():
                     skipped += 1
                     continue
                 q = src[l['start']]
-                ko = it['ko'].replace('\\', '\\\\').replace(q, '\\' + q).replace('\n', '\\n').replace('\r', '\\r')
+                # 'ko' is in source form like 'text' (escapes such as \r\n kept);
+                # only bare quotes of the literal's kind need escaping
+                ko = re.sub(r'(?<!\\)' + re.escape(q), '\\' + q, it['ko'])
+                ko = ko.replace('\n', '\\n').replace('\r', '\\r')
                 edits.append((l['start'], l['end'], q + ko + q))
                 done += 1
             for s, e, rep in sorted(edits, reverse=True):
