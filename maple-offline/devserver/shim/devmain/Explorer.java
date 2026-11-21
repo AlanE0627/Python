@@ -148,6 +148,14 @@ public final class Explorer implements Runnable {
             realErr.println("[explore] clearinv");
             return;
         }
+        if (kind.equals("qforce")) {   // qforce questId [0=reset|1=start|2=complete]
+            int q = Integer.parseInt(arg[1]);
+            int st = arg.length > 2 ? Integer.parseInt(arg[2]) : 2;
+            server.quest.Quest qq = server.quest.Quest.getInstance(q);
+            if (st == 0) qq.reset(chr); else if (st == 1) qq.forceStart(chr, 0); else qq.forceComplete(chr, 0);
+            realErr.println("[explore] qforce " + q + " " + st);
+            return;
+        }
         if (kind.equals("setchar")) {   // setchar job level str dex int luk (dev test character state)
             chr.setJob(client.Job.getById(Integer.parseInt(arg[1])));
             chr.setLevel(Integer.parseInt(arg[2]));
