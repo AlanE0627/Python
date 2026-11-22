@@ -27,6 +27,10 @@ import java.util.regex.*;
  *   path | msgtype style | text   and END / STALL / ERROR lines.
  */
 public final class Explorer implements Runnable {
+    static final java.util.Set<String> SIM_SKIP = new java.util.HashSet<>(java.util.Arrays.asList(
+            "ITEM", "PET", "MIN_PET_TAMENESS", "SKILL", "FIELD_ENTER", "EQUIP_ALL", "EQUIP_SELECT",
+            "MB_CARD", "MONSTER_BOOK", "FAME", "MESO", "BUFF", "EXCEPT_BUFF", "NPC", "SCRIPT", "MOB", "NORMAL_AUTO_START"));
+
     private static final int NPC_TALK = 0x130;
     private static final int MAX_PATHS = 400;
     private static final int MAX_DEPTH = 30;
@@ -159,6 +163,122 @@ public final class Explorer implements Runnable {
             server.quest.Quest qq = server.quest.Quest.getInstance(q);
             if (st == 0) qq.reset(chr); else if (st == 1) qq.forceStart(chr, 0); else qq.forceComplete(chr, 0);
             realErr.println("[explore] qforce " + q + " " + st);
+            return;
+        }
+        if (kind.equals("qsim")) {   // qsim name job:lvl,job:lvl,... -> simulated quest progression
+            String name = arg[1];
+            java.util.TreeMap<Integer, Integer> track = new java.util.TreeMap<>();
+            for (String t : arg[2].split(",")) {
+                String[] jl = t.split(":");
+                track.put(Integer.parseInt(jl[1]), Integer.parseInt(jl[0]));
+            }
+            java.lang.reflect.Field qf = client.Character.class.getDeclaredField("quests");
+            qf.setAccessible(true);
+            java.util.Map<?, ?> qmap = (java.util.Map<?, ?>) qf.get(chr);
+            synchronized (qmap) { qmap.clear(); }
+            int base = track.firstEntry().getValue() / 1000 * 1000;
+            if (base == 1000) chr.getQuest(server.quest.Quest.getInstance(20022)).setProgress(0, "1");
+            if (base == 2000) chr.getQuest(server.quest.Quest.getInstance(21002)).setProgress(0, "1");
+            java.lang.reflect.Field srf = server.quest.Quest.class.getDeclaredField("startReqs");
+            srf.setAccessible(true);
+            Files.createDirectories(Paths.get("/tmp/explore"));
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream("/tmp/explore/qsim_" + name + ".txt"), StandardCharsets.UTF_8));
+            java.util.Set<Integer> done = new java.util.HashSet<>();
+            java.lang.reflect.Field saf = server.quest.Quest.class.getDeclaredField("startActs");
+            java.lang.reflect.Field caf = server.quest.Quest.class.getDeclaredField("completeActs");
+            saf.setAccessible(true);
+            caf.setAccessible(true);
+            int job = track.firstEntry().getValue();
+            java.util.List<int[]> steps = new ArrayList<>();
+            for (int lv = 1; lv <= 200; lv++) {
+                Integer nj = track.get(lv);
+                if (nj != null && lv > 1) steps.add(new int[]{lv, job});   // still the old job at the new level
+                if (nj != null) job = nj;
+                steps.add(new int[]{lv, job});
+            }
+            for (int[] step : steps) {
+                int lv = step[0];
+                job = step[1];
+                chr.setJob(client.Job.getById(job));
+                chr.setLevel(lv);
+                boolean progress = true;
+                while (progress) {
+                    progress = false;
+                    // phase 1: start everything startable (repeat: some quests
+                    // need another one *in progress*)
+                    List<server.quest.Quest> started = new ArrayList<>();
+                    boolean more = true;
+                    while (more) {
+                        more = false;
+                        chr.setJob(client.Job.getById(job));
+                        chr.setLevel(lv);
+                        for (server.quest.Quest q : server.quest.Quest.getAllQuests()) {
+                            if (done.contains((int) q.getId())) continue;
+                            if (chr.getQuest(q).getStatus() != client.QuestStatus.Status.NOT_STARTED) continue;
+                            int npc = q.getNpcRequirement(false);
+                            if (!q.canStartQuestByStatus(chr) || !q.canQuestByInfoProgress(chr)) continue;
+                            boolean ok = true;
+                            for (Object o : ((java.util.Map<?, ?>) srf.get(q)).entrySet()) {
+                                java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                                String t = e.getKey().toString();
+                                // conditions a player meets by playing (drops, equipping,
+                                // walking into a map, pets, skill books) count as met here
+                                if (SIM_SKIP.contains(t)) continue;
+                                if (!((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc > 0 ? npc : 0)) { ok = false; break; }
+                            }
+                            if (!ok) continue;
+                            for (client.inventory.InventoryType it : new client.inventory.InventoryType[]{client.inventory.InventoryType.EQUIP, client.inventory.InventoryType.USE, client.inventory.InventoryType.SETUP, client.inventory.InventoryType.ETC}) {
+                                client.inventory.Inventory iv = chr.getInventory(it);
+                                if (iv.isFull(10)) {
+                                    for (client.inventory.Item item : new ArrayList<>(iv.list())) iv.removeSlot(item.getPosition());
+                                }
+                            }
+                            q.forceStart(chr, npc);
+                            for (Object a : ((java.util.Map<?, ?>) saf.get(q)).values()) {
+                                try { ((server.quest.actions.AbstractQuestAction) a).run(chr, null); } catch (Throwable t) { }
+                            }
+                            done.add((int) q.getId());
+                            started.add(q);
+                            out.println("L" + lv + " J" + job + " " + q.getId() + (npc > 0 ? "" : " (script)") + " " + q.getName());
+                            more = true;
+                            progress = true;
+                        }
+                    }
+                    // phase 2: finish them
+                    for (server.quest.Quest q : started) {
+                        for (Object a : ((java.util.Map<?, ?>) caf.get(q)).values()) {
+                            try { ((server.quest.actions.AbstractQuestAction) a).run(chr, 0); } catch (Throwable t) { }
+                        }
+                        if (chr.getQuest(q).getStatus() != client.QuestStatus.Status.COMPLETED) {
+                            int npc = q.getNpcRequirement(true) > 0 ? q.getNpcRequirement(true) : q.getNpcRequirement(false);
+                            q.forceComplete(chr, npc);
+                        }
+                    }
+                }
+            }
+            out.println("== never started (has start NPC):");
+            for (server.quest.Quest q : server.quest.Quest.getAllQuests()) {
+                int npc = q.getNpcRequirement(false);
+                if (npc <= 0 || done.contains((int) q.getId()) || q.isAutoStart()) continue;
+                StringBuilder why = new StringBuilder();
+                for (Object o : ((java.util.Map<?, ?>) srf.get(q)).entrySet()) {
+                    java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                    if (!((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc)) why.append(e.getKey()).append(' ');
+                }
+                if (!q.canQuestByInfoProgress(chr)) why.append("INFO_PROGRESS ");
+                out.println("X " + q.getId() + " npc=" + npc + " [" + why.toString().trim() + "] " + q.getName());
+            }
+            out.close();
+            realErr.println("[explore] qsim " + name + " started=" + done.size());
+            return;
+        }
+        if (kind.equals("inv")) {   // inv type(1..5) -> list items in that inventory, plus cash locker
+            client.inventory.Inventory iv = chr.getInventory(client.inventory.InventoryType.getByType(Byte.parseByte(arg[1])));
+            StringBuilder sb = new StringBuilder();
+            for (client.inventory.Item it : iv.list()) sb.append(it.getPosition()).append(':').append(it.getItemId()).append('x').append(it.getQuantity()).append(' ');
+            sb.append("| locker ");
+            for (client.inventory.Item it : chr.getCashShop().getInventory()) sb.append(it.getItemId()).append(' ');
+            realErr.println("[explore] inv " + arg[1] + " " + sb);
             return;
         }
         if (kind.equals("qcheck")) {   // qcheck questId npc [fame] -> canStart / canComplete
