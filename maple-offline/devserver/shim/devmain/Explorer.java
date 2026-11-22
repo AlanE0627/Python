@@ -165,6 +165,20 @@ public final class Explorer implements Runnable {
             realErr.println("[explore] qforce " + q + " " + st);
             return;
         }
+        if (kind.equals("skill")) {   // skill id level
+            client.Skill sk = client.SkillFactory.getSkill(Integer.parseInt(arg[1]));
+            chr.changeSkillLevel(sk, Byte.parseByte(arg[2]), sk.getMaxLevel(), -1);
+            return;
+        }
+        if (kind.equals("keys")) {   // keys -> controller key bindings
+            StringBuilder sb = new StringBuilder();
+            for (int k : new int[]{79, 71, 81, 73, 67, 68, 69, 70, 83, 82, 29}) {
+                client.keybind.KeyBinding kb = chr.getKeymap().get(k);
+                sb.append(k).append('=').append(kb == null ? "-" : kb.getType() + ":" + kb.getAction()).append(' ');
+            }
+            realErr.println("[explore] keys job=" + chr.getJob().getId() + " " + sb);
+            return;
+        }
         if (kind.equals("qsim")) {   // qsim name job:lvl,job:lvl,... -> simulated quest progression
             String name = arg[1];
             java.util.TreeMap<Integer, Integer> track = new java.util.TreeMap<>();
