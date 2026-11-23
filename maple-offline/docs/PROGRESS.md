@@ -1113,3 +1113,10 @@
 - Pet food the current pet cannot eat now gives a message.
 - Quest progress: killing a slime during 2132 updates the quest alarm live (0/8 -> 1/8).
 - Still to do: PlayTest1 warrior Stumps -> 2nd-job training report flow; low-priority cash items (megaphones, chalkboard, weather, notes, pet rename).
+
+## 1195 (2026-11-24)
+- Buff list: right-click on desktop, or a long press on the phone, on an item buff icon now sends CANCEL_ITEM_EFFECT (opcode 73, negative item id), as in the original client. The server refuses items marked noCancelMouse. Checked: Mushroom transformation (5300000) is cancelled, the character returns to normal, and attacks are sent again.
+- Teleport rock menu: saved maps are shown in blue, the same as the other choices (the delete list too).
+- Warrior quest chain checked: Perion alarm → Dances with Balrog dialog → accept → alarm shows Stump 0/20, updates live on kills, then 20/20 with the report line. The NPC shows the completion icon. Completing the quest gives EXP (Lv14→15) and red/blue potions x30. The next quest (2129) opens automatically, as with normalAutoStart.
+- Dev server: Explorer `qprog questId mobId count` sets kill progress.
+- Megaphones, chalkboard, notes, weather and pet rename were left out: they only matter with other players, or need a text-input flow, so they have low value for solo play.
