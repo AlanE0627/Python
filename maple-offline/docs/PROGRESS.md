@@ -1105,3 +1105,11 @@
 
 ### 1193 묶음 계속 (2026-11-24 9시 10분, 코드 변경 없음 → 1192가 최신)
 - 퀘스트 목록 진행중 탭 실제 화면: [전직] '다섯 개의 갈림길'이 맨 위, 그 아래 사냥·수집 퀘스트 순 정렬 확인. 상세 목표 "슬라임 8마리 처치 (0 / 8)" 빨간 진행도 표시 확인(1179 기능)
+
+## 1194 (2026-11-24)
+- Teleport rock: saved maps were lost. The server padded the lists with empty slots before adding the saved maps, so they fell outside the 5/10 window and the next save dropped them. The padding now goes after the saved maps, as in Cosmic. The client also replaces its lists on every login instead of appending to them. Checked: register Orbis, relogin, Orbis still listed. Choosing Orbis from Henesys shows the failure popup with a line break inside the box, and the rock is kept. Deleting the saved place empties the list.
+- Server popup (type 1): wraps at a space after 16 characters.
+- Item transformation (morph id below 100, e.g. 5300000): attacks and skills are now blocked on the client, as in the original. The server disconnects anyone who attacks while transformed. Checked: transformation shows, item is used up, no attack packet is sent.
+- Pet food the current pet cannot eat now gives a message.
+- Quest progress: killing a slime during 2132 updates the quest alarm live (0/8 -> 1/8).
+- Still to do: PlayTest1 warrior Stumps -> 2nd-job training report flow; low-priority cash items (megaphones, chalkboard, weather, notes, pet rename).
