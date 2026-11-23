@@ -1127,3 +1127,9 @@
 - First-training chains for the other jobs: thief 2140–2143, bowman 2136–2139, pirate 2193–2196 (mage 2132–2135 as before). They are data-only quests (normalAutoStart, mob count, NPC report, no script), the same mechanism checked live for the warrior. Their report NPCs (1012100, 1052001, 1090000, 1032001) are all placed on maps. No live run per job yet.
 - Quest window Esc: the first Esc closes the detail pane and the second closes the list. Left as is: each Esc closes the top-most panel.
 - Next: minimap WORLD button caption, live check of one non-warrior chain.
+
+## 1197 (2026-11-24)
+- Minimap: added a Korean caption 월드 over the English WORLD button art (orange box, new colour WORLDORANGE).
+- Thief first-training chain (UxCyg, 2140) checked on screen. Tap the alarm, Dark Lord's dialog opens, accept, the alarm shows 스텀프 0/20. With progress at 20, entering Dark Lord's map opens the completion dialog by itself (the quest is autoComplete). Rewards: potions x30 each, completion notice, then the 2141 offer opens.
+- Blaze Wizard (CygTest3, 2132, Grendel): same flow. Slime 8/8, the completion dialog opens on entering the Magic Library, Lv10→12 with potions, then 2133 is offered. Quest 2132's original job list includes the Cygnus jobs (1200…), so the Grendel training is original data for Blaze Wizards.
+- Warrior 2129 (Stump 50) appears in the alarm as a new quest after 2128 is done.
