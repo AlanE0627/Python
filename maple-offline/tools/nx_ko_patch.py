@@ -68,7 +68,7 @@ def overrides_main(src, dst, path):
     new_strings, patches, counts = [], [], {}
 
     def set_string(node_idx, text):
-        if node_idx is None or not text or nx.node(node_idx)[3] != 3:
+        if node_idx is None or text is None or nx.node(node_idx)[3] != 3:
             return False
         patches.append((node_idx, nx.sc + len(new_strings)))
         new_strings.append(text)
