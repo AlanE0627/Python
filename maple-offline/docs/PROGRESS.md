@@ -1120,3 +1120,10 @@
 - Warrior quest chain checked: Perion alarm → Dances with Balrog dialog → accept → alarm shows Stump 0/20, updates live on kills, then 20/20 with the report line. The NPC shows the completion icon. Completing the quest gives EXP (Lv14→15) and red/blue potions x30. The next quest (2129) opens automatically, as with normalAutoStart.
 - Dev server: Explorer `qprog questId mobId count` sets kill progress.
 - Megaphones, chalkboard, notes, weather and pet rename were left out: they only matter with other players, or need a text-input flow, so they have low value for solo play.
+
+## 1196 (2026-11-24)
+- Skill buff cancel checked: cast Iron Body (1001003) from the skill book, long-press its icon, CANCEL_BUFF (92) is sent and the icon goes away.
+- Status bar: Korean captions over the English big-button art: 캐시샵 (red), 메뉴, 단축키 (blue). 몬스터북 was already there.
+- First-training chains for the other jobs: thief 2140–2143, bowman 2136–2139, pirate 2193–2196 (mage 2132–2135 as before). They are data-only quests (normalAutoStart, mob count, NPC report, no script), the same mechanism checked live for the warrior. Their report NPCs (1012100, 1052001, 1090000, 1032001) are all placed on maps. No live run per job yet.
+- Quest window Esc: the first Esc closes the detail pane and the second closes the list. Left as is: each Esc closes the top-most panel.
+- Next: minimap WORLD button caption, live check of one non-warrior chain.
