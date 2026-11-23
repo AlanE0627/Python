@@ -1,0 +1,466 @@
+package devmain;
+
+import client.Character;
+import client.Client;
+import net.packet.Packet;
+import net.server.Server;
+import scripting.npc.NPCScriptManager;
+import scripting.quest.QuestScriptManager;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
+import java.util.regex.*;
+
+/**
+ * Walks every branch of an NPC or quest script on the dev server, as the
+ * logged-in character: starts the conversation, answers each dialog with
+ * every possible answer (next / yes / no / accept / decline / each #L
+ * option), and replays the answer path from the start for each branch.
+ *
+ * Commands, one per line in /tmp/devcmd (the file is consumed):
+ *   npc <id>
+ *   qstart <quest> <npc>
+ *   qend <quest> <npc>
+ * Output: /tmp/explore/<kind>_<id>.txt, one line per dialog reached:
+ *   path | msgtype style | text   and END / STALL / ERROR lines.
+ */
+public final class Explorer implements Runnable {
+    static final java.util.Set<String> SIM_SKIP = new java.util.HashSet<>(java.util.Arrays.asList(
+            "ITEM", "PET", "MIN_PET_TAMENESS", "SKILL", "FIELD_ENTER", "EQUIP_ALL", "EQUIP_SELECT",
+            "MB_CARD", "MONSTER_BOOK", "FAME", "MESO", "BUFF", "EXCEPT_BUFF", "NPC", "SCRIPT", "MOB", "NORMAL_AUTO_START"));
+
+    private static final int NPC_TALK = 0x130;
+    private static final int MAX_PATHS = 400;
+    private static final int MAX_DEPTH = 30;
+
+    private final List<byte[]> talks = Collections.synchronizedList(new ArrayList<>());
+    private static final PrintStream realErr = System.err;
+    private static final ByteArrayOutputStream errBuf = new ByteArrayOutputStream();
+
+    public static void install() {
+        System.setErr(new PrintStream(new OutputStream() {
+            @Override
+            public void write(int b) {
+                realErr.write(b);
+                synchronized (errBuf) { errBuf.write(b); }
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) {
+                realErr.write(b, off, len);
+                synchronized (errBuf) { errBuf.write(b, off, len); }
+            }
+        }, true));
+        Thread t = new Thread(new Explorer(), "explorer");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    @Override
+    public void run() {
+        Path cmd = Paths.get("/tmp/devcmd");
+        while (true) {
+            try {
+                Thread.sleep(500);
+                if (!Files.exists(cmd)) continue;
+                List<String> lines = Files.readAllLines(cmd);
+                Files.delete(cmd);
+                for (String line : lines) {
+                    line = line.trim();
+                    if (line.isEmpty()) continue;
+                    try {
+                        handle(line.split("\\s+"));
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                }
+                Files.writeString(Paths.get("/tmp/explore/done"), String.valueOf(System.currentTimeMillis()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private Character player() {
+        for (Character c : Server.getInstance().getWorld(0).getPlayerStorage().getAllCharacters()) {
+            return c;
+        }
+        return null;
+    }
+
+    /** One dialog as the client would see it. */
+    static final class Dialog {
+        int msgtype;
+        int b0;
+        int b1;
+        String text;
+        List<Integer> options = new ArrayList<>();
+    }
+
+    private static Dialog parse(byte[] b) {
+        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(b).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        bb.getShort();
+        bb.get();
+        bb.getInt();
+        Dialog d = new Dialog();
+        d.msgtype = bb.get() & 0xFF;
+        bb.get();
+        if (d.msgtype == 14) bb.getInt();
+        int len = bb.getShort() & 0xFFFF;
+        byte[] s = new byte[len];
+        bb.get(s);
+        d.text = new String(s, StandardCharsets.UTF_8);
+        if (d.msgtype == 0 && bb.remaining() >= 2) {
+            d.b0 = bb.get() & 0xFF;
+            d.b1 = bb.get() & 0xFF;
+        }
+        Matcher m = Pattern.compile("#L(\\d+)#").matcher(d.text);
+        while (m.find()) d.options.add(Integer.parseInt(m.group(1)));
+        return d;
+    }
+
+    /** Answers worth following from a dialog: {mode, type, selection}. */
+    private static List<int[]> answers(Dialog d) {
+        List<int[]> a = new ArrayList<>();
+        switch (d.msgtype) {
+            case 0 -> a.add(d.b0 == 1 && d.b1 == 0 ? new int[]{-1, 0, -1} : new int[]{1, 0, -1});  // prev-only page: OK = end chat
+            case 1 -> { a.add(new int[]{1, 1, -1}); a.add(new int[]{0, 1, -1}); }  // yes, no
+            case 12 -> { a.add(new int[]{1, 12, -1}); a.add(new int[]{0, 12, -1}); }
+            case 4, 14 -> { for (int o : d.options) a.add(new int[]{1, d.msgtype, o}); }
+            case 3 -> a.add(new int[]{1, 3, 1});
+            case 2 -> a.add(new int[]{1, 2, -1});
+            case 7 -> a.add(new int[]{1, 7, 0});
+            default -> a.add(new int[]{1, d.msgtype, -1});
+        }
+        return a;
+    }
+
+    private void handle(String[] arg) throws Exception {
+        Character chr = player();
+        if (chr == null) { realErr.println("[explore] nobody logged in"); return; }
+        Client c = chr.getClient();
+        String kind = arg[0];
+        if (kind.equals("clearinv")) {   // dev only: empty equip/use/etc so reward items fit
+            for (client.inventory.InventoryType t : new client.inventory.InventoryType[]{client.inventory.InventoryType.EQUIP, client.inventory.InventoryType.USE, client.inventory.InventoryType.ETC, client.inventory.InventoryType.SETUP}) {
+                client.inventory.Inventory inv = chr.getInventory(t);
+                for (client.inventory.Item it : new java.util.ArrayList<>(inv.list())) {
+                    inv.removeSlot(it.getPosition());
+                }
+            }
+            realErr.println("[explore] clearinv");
+            return;
+        }
+        if (kind.equals("portal")) {   // portal mapId portalName -> run its script from that map
+            int mapId = Integer.parseInt(arg[1]);
+            chr.changeMap(mapId);
+            Thread.sleep(300);
+            server.maps.Portal pt = chr.getMap().getPortal(arg[2]);
+            String res;
+            synchronized (errBuf) { errBuf.reset(); }
+            if (pt == null) {
+                res = "NOPORTAL";
+            } else {
+                boolean ok;
+                try {
+                    ok = scripting.portal.PortalScriptManager.getInstance().executePortalScript(pt, c);
+                } catch (Throwable t) {
+                    ok = false;
+                }
+                Thread.sleep(300);
+                String err;
+                synchronized (errBuf) { err = errBuf.toString(StandardCharsets.UTF_8); }
+                boolean bad = err.contains("Exception") || err.contains("ERROR");
+                res = (bad ? "ERROR " : "") + "ok=" + ok + " now=" + chr.getMapId()
+                        + (bad ? " " + err.replace('\n', ' ').substring(0, Math.min(300, err.length())) : "");
+            }
+            Files.createDirectories(Paths.get("/tmp/explore"));
+            Files.writeString(Paths.get("/tmp/explore/portals.txt"), mapId + " " + arg[2] + " " + (pt == null ? "" : pt.getScriptName()) + " | " + res + "\n",
+                    StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return;
+        }
+        if (kind.equals("warp")) {   // warp mapId
+            chr.changeMap(Integer.parseInt(arg[1]));
+            realErr.println("[explore] warp " + arg[1]);
+            return;
+        }
+        if (kind.equals("qforce")) {   // qforce questId [0=reset|1=start|2=complete]
+            int q = Integer.parseInt(arg[1]);
+            int st = arg.length > 2 ? Integer.parseInt(arg[2]) : 2;
+            server.quest.Quest qq = server.quest.Quest.getInstance(q);
+            if (st == 0) qq.reset(chr); else if (st == 1) qq.forceStart(chr, 0); else qq.forceComplete(chr, 0);
+            realErr.println("[explore] qforce " + q + " " + st);
+            return;
+        }
+        if (kind.equals("skill")) {   // skill id level
+            client.Skill sk = client.SkillFactory.getSkill(Integer.parseInt(arg[1]));
+            chr.changeSkillLevel(sk, Byte.parseByte(arg[2]), sk.getMaxLevel(), -1);
+            return;
+        }
+        if (kind.equals("keys")) {   // keys -> controller key bindings
+            StringBuilder sb = new StringBuilder();
+            for (int k : new int[]{79, 71, 81, 73, 67, 68, 69, 70, 83, 82, 29}) {
+                client.keybind.KeyBinding kb = chr.getKeymap().get(k);
+                sb.append(k).append('=').append(kb == null ? "-" : kb.getType() + ":" + kb.getAction()).append(' ');
+            }
+            realErr.println("[explore] keys job=" + chr.getJob().getId() + " " + sb);
+            return;
+        }
+        if (kind.equals("qsim")) {   // qsim name job:lvl,job:lvl,... -> simulated quest progression
+            String name = arg[1];
+            java.util.TreeMap<Integer, Integer> track = new java.util.TreeMap<>();
+            for (String t : arg[2].split(",")) {
+                String[] jl = t.split(":");
+                track.put(Integer.parseInt(jl[1]), Integer.parseInt(jl[0]));
+            }
+            java.lang.reflect.Field qf = client.Character.class.getDeclaredField("quests");
+            qf.setAccessible(true);
+            java.util.Map<?, ?> qmap = (java.util.Map<?, ?>) qf.get(chr);
+            synchronized (qmap) { qmap.clear(); }
+            int base = track.firstEntry().getValue() / 1000 * 1000;
+            if (base == 1000) chr.getQuest(server.quest.Quest.getInstance(20022)).setProgress(0, "1");
+            if (base == 2000) chr.getQuest(server.quest.Quest.getInstance(21002)).setProgress(0, "1");
+            java.lang.reflect.Field srf = server.quest.Quest.class.getDeclaredField("startReqs");
+            srf.setAccessible(true);
+            Files.createDirectories(Paths.get("/tmp/explore"));
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream("/tmp/explore/qsim_" + name + ".txt"), StandardCharsets.UTF_8));
+            java.util.Set<Integer> done = new java.util.HashSet<>();
+            java.lang.reflect.Field saf = server.quest.Quest.class.getDeclaredField("startActs");
+            java.lang.reflect.Field caf = server.quest.Quest.class.getDeclaredField("completeActs");
+            saf.setAccessible(true);
+            caf.setAccessible(true);
+            int job = track.firstEntry().getValue();
+            java.util.List<int[]> steps = new ArrayList<>();
+            for (int lv = 1; lv <= 200; lv++) {
+                Integer nj = track.get(lv);
+                if (nj != null && lv > 1) steps.add(new int[]{lv, job});   // still the old job at the new level
+                if (nj != null) job = nj;
+                steps.add(new int[]{lv, job});
+            }
+            for (int[] step : steps) {
+                int lv = step[0];
+                job = step[1];
+                chr.setJob(client.Job.getById(job));
+                chr.setLevel(lv);
+                boolean progress = true;
+                while (progress) {
+                    progress = false;
+                    // phase 1: start everything startable (repeat: some quests
+                    // need another one *in progress*)
+                    List<server.quest.Quest> started = new ArrayList<>();
+                    boolean more = true;
+                    while (more) {
+                        more = false;
+                        chr.setJob(client.Job.getById(job));
+                        chr.setLevel(lv);
+                        for (server.quest.Quest q : server.quest.Quest.getAllQuests()) {
+                            if (done.contains((int) q.getId())) continue;
+                            if (chr.getQuest(q).getStatus() != client.QuestStatus.Status.NOT_STARTED) continue;
+                            int npc = q.getNpcRequirement(false);
+                            if (!q.canStartQuestByStatus(chr) || !q.canQuestByInfoProgress(chr)) continue;
+                            boolean ok = true;
+                            for (Object o : ((java.util.Map<?, ?>) srf.get(q)).entrySet()) {
+                                java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                                String t = e.getKey().toString();
+                                // conditions a player meets by playing (drops, equipping,
+                                // walking into a map, pets, skill books) count as met here
+                                if (SIM_SKIP.contains(t)) continue;
+                                if (!((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc > 0 ? npc : 0)) { ok = false; break; }
+                            }
+                            if (!ok) continue;
+                            for (client.inventory.InventoryType it : new client.inventory.InventoryType[]{client.inventory.InventoryType.EQUIP, client.inventory.InventoryType.USE, client.inventory.InventoryType.SETUP, client.inventory.InventoryType.ETC}) {
+                                client.inventory.Inventory iv = chr.getInventory(it);
+                                if (iv.isFull(10)) {
+                                    for (client.inventory.Item item : new ArrayList<>(iv.list())) iv.removeSlot(item.getPosition());
+                                }
+                            }
+                            q.forceStart(chr, npc);
+                            for (Object a : ((java.util.Map<?, ?>) saf.get(q)).values()) {
+                                try { ((server.quest.actions.AbstractQuestAction) a).run(chr, null); } catch (Throwable t) { }
+                            }
+                            done.add((int) q.getId());
+                            started.add(q);
+                            out.println("L" + lv + " J" + job + " " + q.getId() + (npc > 0 ? "" : " (script)") + " " + q.getName());
+                            more = true;
+                            progress = true;
+                        }
+                    }
+                    // phase 2: finish them
+                    for (server.quest.Quest q : started) {
+                        for (Object a : ((java.util.Map<?, ?>) caf.get(q)).values()) {
+                            try { ((server.quest.actions.AbstractQuestAction) a).run(chr, 0); } catch (Throwable t) { }
+                        }
+                        if (chr.getQuest(q).getStatus() != client.QuestStatus.Status.COMPLETED) {
+                            int npc = q.getNpcRequirement(true) > 0 ? q.getNpcRequirement(true) : q.getNpcRequirement(false);
+                            q.forceComplete(chr, npc);
+                        }
+                    }
+                }
+            }
+            out.println("== never started (has start NPC):");
+            for (server.quest.Quest q : server.quest.Quest.getAllQuests()) {
+                int npc = q.getNpcRequirement(false);
+                if (npc <= 0 || done.contains((int) q.getId()) || q.isAutoStart()) continue;
+                StringBuilder why = new StringBuilder();
+                for (Object o : ((java.util.Map<?, ?>) srf.get(q)).entrySet()) {
+                    java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                    if (!((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc)) why.append(e.getKey()).append(' ');
+                }
+                if (!q.canQuestByInfoProgress(chr)) why.append("INFO_PROGRESS ");
+                out.println("X " + q.getId() + " npc=" + npc + " [" + why.toString().trim() + "] " + q.getName());
+            }
+            out.close();
+            realErr.println("[explore] qsim " + name + " started=" + done.size());
+            return;
+        }
+        if (kind.equals("inv")) {   // inv type(1..5) -> list items in that inventory, plus cash locker
+            client.inventory.Inventory iv = chr.getInventory(client.inventory.InventoryType.getByType(Byte.parseByte(arg[1])));
+            StringBuilder sb = new StringBuilder();
+            for (client.inventory.Item it : iv.list()) sb.append(it.getPosition()).append(':').append(it.getItemId()).append('x').append(it.getQuantity()).append(' ');
+            sb.append("| locker ");
+            for (client.inventory.Item it : chr.getCashShop().getInventory()) sb.append(it.getItemId()).append(' ');
+            realErr.println("[explore] inv " + arg[1] + " " + sb);
+            return;
+        }
+        if (kind.equals("qcheck")) {   // qcheck questId npc [fame] -> canStart / canComplete
+            int q = Integer.parseInt(arg[1]);
+            int npc = arg.length > 2 ? Integer.parseInt(arg[2]) : 0;
+            if (arg.length > 3) chr.setFame(Integer.parseInt(arg[3]));
+            server.quest.Quest qq = server.quest.Quest.getInstance(q);
+            for (String fn : new String[]{"startReqs", "completeReqs"}) {
+                java.lang.reflect.Field f = server.quest.Quest.class.getDeclaredField(fn);
+                f.setAccessible(true);
+                StringBuilder sb = new StringBuilder();
+                for (Object o : ((java.util.Map<?, ?>) f.get(qq)).entrySet()) {
+                    java.util.Map.Entry<?, ?> e = (java.util.Map.Entry<?, ?>) o;
+                    sb.append(e.getKey()).append('=').append(((server.quest.requirements.AbstractQuestRequirement) e.getValue()).check(chr, npc)).append(' ');
+                }
+                realErr.println("[explore] qcheck " + q + " " + fn + ": " + sb);
+            }
+            realErr.println("[explore] qcheck " + q + " start=" + qq.canStart(chr, npc) + " complete=" + qq.canComplete(chr, npc));
+            return;
+        }
+        if (kind.equals("setchar")) {   // setchar job level str dex int luk (dev test character state)
+            chr.setJob(client.Job.getById(Integer.parseInt(arg[1])));
+            chr.setLevel(Integer.parseInt(arg[2]));
+            java.lang.reflect.Method m = client.AbstractCharacterObject.class.getDeclaredMethod("updateStrDexIntLuk", int.class, int.class, int.class, int.class, int.class);
+            m.setAccessible(true);
+            m.invoke(chr, Integer.parseInt(arg[3]), Integer.parseInt(arg[4]), Integer.parseInt(arg[5]), Integer.parseInt(arg[6]), -1);
+            realErr.println("[explore] setchar " + String.join(" ", arg));
+            return;
+        }
+        int id = Integer.parseInt(arg[1]);
+        int npc = arg.length > 2 ? Integer.parseInt(arg[2]) : id;
+        Files.createDirectories(Paths.get("/tmp/explore"));
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream("/tmp/explore/" + kind + "_" + id + ".txt"), StandardCharsets.UTF_8));
+
+        Client.packetTap = (cl, p) -> {
+            byte[] b = p.getBytes();
+            if (cl == c && b.length > 2 && ((b[0] & 0xFF) | (b[1] & 0xFF) << 8) == NPC_TALK) talks.add(b);
+        };
+
+        Deque<List<int[]>> todo = new ArrayDeque<>();
+        todo.add(new ArrayList<>());
+        Set<String> seen = new HashSet<>();
+        int paths = 0;
+        int ends = 0, stalls = 0, errors = 0;
+
+        try {
+            while (!todo.isEmpty() && paths < MAX_PATHS) {
+                List<int[]> path = todo.poll();
+                paths++;
+                reset(c);
+                talks.clear();
+                int errMark;
+                synchronized (errBuf) { errMark = errBuf.size(); }
+
+                begin(kind, c, id, npc, chr);
+                Thread.sleep(30);
+                String label = "";
+                Dialog last = null;
+                boolean ok = true;
+                for (int[] step : path) {
+                    if (talks.isEmpty()) { ok = false; break; }
+                    last = parse(talks.get(talks.size() - 1));
+                    talks.clear();
+                    act(kind, c, step);
+                    Thread.sleep(20);
+                    label += "/" + step[0] + (step[2] >= 0 ? ":" + step[2] : "");
+                }
+                String err;
+                synchronized (errBuf) {
+                    err = new String(errBuf.toByteArray(), errMark, errBuf.size() - errMark, StandardCharsets.UTF_8);
+                }
+                boolean failed = err.contains("Exception") || err.contains("Error ");
+                if (!ok) continue;
+                if (talks.isEmpty()) {
+                    boolean open = kind.equals("npc") ? NPCScriptManager.getInstance().getCM(c) != null
+                                                      : QuestScriptManager.getInstance().getQM(c) != null;
+                    if (failed) { errors++; out.println("ERROR " + label + " | " + firstLine(err)); }
+                    else if (open) { stalls++; out.println("STALL " + label); }
+                    else { ends++; out.println("END   " + label); }
+                    continue;
+                }
+                Dialog d = parse(talks.get(talks.size() - 1));
+                String key = d.msgtype + "|" + d.text;
+                out.println("TALK  " + label + " | " + d.msgtype + (d.msgtype == 0 ? " " + d.b0 + d.b1 : "") + " | " + d.text.replace("\r", "").replace("\n", "\\n"));
+                if (failed) { errors++; out.println("ERROR " + label + " | " + firstLine(err)); }
+                if (path.size() >= MAX_DEPTH) continue;
+                // a dialog seen before on another path: its branches are already queued
+                if (!seen.add(key + "@" + path.size())) {
+                    if (d.msgtype == 0 && d.b0 == 0 && d.b1 == 0) {
+                        // still follow OK so the end of each path is checked
+                    } else if (seen.contains(key)) {
+                        continue;
+                    }
+                }
+                seen.add(key);
+                for (int[] a : answers(d)) {
+                    List<int[]> next = new ArrayList<>(path);
+                    next.add(a);
+                    todo.add(next);
+                }
+            }
+        } finally {
+            reset(c);
+            Client.packetTap = null;
+            out.println("SUMMARY paths " + paths + " end " + ends + " stall " + stalls + " error " + errors
+                        + (todo.isEmpty() ? "" : " (cut, " + todo.size() + " left)"));
+            out.close();
+        }
+    }
+
+    private static String firstLine(String s) {
+        for (String l : s.split("\n")) if (l.contains("Exception") || l.contains("Error")) return l.trim();
+        return s.trim();
+    }
+
+    private static void reset(Client c) {
+        NPCScriptManager.getInstance().dispose(c);
+        QuestScriptManager.getInstance().dispose(c);
+    }
+
+    private static void begin(String kind, Client c, int id, int npc, Character chr) {
+        try {
+            java.lang.reflect.Field f = Client.class.getDeclaredField("lastNpcClick");
+            f.setAccessible(true);
+            f.setLong(c, 0L);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        switch (kind) {
+            case "npc" -> NPCScriptManager.getInstance().start(c, id, chr);
+            case "qstart" -> QuestScriptManager.getInstance().start(c, (short) id, npc);
+            case "qend" -> QuestScriptManager.getInstance().end(c, (short) id, npc);
+        }
+    }
+
+    private static void act(String kind, Client c, int[] s) {
+        switch (kind) {
+            case "npc" -> NPCScriptManager.getInstance().action(c, (byte) s[0], (byte) s[1], s[2]);
+            case "qstart" -> QuestScriptManager.getInstance().start(c, (byte) s[0], (byte) s[1], s[2]);
+            case "qend" -> QuestScriptManager.getInstance().end(c, (byte) s[0], (byte) s[1], s[2]);
+        }
+    }
+}
