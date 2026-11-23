@@ -61,7 +61,7 @@ def load(dirpath, kind):
 
 
 def overrides_main(src, dst, path):
-    """Second pass: set names from a hand-made table {npc|mob: {id: name}, map: {id: {name, streetName}}, item: {id: name}, npcfield: {id: {field: text}}}."""
+    """Second pass: set names from a hand-made table {npc|mob: {id: name}, map: {id: {name, streetName}}, item: {id: name}, npcfield: {id: {field: text}}, path: {"/Img.img/a/b": text}}."""
     shutil.copyfile(src, dst)
     nx = NX(dst)
     ov = json.load(open(path, encoding='utf8'))
@@ -103,6 +103,15 @@ def overrides_main(src, dst, path):
     for cat, cnode in (nx.children(eqp).items() if eqp is not None else []):
         for k, c in nx.children(cnode).items():
             item_node(c, k)
+    # any string node by its full path, e.g. "/Say.img/1035/0/1"
+    for path, text in ov.get('path', {}).items():
+        node = 0
+        for part in path.strip('/').split('/'):
+            node = nx.child(node, part)
+            if node is None:
+                break
+        if node is not None and set_string(node, text):
+            counts['path'] = counts.get('path', 0) + 1
     mapimg = nx.child(0, 'Map.img')
     table = ov.get('map', {})
     for region, rnode in (nx.children(mapimg).items() if mapimg is not None else []):
