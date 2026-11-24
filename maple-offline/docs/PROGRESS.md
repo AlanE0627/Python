@@ -1226,3 +1226,23 @@
 - Thunder Breaker Somersault Kick: the damage showed at frame 0, before the flip. Every frame of the body action is an attack frame (no negative delay marks the swing), and the first frame has delay 0. For "somersault" and "screw" (Corkscrew Blow) the 0-delay frames no longer count as attack frames and the hits move to the middle of the move. Checked: the damage appears at 516 ms, mid-flip. The other 27 actions of the same shape (doublefire, rapidfire, dash …) are unchanged because they already looked right.
 - Teleport distance now uses the level's range (130–150, kept as hrange) × 1.5. All four Teleports (FP, IL, Priest, Blaze Wizard) share that data.
 - Alancyg restored: 111/80/200/60/4/4, weapon 1302000; test skills, the A binding, test weapons and ammo removed.
+
+## 1211–1212 (2026-11-24, user report)
+- Skill audit, part 4. Thunder Bolt, Flame Orb, Iron Arrow and Double Shot are in the right order. Arrow Bomb (3101005) never attacked: its level data has no "damage" (the server defaults to 100%), so the client took it for a buff. It is now an attack, and SkillData uses 100% when "damage" is missing, as the server does.
+- Thorn remover / Mushroom Castle wall:
+  - The client never sent SCRIPTED_ITEM (78) for 243xxxx items. A double-click went through USE_ITEM and did nothing; earlier builds even lost the item. Now ScriptedItemPacket is sent.
+  - removethorns.js called Point.distance(), which android Point lacks. Fixed, and it now tells the player where to use the spray.
+  - The wall portal (106020400 right00, gotocastle.js) uses the spray itself while quest 2324 is in progress: EXP, completes 2324, removes the spray, warps to 106020501. A spray lost in earlier builds no longer blocks the chain.
+  - ScriptedItemHandler always re-enables actions.
+  - Checked: the item script message, and the portal completing the quest and moving the player.
+- Teleport:
+  - The BasicEff.img/Teleport effect plays where the player appears.
+  - 600 ms minimum interval; a press inside it is queued, not lost.
+  - Sideways teleport lands only on floor from 20 px above to 120 px below the current height; it steps back toward the player otherwise (no landing in the void under the map or far down a cliff).
+  - Checked: the effect shows; four quick presses give about 770 px over 2 s.
+- Scroll result: added the Game.img EnchantSuccess / EnchantFailure sounds to the existing ScrollResultHandler. A duplicate handler for opcode 167 was added by mistake and removed.
+- Item-use sounds: the per-item Sound/Item.img/<id>/Use was already played. Items with no sound of their own and outside 200–202 (scrolls, return scrolls …) no longer fall back to the potion gulp.
+- Cash shop: the equipment chips are drawn with gaps inside the green strip; icons are centred in their boxes by size (weapon icons sat off-centre). Buying a cash weapon works on desktop: it goes to the cash locker first.
+- Auto re-buff: a buff from the buff keys that was active this session is recast by itself when it runs out (through the buff queue, one at a time; a failed cast waits 10 s). Checked: Iron Body recast after 75 s.
+- Portal arrival on 106020100 (right of the Mushroom Castle town 106020000): lands on the ground at once on desktop, so still not reproduced.
+- To do: world map (other regions list, search panel, double-click route guide); a full pass over the Mushroom Castle quest chain (2300–2340).
