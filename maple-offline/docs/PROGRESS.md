@@ -1316,3 +1316,11 @@
 - The phone's server log (user screenshot): "tried to equip Elegant Noblesse Hat into slot -101", "Blue Jewelry Boots into slot -107". The client sent normal equipment to the cash slots (slot - 100) and the server refused it every time. The server's data has cash = 0 for both; the desktop client data agrees, so the phone client's item data (built on the phone from the installer + custom WZ) or its slot choice differs.
 - Fix on the server (authoritative): ItemMoveHandler moves an equip to the slot its own cash flag says — a non-cash item sent to -1xx goes to the normal slot, a cash item sent to a normal slot goes to the cash slot (pet equipment excepted).
 - To look at next: why the phone client marks these items cash (its Character.nx info/cash), since other client logic (scroll menu, tooltips) also uses that flag.
+
+### Big play-through pass 3 (2026-11-24) — no code changes after 1220
+- Equip root cause hunt: the phone builds Character.nx on the phone from the installer + custom Character.wz. Converting the same custom Character.wz with the phone's converter gives cash = 0 for the reported hat (1002869) and boots (1072019), same as the server. Desktop double-click of a normal top (1040010) equips to the normal slot with no warning. So the phone sends -101/-107 for a reason not seen yet; the 1220 server fix makes the equip work either way. Waiting for the user to confirm on the phone.
+- Second job advancement, all five lines (server dialogs and item flow, client warps; marbles/crystals given rather than hunted, drop tables checked):
+  - Thief: Dark Lord → letter 4031011 → 1072003 (102040000) → test 108000400 → 1072007 → proof → Assassin (410).
+  - Archer: Athena Pierce → letter 4031010 → 1072002 (106010000) → test 108000100 → 1072006 → proof → Hunter (310).
+  - Pirate: quest-based (2191 Brawler / 2192 Gunslinger) → Kyrin sends to the test room by the started quest (2191 → 108000502, mob 9001006 drops 4031856; 2192 → 108000501, mob 9001005 drops 4031857) → 15 crystals → quest end takes them → Kyrin → Gunslinger (520).
+  - Warrior and magician were checked earlier the same day (Fighter 110, Wizard 210).
