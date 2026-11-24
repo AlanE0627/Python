@@ -1324,3 +1324,8 @@
   - Archer: Athena Pierce → letter 4031010 → 1072002 (106010000) → test 108000100 → 1072006 → proof → Hunter (310).
   - Pirate: quest-based (2191 Brawler / 2192 Gunslinger) → Kyrin sends to the test room by the started quest (2191 → 108000502, mob 9001006 drops 4031856; 2192 → 108000501, mob 9001005 drops 4031857) → 15 crystals → quest end takes them → Kyrin → Gunslinger (520).
   - Warrior and magician were checked earlier the same day (Fighter 110, Wizard 210).
+
+### 1221 (2026-11-24) — cash equipment root cause, separate cash page
+- Root cause of "equipment can't be equipped / cash items don't come off after relogging": the character data sends the cash (look) equips in a second list as slot - 100; the client stored them under the real slot number, on top of the real equip. After a relog the client thought the cash hat was the real hat, so equipping and taking off went to the wrong slots (the server log showed normal hats sent to -101). CharacterParser now stores that list at slot + 100.
+- Cash weapons (170xxxx) had no equip slot in the client, so they were sent to -100. They now take the weapon slot (cash -111); the server maps -100 to -111 for them, and a cash weapon already saved at -100 is moved to -111 on login.
+- Equipment window: two tabs under the window, 장비 / 캐시 (user's request). The 장비 page shows and takes off only the real equipment, the 캐시 page only the look items; tooltips follow the page. Tested with CygTest3 after relog: 장비 page = hat, top, weapon, shoes; 캐시 page = face accessory, ring, overall, cash weapon; taking off the cash overall from the 캐시 page and putting it back from the inventory went to -105 with no warning.
