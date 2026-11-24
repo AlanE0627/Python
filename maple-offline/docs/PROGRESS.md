@@ -1335,3 +1335,11 @@
 - Henesys general store (1011100) on desktop: clicking the NPC opens the shop window (Korean item list, mesos), buying a red potion with the quantity box (+10) put 10 red potions in the USE tab.
 - A test character that had died on the Orbis ship and was then moved with dev warps stayed dead on the server (HP 0) while the client showed it walking: every NPC click was ignored (NPCTalkHandler returns early for a dead character). Normal play revives through the death dialog (Character.respawn → HP 50), so this was the dev tools, not the game. Dev-only NPC talk log added (needs -Dms.devlog, not set on the phone).
 - After a dev server restart a leftover /tmp/devcmd made the dev Explorer touch the server before its config was loaded (null config, server did not start); deleting the file before a restart avoids it.
+
+### 1222 (2026-11-24)
+- Storage and shop windows stayed open after a map change (a warp while the storage was open kept the window in the new map). change_map now closes them the way their own close buttons do, so the server is told too. Tested: storage open → warp → window gone and the close packet sent.
+- Town functions checked on desktop with real NPC clicks:
+  - Storage keeper (1012009, Henesys Park): store a red potion stack (fee 100 mesos taken), take it back out.
+  - General store (1011100): buy with the quantity box.
+- Death and revive: killed on a field, the death notice's OK sends the character to town alive; NPC talk works right after.
+- Not done in this pass: new character on Maple Island 1→10, Kerning PQ solo run, taxi / hair / face coupons on the client (their NPC dialogs were covered by the NPC sweep).
