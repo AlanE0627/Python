@@ -1140,3 +1140,10 @@
 - Stat window and world map: Korean (the world map uses KMS art). The cash shop EXIT/Best Item/NEXON ID art is the KMS original and was left as is.
 - Warrior 2129 accepted from the alarm: Dances with Balrog dialog → accept → alarm shows 스텀프 0/50.
 - Not done in this bundle: live bowman/pirate run (needs a job switch on a test character); Ereve Cygnus-only quest flow.
+
+## 1199 (2026-11-24)
+- Item names: 383 more GMS-only items that a player actually meets (monster drop tables, NPC shops, reactor drops, quest rewards and requirements) had no Korean name. Translated by hand into the private override table and applied with `--overrides`. Read back from String_ko: 마나 불, 초록 의자, 땅콩잼 샌드위치, 오닉스 블레이드.
+- About 1,200 GMS-only item names are left; none of them is in a drop, shop or quest.
+- Item descriptions: 520 of the 736 items translated so far still have an English description (about 57k characters). To do in later bundles.
+- Each `--overrides` pass appends a new string offset table, adding about 1.5 MB to String_ko each time (now 39 MB). A clean rebuild from String.nx with the full override table is needed before the installer.
+- Bowman and pirate first training are the same data-only quests as the warrior, thief and mage ones, which were checked live, so they were not run again. The Ereve Cygnus-only quest flow is not checked yet.
