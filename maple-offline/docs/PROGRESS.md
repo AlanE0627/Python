@@ -1368,3 +1368,4 @@
 - (pass 19) IslandT1 hunted to Lv11 on 100010000 (bow, real shots): level-up gives 5 AP; the stat window's DEX + button raises DEX 25 → 28 with AP 5 → 2. No new issue found.
 - (pass 20) Archer skills: Double Shot's + stays grey until Arrow Blow has a point (the v83 data requires Arrow Blow 1), then both can be learned. Dragging Double Shot from the skill window onto an empty quick slot binds it (server keymap shows the skill on the slot's key). Using it from that slot was not driven in the desktop test (the touch slots need real touch input there).
 - (pass 21) Double Shot on a key (IslandT1, bow + arrows): cast with the release delay, two arrows (bullet 0 and 1 at 409 ms), hits on the spores. No new issue found.
+- (pass 22) Henesys taxi for a 1st-job character: full prices (no beginner discount), Ellinia 800 mesos → confirm → fade → Ellinia. No new issue found.
