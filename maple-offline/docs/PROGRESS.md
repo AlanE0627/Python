@@ -1365,3 +1365,4 @@
 - (pass 16) IslandT1 archer: bow from the equip tab equipped by double tap (no slot warning on the server), arrows in the USE tab, shooting on 100010000 kills snails / spores (monster card drop, EXP gain). No new issue found.
 - (pass 17) Teleport rock (5040000) from the cash tab by double tap: menu "지금 있는 맵 등록하기" saved 헤네시스동쪽언덕; from Henesys the saved map is listed and choosing it moves there, using up the rock. No new issue found.
 - (pass 18) Henesys lens shop (Dr. Lenu 9200100, 100000103): coupon menu in Korean, the VIP lens coupon opens the look picker with live preview, OK changes the eyes and uses the coupon. No new issue found.
+- (pass 19) IslandT1 hunted to Lv11 on 100010000 (bow, real shots): level-up gives 5 AP; the stat window's DEX + button raises DEX 25 → 28 with AP 5 → 2. No new issue found.
