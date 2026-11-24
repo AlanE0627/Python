@@ -1348,3 +1348,6 @@
 - Kerning PQ solo, stage 1: with one member it cleared at once with 0 passes (an earlier solo adaptation). Now the solo leader answers a question like a member, brings the coupons for one pass, and the next talk clears the stage. Party quests with more members are unchanged. Tested: one-person party (dev command) → Lakelis → stage 1 → question (archer DEX) → 25 coupons → pass → stage cleared.
 - Leaving a KPQ instance by warp ends it a moment later (changedMap → end); re-entry works after that.
 - Dev: Explorer `party` command (one-person party).
+
+### Play-through pass 7 (2026-11-24) — no code change
+- Kerning PQ solo stages 2 and 3 (one-person party): standing on a correct rope / platform area and talking to Cloto clears the stage (solo rule: the one member on a correct area), the portal opens. Stage 4 (boxes) and 5 (boss) not run this pass.
