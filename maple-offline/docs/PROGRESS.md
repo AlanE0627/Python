@@ -1147,3 +1147,12 @@
 - Item descriptions: 520 of the 736 items translated so far still have an English description (about 57k characters). To do in later bundles.
 - Each `--overrides` pass appends a new string offset table, adding about 1.5 MB to String_ko each time (now 39 MB). A clean rebuild from String.nx with the full override table is needed before the installer.
 - Bowman and pirate first training are the same data-only quests as the warrior, thief and mage ones, which were checked live, so they were not run again. The Ereve Cygnus-only quest flow is not checked yet.
+
+## 1200 (2026-11-24, user report)
+- Cash equips checked on screen. Hat, glasses, clown nose, overall, shoes, gloves and cape all draw over the real equips.
+- Cash weapon: it was not drawn at all before. It now draws over the real weapon using the cash item's frames for the real weapon's type (01702xxx.img/<30..49>). Attacks, stances and sounds still follow the real weapon. If the cash item has no frames for that weapon type, the real weapon shows, as in the original. The login look reads the cash weapon from masked slot -111. Checked: 1702004 on a one-handed sword.
+- Dev command `equipid itemId` equips an item from the EQUIP tab (cash items go to the cash slot).
+- NPC/quest dialog: item pictures in the body text (#i…# / #v…#) were dropped. They are now drawn in a row under the text, slider case included. Checked: Sabitrama 2050, pink anthurium.
+- Walls: a wall foothold stored bottom to top (y1 > y2) had a reversed range, so is_blocking() never matched and walls never blocked. On Kerning PQ stage 1 (103000800) the player jumped through the right-end wall into a strip with no floor and dropped to the bottom border. Fixed by ordering the range in is_blocking. Also: the player no longer steps onto a blocking wall foothold as the next/prev foothold, and when airborne with no foothold under the player, walls crossed are found by a scan. Checked: stops at x 767. Henesys walks normally. The down-jump rule is unchanged.
+- Shumi coin quest: the last area maps (103000902/905/909) have no exit portal by design; the treasure chest NPC (1052008/9/10) gives the item and warps out. Checked: clicking the chest returns the player to the subway ticket booth with the item.
+- Could not reproduce the freeze after accepting a quest: Sabitrama 2050 and Eurek 6000, then portals and other NPCs, all work. Dropping a cash item (with the "cannot be picked up again" warning) and then using a portal also works. Asked the user for the quest name.
