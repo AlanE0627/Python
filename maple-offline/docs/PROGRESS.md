@@ -1373,3 +1373,4 @@
 - (pass 24) Kerning subway: ticket seller (1052006) greets and sells; the gate NPC (1052007) lists 커닝 스퀘어 / 공사장 들어가기 / 뉴리프 시티, asks for a ticket when there is none and explains the boarding time for the New Leaf City train. No new issue found.
 - (pass 25) Kerning subway lobby on the client: NPC talk works (subway staff lines in Korean). The construction-site jump maps and the treasure-chest exit were checked in an earlier bundle; not repeated.
 - (pass 26) Magician check with PlayTest1 (job 200, Lv15, wand): Magic Claw on a key casts every press (reason 0), uses MP and sends magic attacks on the Ellinia forest maps. PlayTest1 restored to warrior afterwards.
+- (pass 27) Thief check with PlayTest1 (job 400, Lv15, claw + Subi stars): Lucky Seven on a key casts, each cast uses 2 stars (500 → 478 over 11 casts), monsters drop items and monster cards, pickups shown in chat. PlayTest1 restored to warrior.
