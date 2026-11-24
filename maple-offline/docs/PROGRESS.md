@@ -1279,3 +1279,8 @@
 - Route arrow kept clear of the right-side buttons when it sits at the screen edge.
 - Skill check: Avenger (claw + stars): hand effect, the skill's own ball flies to the target, hit at the expected delay. Strafe (bow): four hits, effect shown. Note: with a sword equipped the client still let Avenger start (weapon check) — next bundle.
 - Item description translation not started (next bundle).
+
+### 1216 bundle (2026-11-24)
+- Weapon check for attack skills: the v83 data names a weapon for few skills, so the client let e.g. Avenger go off with a sword. Attack skills of single-weapon job lines now need that weapon: Assassin/Hermit/Night Lord/Night Walker → claw, Bandit/Chief Bandit/Shadower → dagger (Meso Explosion excepted), Hunter/Ranger/Bowmaster/Wind Archer → bow, Crossbowman line → crossbow, Brawler line/Thunder Breaker → knuckle, Gunslinger line → gun; Lucky Seven → claw, Double Stab → dagger. Warrior and beginner-archer lines accept several weapons and stay as they were. Tested: Avenger with a sword → refused (weapon), with a claw → cast.
+- Skill check: Assaulter (dagger) hits with its effect. Corkscrew Blow (knuckle) hits but the character does not move forward. The skill text says it runs forward; the v83 data has no displacement value for it, so the distance is still to be settled (next bundle).
+- Item description translation not started (next bundle).
