@@ -1220,3 +1220,9 @@
 - Elemental Reset (2111008, 2211008, 12101005) is no longer in the buff bundles. It casts by itself 2 s after entering a map whose monsters resist or are immune to the mage's element (elemAttr F1/F2, or I1/I2 for Ice/Lightning), at most once per buff duration. Checked: a fresh login into 230020101 casts it; Henesys does not.
 - Magic summons (Flame 12001004 and others): the client used the weapon damage (about 5 with a wand). It now mirrors the server cap: calculateMaxBaseMagicDamage(INT + magic) × 0.05 × summon mad. Checked: 360 (max 421) at INT 300.
 - Portal arrival "falling from the sky": not reproduced; two portals land on the ground at once. Asked the user for the map.
+
+## 1210 (2026-11-24)
+- Skill audit, part 3. Double Fire (gun + bullets), Night Walker Lucky Seven and Wind Archer Double Shot: shot → projectile → hit, in order.
+- Thunder Breaker Somersault Kick: the damage showed at frame 0, before the flip. Every frame of the body action is an attack frame (no negative delay marks the swing), and the first frame has delay 0. For "somersault" and "screw" (Corkscrew Blow) the 0-delay frames no longer count as attack frames and the hits move to the middle of the move. Checked: the damage appears at 516 ms, mid-flip. The other 27 actions of the same shape (doublefire, rapidfire, dash …) are unchanged because they already looked right.
+- Teleport distance now uses the level's range (130–150, kept as hrange) × 1.5. All four Teleports (FP, IL, Priest, Blaze Wizard) share that data.
+- Alancyg restored: 111/80/200/60/4/4, weapon 1302000; test skills, the A binding, test weapons and ammo removed.
