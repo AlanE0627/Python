@@ -1188,3 +1188,8 @@
 - Server ScrollHandler: Legendary Spirit now also counts the Cygnus (10001003) and Aran (20001003) skills, so a Blaze Wizard can scroll unequipped items. An empty target slot now gives "cannot scroll" instead of an NPE.
 - Checked: CygTest3 with 10001003. 하의 방어력 주문서 100% lists two pants in the equip tab; picking one sends USE_UPGRADE_SCROLL, SHOW_SCROLL_EFFECT comes back and the scroll is used up.
 - Still to do: see the #f reward banner on screen; item description translation.
+
+## 1205 (2026-11-24)
+- Dialog UI pictures (#fUI/…) are looked up through the Korean UI pack (ui_img). The quest reward banner (QuestIcon/4/0, Quest/reward) uses the Korean "보상!!" label from UIWindow.img/Quest/reward, the one the quest log shows; the GMS art read "REWARD!!".
+- Checked on screen: Neinheart quest 20016 on CygTest3 (job set to 1000 for the test, then restored to 1200, 20016 set back to completed). The last page shows the "보상!!" banner and the EXP icon in front of "380 exp", inline.
+- Not done yet: white scroll option in the scroll list; item description translation.
