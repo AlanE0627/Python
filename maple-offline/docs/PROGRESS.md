@@ -1294,3 +1294,13 @@
 ### 1218 work (2026-11-24, not delivered separately — goes out with the next big play-through bundle)
 - Hold-to-charge skills (Big Bang ×3, Grenade, Corkscrew Blow ×2, Poison Bomb, Piercing Arrow): key down starts charging (SKILL_EFFECT packet to the server, the skill's keydown effect repeats on the player), release attacks with the charge time (cap 2 s) in the attack packet. Corkscrew Blow runs forward along the ground by 60 px + up to 220 px for a 1 s charge, stopping at walls and edges. Tested: tap + 1 s hold moved the character about 350 px in total.
 - Working method changed at the user's request: next bundles are large real-play passes (a character played through a whole level range with quests, hunting, shops and job advancements), fixes collected, one APK at the end.
+
+### 1218 bundle (2026-11-24, delivered)
+- Charge skills (see 1218 work above) included.
+- NPC sweep over every NPC placed on Maple Island, Victoria, Orbis and El Nath maps (478): all dialogs reach an end with no stall. Three party-quest NPCs (1052013, 9000004, Cloto 9020001) failed when talked to outside their event instance and left the dialog stuck; they now say no party quest is running and close.
+- Quest script sweep for every scripted quest whose NPC is on those maps (160 start/end scripts): no errors (one false hit, 2251, starts without a script).
+- Quest progression simulation for warrior, magician, archer, thief and pirate paths to level 70: the quests that never start are dated events, other jobs' lines, or need a quest state the simulation does not keep (in progress / not started); nothing blocks a normal path.
+- Ellinia → Orbis ship ride: waiting room → ship → Orbis station works (travel_rate 10, about 1.5 min). The test character died on the ship to the Balrog invasion (part of the original ride).
+- Orbis → El Nath on foot with route guidance: 23 maps through the Orbis tower, arrived in El Nath.
+- Cash equip (user report "캐시템 장착이 안되네"): desktop with CygTest3: transparent hat double-clicked in the equip tab → equipped (ITEM_MOVE → INVENTORY_OPERATION). Not reproduced; asked the user which item and how, and for the phone's server.log.
+- Not done in this bundle: full job-advancement play-through (1st/2nd job test maps) for two jobs.
