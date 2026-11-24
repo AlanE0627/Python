@@ -1200,3 +1200,13 @@
 - Quest helper order: recency. A quest that is new, or whose goal counts changed (a kill, a quest item picked up), moves to the top. Stamps are kept per character in quest_recent_<name>.txt. The first look after login only records. Ties: quests with goals first. Checked: picking up the pink anthurium moved 2050 to the top; a scroll for 6000 moved 6000 back up.
 - Label / quote rings (original v83 features): Ring info nameTag → UI/NameTag.img/<n> (w/c/e pieces, clr) drawn as the name tag; chatBalloon → ChatBalloon.img/<n>, with the text colour from clr (light or dark). Styles are re-read on login and after every inventory change. Checked: 1112115 label ring tag, 1112808 quote ring balloon, the tag returns to normal when the ring comes off.
 - Dev: equipid maps 111xxxx to the ring slot; inv shows equip slots, level and wdef.
+
+## 1208 (2026-11-24)
+- Skill-effect audit, first set. Each skill was cast from a key bound by the new dev command `bind key skill` and captured in 8 frames about 0.1 s apart (/tmp/sktest.sh).
+  - Magic Claw: cast, then claw mark and damage; the action delay is 346 ms.
+  - Holy Arrow: the arrow leaves, then the hit flash and damage.
+  - Fire Arrow (1206): the fire bow, then the arrow.
+  - Slash Blast: cast fine. No hit because the target was out of its reach (sword afterimage range × 1.5 ≈ 18–132 px in front), which is expected.
+- Non-projectile hits now use the same release rule as projectiles (Char::get_bulletdelay): it applies only when there is neither a skill action nor a weapon afterimage frame. Melee with a swing frame and skills with an action are unchanged.
+- Test characters restored: Alancyg back to 111/80, extra skills and the A binding removed. PlayTest1 had received Magic Claw by mistake (the dev commands went to the logged-in character); removed from the DB.
+- Still to do in the audit: thief (Lucky Seven, claw + stars), bowman (Double Shot, bow + arrows), pirate (Double Fire, gun + bullets) and the Cygnus jobs. They need the weapon equipped for the test, then put back.
