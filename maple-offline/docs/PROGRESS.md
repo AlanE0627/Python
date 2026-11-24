@@ -1270,3 +1270,12 @@
 - Portal arrival "dropping from the sky": a jump into a portal carried its upward speed into the new map. Respawn now clears speed and forces. Tested: jump + Up into 106020000 → arrives on the ground at 106020100 (was rising and falling).
 - Auto re-buff limited to hunting fields, measured: Iron Body cast on 104040000, then in Henesys for 85 s (75 s buff) → not recast; back on 104040000 → recast within seconds.
 - Skill audit (2nd/3rd jobs) not done in this bundle.
+
+### 1215 bundle (2026-11-24)
+- Route guidance walked on desktop (portal by portal with a script reading the route):
+  - Henesys → Ellinia: 100000000 → 100010000 → 100020000 → 100030000 → 100040000 → 100040100 → 100050000 → 101000000, "목적지에 도착했습니다" on arrival.
+  - Ellinia → Orbis: 101000000 → Ellinia station 101000300, then "오르비스 정거장 입구 (체리 이용)" — the ride NPC hop is chosen. The ship itself (timed event) was not ridden in the test.
+- Map search ranking: exact name first, then names starting with the query, then the rest ("오르비스" → 오르비스 (스카이로드) before the tower floors).
+- Route arrow kept clear of the right-side buttons when it sits at the screen edge.
+- Skill check: Avenger (claw + stars): hand effect, the skill's own ball flies to the target, hit at the expected delay. Strafe (bow): four hits, effect shown. Note: with a sword equipped the client still let Avenger start (weapon check) — next bundle.
+- Item description translation not started (next bundle).
