@@ -1290,3 +1290,7 @@
 - Item descriptions: a fresh scan of String_ko finds only 3 non-Korean descriptions left (the earlier "520" count is stale, already covered by the KMS data). Translated 펩시콜라 (HP 250 / MP 100) and 새해 도시락 (HP·MP 2000) from their item specs; the third is an unused placeholder item. Override table stays private.
 - Flamethrower (gun + bullets): fire bursts hit two monsters with damage shown.
 - Alancyg restored to 111/80/200/60/4/4 with 1302000.
+
+### 1218 work (2026-11-24, not delivered separately — goes out with the next big play-through bundle)
+- Hold-to-charge skills (Big Bang ×3, Grenade, Corkscrew Blow ×2, Poison Bomb, Piercing Arrow): key down starts charging (SKILL_EFFECT packet to the server, the skill's keydown effect repeats on the player), release attacks with the charge time (cap 2 s) in the attack packet. Corkscrew Blow runs forward along the ground by 60 px + up to 220 px for a 1 s charge, stopping at walls and edges. Tested: tap + 1 s hold moved the character about 350 px in total.
+- Working method changed at the user's request: next bundles are large real-play passes (a character played through a whole level range with quests, hunting, shops and job advancements), fixes collected, one APK at the end.
