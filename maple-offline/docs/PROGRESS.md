@@ -1178,3 +1178,13 @@
   - This is probably not the cause of the quest freeze: the client re-enables itself after 1.5 s. That was handled in 1201 (stale conversation).
 - Dialog pictures are now drawn inline, where they sit in the line: item #i/#v and UI #f (QuestIcon/4/0 reward banner, 8/0 EXP icon, 5/0, Quest/reward). Each picture becomes a private-use marker that survives text formatting; in its line the marker is replaced by full-width spaces matching the picture's width. The picture is placed at the wrapped end offset of the text before it. The earlier "row under the text" was removed. Checked: Sabitrama's "이렇게 생긴 꽃이지" shows the flower in the gap in line 3. The #f reward banner was not seen on screen yet (the warrior 2300 branch tried did not reach a reward page).
 - Tag scan of quest data and scripts: #i 340, #v 52, #f 54 (all UI/UIWindow.img QuestIcon/Quest), #s 11 (all line breaks such as "#s\\n", not skill icons).
+
+## 1204 (2026-11-24)
+- Scrolls: double-clicking a scroll (204xxxx) opens a list of the items it fits.
+  - Listed: worn items, plus items in the equip tab when the character has Legendary Spirit (1003 / 10001003 / 20001003, the reward of Eurek's quest 6000/28136).
+  - Matching: a 204ABxx scroll fits item category 1AB; 2049xxx scrolls fit any non-cash equip.
+  - Sending: worn items go through the normal SCROLL_EQUIP; equip-tab items use a positive slot.
+  - White scroll (234xxxx): double-click only shows a hint.
+- Server ScrollHandler: Legendary Spirit now also counts the Cygnus (10001003) and Aran (20001003) skills, so a Blaze Wizard can scroll unequipped items. An empty target slot now gives "cannot scroll" instead of an NPE.
+- Checked: CygTest3 with 10001003. 하의 방어력 주문서 100% lists two pants in the equip tab; picking one sends USE_UPGRADE_SCROLL, SHOW_SCROLL_EFFECT comes back and the scroll is used up.
+- Still to do: see the #f reward banner on screen; item description translation.
