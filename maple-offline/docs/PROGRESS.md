@@ -1311,3 +1311,8 @@
 - Job advancement walk-through (server dialogs + item flow, client warps):
   - Warrior Lv30: Dances with Balrog → letter 4031008 → instructor 1072000 (102020300) → test map 108000300 (mobs 9000100/9000101 drop the marbles at 70%) → 30 marbles → 1072004 → proof 4031012 → Dances with Balrog → job menu (Fighter/Page/Spearman with descriptions) → Fighter (110).
   - Magician Lv30: Grendel → letter 4031009 → instructor 1072001 (101020000) → test map 108000200 → 1072005 → proof → Grendel → 2nd job (210).
+
+### 1220 (2026-11-24) — equipment could not be equipped on the phone
+- The phone's server log (user screenshot): "tried to equip Elegant Noblesse Hat into slot -101", "Blue Jewelry Boots into slot -107". The client sent normal equipment to the cash slots (slot - 100) and the server refused it every time. The server's data has cash = 0 for both; the desktop client data agrees, so the phone client's item data (built on the phone from the installer + custom WZ) or its slot choice differs.
+- Fix on the server (authoritative): ItemMoveHandler moves an equip to the slot its own cash flag says — a non-cash item sent to -1xx goes to the normal slot, a cash item sent to a normal slot goes to the cash slot (pet equipment excepted).
+- To look at next: why the phone client marks these items cash (its Character.nx info/cash), since other client logic (scroll menu, tooltips) also uses that flag.
