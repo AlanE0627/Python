@@ -1133,3 +1133,10 @@
 - Thief first-training chain (UxCyg, 2140) checked on screen. Tap the alarm, Dark Lord's dialog opens, accept, the alarm shows 스텀프 0/20. With progress at 20, entering Dark Lord's map opens the completion dialog by itself (the quest is autoComplete). Rewards: potions x30 each, completion notice, then the 2141 offer opens.
 - Blaze Wizard (CygTest3, 2132, Grendel): same flow. Slime 8/8, the completion dialog opens on entering the Magic Library, Lv10→12 with potions, then 2133 is offered. Quest 2132's original job list includes the Cygnus jobs (1200…), so the Grendel training is original data for Blaze Wizards.
 - Warrior 2129 (Stump 50) appears in the alarm as a new quest after 2128 is done.
+
+## 1198 (2026-11-24)
+- Cash shop: 353 of the items on sale (Commodity OnSale=1) had no Korean name in the KMS data and showed in English (Mr. Popular, 3D Glasses, 2x EXP cards, pet names, cash weapons …). Translated them by hand into the private override table and applied them with a `nx_ko_patch.py --overrides` pass on String_ko.nx. Checked in the cash shop main list: 인기 신사, 3D 안경, 주황버섯 학자 모자 and so on.
+- About 1,600 GMS-only items that are not sold in the cash shop are still English. Next step: the drop and quest items a player actually meets.
+- Stat window and world map: Korean (the world map uses KMS art). The cash shop EXIT/Best Item/NEXON ID art is the KMS original and was left as is.
+- Warrior 2129 accepted from the alarm: Dances with Balrog dialog → accept → alarm shows 스텀프 0/50.
+- Not done in this bundle: live bowman/pirate run (needs a job switch on a test character); Ereve Cygnus-only quest flow.
