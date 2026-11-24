@@ -1169,3 +1169,12 @@
 - Face accessories follow the face's current expression (blink, hit, smile …). Each expression's frame-0 picture is kept, falling back to default, then to the stance frames. Checked: bubble gum still draws in the default expression.
 - Cash gear in other poses: the attack swing and lying down with the cash weapon, hat, glasses, overall and bubble gum all draw.
 - Item descriptions (520 English) and a clean String_ko rebuild move to the next bundles.
+
+## 1203 (2026-11-24, user report)
+- The user sent a server warning: an NPE in UseItemHandler for item 2041015 (a scroll) on 105040300. Cause: double-clicking a scroll sent USE_ITEM. The server removed the item first and then failed to find a use effect, so the scroll was lost. Fixes:
+  - Server: items with no use effect, and scrolls (204xxxx/234xxxx), are no longer consumed; the server always replies with enableActions.
+  - Client: double-clicking a scroll shows a chat hint (drag it onto an equip).
+  - Checked: the scroll stays and the hint shows.
+  - This is probably not the cause of the quest freeze: the client re-enables itself after 1.5 s. That was handled in 1201 (stale conversation).
+- Dialog pictures are now drawn inline, where they sit in the line: item #i/#v and UI #f (QuestIcon/4/0 reward banner, 8/0 EXP icon, 5/0, Quest/reward). Each picture becomes a private-use marker that survives text formatting; in its line the marker is replaced by full-width spaces matching the picture's width. The picture is placed at the wrapped end offset of the text before it. The earlier "row under the text" was removed. Checked: Sabitrama's "이렇게 생긴 꽃이지" shows the flower in the gap in line 3. The #f reward banner was not seen on screen yet (the warrior 2300 branch tried did not reach a reward page).
+- Tag scan of quest data and scripts: #i 340, #v 52, #f 54 (all UI/UIWindow.img QuestIcon/Quest), #s 11 (all line breaks such as "#s\\n", not skill icons).
