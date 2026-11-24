@@ -1379,3 +1379,11 @@
 - (pass 30) Aran creation on the client: 캐릭터 만들기 → Aran card → look settings (Korean) → name "AranT1" → shown on select as 레전드 Lv1 → game start places it in the Aran tutorial (블랙로드 : 부상병의 막사) with the key hint pictures (↑, ↓+점프, 점프) and the tutorial vignette. Rest of the tutorial next pass.
 - (pass 31) Aran tutorial on the client: start map script portal → 914000100 (refugee camp), Helena offers "아이를 구해주세요1" in the quest list, accept → quest helper "길 잃은 아이에게 가 보기"; the tutorial road portals (914000200 → 914000210 burning forest) move on. No new issue found so far; child rescue and Lith/Rien arrival next.
 - (pass 32) Aran tutorial continued: relogging inside the tutorial returns to 914000000 (the tutorial maps' forcedReturn in the data, original behaviour; quest state kept). Walked the road maps again to the dead-end forest (914000300), the lost child's dialog runs, the child joins (quest "아이를 구해주세요2": 길 잃은 아이 1/1, report to Helena) and the way back opens. No new issue found.
+
+## 2026-11-25 · 33차 실플레이 점검 (아란 튜토리얼 → 리엔) · 번들 1225
+- [x] 인트로 연출 재생(MapDirection): 서버의 인트로 이펙트(0x12) 경로의 Effect/DirectionN.img 장면을 읽어 그림(맵 좌표·z 순서·이동 x1/y1·duration)·소리·field 이동을 시간순으로 재생. 장면 끝의 field로 맵 이동 요청 → 아란 튜토리얼 1~4(914090010~013)가 끊기지 않고 얼음 동굴(140090000)까지 진행. 시그너스·모험가 직업 소개 장면도 같은 경로
+- [x] 연속으로 온 장면(표정+클릭 표시 등)은 겹쳐서 재생
+- [x] NPC 대화 화자 플래그: 0x2만 플레이어(내 캐릭터 모습·이름), 1/8/9는 NPC 그림 유지 — 리린·헬레나 등 초상화가 빈칸이던 문제 해결
+- [x] 스크립트 남은 영어 대사 한국어화(21001, 3514, 9201101, 2091005, 2131001, 2112013/2112007 보상 문구)
+- [x] 실플레이: AranT1 헬레나 보고 → 컷신 4개 → 리린 대화 → 푸카(포션) → 푸영·푸이르(검) → 푸론(무루 3마리) → 푸조키(상자) → 리엔 서쪽 진입까지 확인
+- 남은 것: 컷신 글자 그림은 v83 영어판 그대로(KMS 1.2.95 Effect에 Direction 데이터 없음), 맨손 공격 불가(원본 확인 필요)
