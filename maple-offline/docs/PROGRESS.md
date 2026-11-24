@@ -1343,3 +1343,8 @@
   - General store (1011100): buy with the quantity box.
 - Death and revive: killed on a field, the death notice's OK sends the character to town alive; NPC talk works right after.
 - Not done in this pass: new character on Maple Island 1→10, Kerning PQ solo run, taxi / hair / face coupons on the client (their NPC dialogs were covered by the NPC sweep).
+
+### 1223 (2026-11-24)
+- Kerning PQ solo, stage 1: with one member it cleared at once with 0 passes (an earlier solo adaptation). Now the solo leader answers a question like a member, brings the coupons for one pass, and the next talk clears the stage. Party quests with more members are unchanged. Tested: one-person party (dev command) → Lakelis → stage 1 → question (archer DEX) → 25 coupons → pass → stage cleared.
+- Leaving a KPQ instance by warp ends it a moment later (changedMap → end); re-entry works after that.
+- Dev: Explorer `party` command (one-person party).
