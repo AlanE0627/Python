@@ -1351,3 +1351,4 @@
 
 ### Play-through pass 7 (2026-11-24) — no code change
 - Kerning PQ solo stages 2 and 3 (one-person party): standing on a correct rope / platform area and talking to Cloto clears the stage (solo rule: the one member on a correct area), the portal opens. Stage 4 (boxes) and 5 (boss) not run this pass.
+- (pass 8) Kerning PQ solo stage 4 (boxes): standing on a correct box and talking to Cloto clears it. Stage 5: the three boss types (9300000/2/3) drop passes at 100%; with 10 passes Cloto clears the stage, takes the passes and opens the bonus stage. Whole solo KPQ goes through.
