@@ -1284,3 +1284,9 @@
 - Weapon check for attack skills: the v83 data names a weapon for few skills, so the client let e.g. Avenger go off with a sword. Attack skills of single-weapon job lines now need that weapon: Assassin/Hermit/Night Lord/Night Walker → claw, Bandit/Chief Bandit/Shadower → dagger (Meso Explosion excepted), Hunter/Ranger/Bowmaster/Wind Archer → bow, Crossbowman line → crossbow, Brawler line/Thunder Breaker → knuckle, Gunslinger line → gun; Lucky Seven → claw, Double Stab → dagger. Warrior and beginner-archer lines accept several weapons and stay as they were. Tested: Avenger with a sword → refused (weapon), with a claw → cast.
 - Skill check: Assaulter (dagger) hits with its effect. Corkscrew Blow (knuckle) hits but the character does not move forward. The skill text says it runs forward; the v83 data has no displacement value for it, so the distance is still to be settled (next bundle).
 - Item description translation not started (next bundle).
+
+### 1217 bundle (2026-11-24)
+- Corkscrew Blow: in the data it is a hold-to-charge skill (prepare + keydown nodes), and the server reads a charge value for it, like Big Bang, Grenade and Poison Bomb. The client has no charge mechanic yet: holding the key only repeats the skill, so the run forward never happens. A charge mechanic for these skills (prepare effect while held, release = attack with the charge time, Corkscrew moves by charge) is its own bundle.
+- Item descriptions: a fresh scan of String_ko finds only 3 non-Korean descriptions left (the earlier "520" count is stale, already covered by the KMS data). Translated 펩시콜라 (HP 250 / MP 100) and 새해 도시락 (HP·MP 2000) from their item specs; the third is an unused placeholder item. Override table stays private.
+- Flamethrower (gun + bullets): fire bursts hit two monsters with damage shown.
+- Alancyg restored to 111/80/200/60/4/4 with 1302000.
