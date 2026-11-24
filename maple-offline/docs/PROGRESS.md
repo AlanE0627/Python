@@ -1259,3 +1259,14 @@
 - Server log copy for the phone: Android/data/com.mapleoffline/files/server.log (previous run server_prev.log).
 - Auto re-buff: only on hunting fields (not a town, has monster spawns, not a jump map: Shuri subway 103000900–909, Zakum lava jump). Elsewhere only Nimble Feet / Haste are kept up.
 - Next: world map (region list + search, route on double-click), portal-arrival fall at 106020100 on phone resolution, skill audit.
+
+### 1214 bundle (2026-11-24)
+- World map side panel (drawn beside the map window; the later-version search art is not used):
+  - Region list from the root world map links (메이플 월드 전체, 메이플아일랜드, 빅토리아아일랜드, 엘나스산맥 … 리엔). The shown region is highlighted.
+  - Map search: a text field (phone keyboard through the IME bridge) over every map listed on the world maps (name + street); results update while typing. Tap = show the place on its world map, double-tap = route guidance.
+  - Double-click / double-tap a place on the map itself: route guidance there.
+- Route guidance (Util/Navigator): breadth-first search over map portals plus the rides between continents (ship, train, cabin, genie, crane, plane, Ereve ferry; boarding map / NPC / arrival from the server's ride event scripts). The next portal (or ride NPC) gets the world map's "current position" arrow; when it is off screen the arrow sits at the screen edge on that side. Chat line on each map: next map, ride NPC, maps left; "목적지에 도착했습니다" on arrival. Leaving the route recomputes it; ride waiting rooms and ships keep it.
+  - Tested: search "페리온" → 8 results; double-tap → route set, "다음: 던전으로 가는 길 · 남은 맵 9개", arrow at the screen edge toward the portal.
+- Portal arrival "dropping from the sky": a jump into a portal carried its upward speed into the new map. Respawn now clears speed and forces. Tested: jump + Up into 106020000 → arrives on the ground at 106020100 (was rising and falling).
+- Auto re-buff limited to hunting fields, measured: Iron Body cast on 104040000, then in Henesys for 85 s (75 s buff) → not recast; back on 104040000 → recast within seconds.
+- Skill audit (2nd/3rd jobs) not done in this bundle.
