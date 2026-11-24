@@ -1304,3 +1304,10 @@
 - Orbis → El Nath on foot with route guidance: 23 maps through the Orbis tower, arrived in El Nath.
 - Cash equip (user report "캐시템 장착이 안되네"): desktop with CygTest3: transparent hat double-clicked in the equip tab → equipped (ITEM_MOVE → INVENTORY_OPERATION). Not reproduced; asked the user which item and how, and for the phone's server.log.
 - Not done in this bundle: full job-advancement play-through (1st/2nd job test maps) for two jobs.
+
+### 1219 bundle (2026-11-24)
+- Server: event timers (ship rides, party quests) sent packets to the character object of a session that had logged out → NullPointerException in the timer. Character.sendPacket now skips a missing client.
+- Equip check (user report: equipment cannot be equipped on the phone, first cash items, then all equipment): on desktop with the touch build, double-tap equips a cash weapon (1702000), face accessory (1010000), ring (1112000), overall (1052228) and a cash hat — all moved to the equipped slots. Not reproduced; waiting for the phone's result after an app restart and its server.log.
+- Job advancement walk-through (server dialogs + item flow, client warps):
+  - Warrior Lv30: Dances with Balrog → letter 4031008 → instructor 1072000 (102020300) → test map 108000300 (mobs 9000100/9000101 drop the marbles at 70%) → 30 marbles → 1072004 → proof 4031012 → Dances with Balrog → job menu (Fighter/Page/Spearman with descriptions) → Fighter (110).
+  - Magician Lv30: Grendel → letter 4031009 → instructor 1072001 (101020000) → test map 108000200 → 1072005 → proof → Grendel → 2nd job (210).
