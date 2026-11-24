@@ -1246,3 +1246,16 @@
 - Auto re-buff: a buff from the buff keys that was active this session is recast by itself when it runs out (through the buff queue, one at a time; a failed cast waits 10 s). Checked: Iron Body recast after 75 s.
 - Portal arrival on 106020100 (right of the Mushroom Castle town 106020000): lands on the ground at once on desktop, so still not reproduced.
 - To do: world map (other regions list, search panel, double-click route guide); a full pass over the Mushroom Castle quest chain (2300–2340).
+
+### 1213 bundle (2026-11-24)
+- Mushroom Castle quests 2300–2342 checked: start NPCs, prerequisites, nextQuest, scripts.
+- Killer mushroom spore (2430014): the item script used `Point.distance()` (not on Android Point) → manual distance; messages when used too far away or on another map. Walking into the vines on 106020300 with the spore now uses it and opens the way (like the thorn remover at the castle wall). Tested: far → message, near → used, portal → 106020400.
+- Quest 2338 (lost spore): could only be done once; now repeatable until the vines are opened, then it closes.
+- Record-goal quests (infoex: 2314, 2322, 2324, 2335): the quest helper said "go to NPC" and counted them done on maps without NPCs (the client never asked the server). Now the helper shows the quest's goal line with the record value (`#R` → "버섯 숲 결계 탐사 : 0 / 1") and turns blue + "보고하기" only when the server says it can be completed. Tested 2314 0/1 → portal → 1/1 + report.
+- Other script items (243xxxx): the remaining ones belong to 2009 dated events only.
+- Kerning PQ stages 2–4: Cloto was below the screen from the upper ropes. The camera now keeps her in view on 103000801–803. Tested from the rope area: she is visible above the status bar.
+- Teleport: presses during the 0.6 s interval are dropped (no queued "rocket"); holding the key repeats every 0.6 s and stops on release. Tested: hold 2.1 s → 4 teleports, 10 taps over 3 s → 5, none after release.
+- Cash shop "nothing buys, EXIT bounces back": the server can leave the shop unopened while the client sits in it (entry failing half-way); purchases were then ignored and EXIT disconnected. Entry now marks the shop open before the listings, each listing fails on its own, and a purchase/EXIT in an unopened shop finishes the entry instead. Tested with the shop forced closed: purchase → locker, EXIT → back to the map.
+- Server log copy for the phone: Android/data/com.mapleoffline/files/server.log (previous run server_prev.log).
+- Auto re-buff: only on hunting fields (not a town, has monster spawns, not a jump map: Shuri subway 103000900–909, Zakum lava jump). Elsewhere only Nimble Feet / Haste are kept up.
+- Next: world map (region list + search, route on double-click), portal-arrival fall at 106020100 on phone resolution, skill audit.
