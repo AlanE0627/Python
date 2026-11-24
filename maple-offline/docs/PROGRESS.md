@@ -1366,3 +1366,4 @@
 - (pass 17) Teleport rock (5040000) from the cash tab by double tap: menu "지금 있는 맵 등록하기" saved 헤네시스동쪽언덕; from Henesys the saved map is listed and choosing it moves there, using up the rock. No new issue found.
 - (pass 18) Henesys lens shop (Dr. Lenu 9200100, 100000103): coupon menu in Korean, the VIP lens coupon opens the look picker with live preview, OK changes the eyes and uses the coupon. No new issue found.
 - (pass 19) IslandT1 hunted to Lv11 on 100010000 (bow, real shots): level-up gives 5 AP; the stat window's DEX + button raises DEX 25 → 28 with AP 5 → 2. No new issue found.
+- (pass 20) Archer skills: Double Shot's + stays grey until Arrow Blow has a point (the v83 data requires Arrow Blow 1), then both can be learned. Dragging Double Shot from the skill window onto an empty quick slot binds it (server keymap shows the skill on the slot's key). Using it from that slot was not driven in the desktop test (the touch slots need real touch input there).
