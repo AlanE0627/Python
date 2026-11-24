@@ -1164,3 +1164,8 @@
   - Server: with a stale conversation (cm/qm) open, every NPC click returned only enableActions and quest updates were held back (announceUpdateQuest is delayed while a conversation is open). That would look like "the quest won't accept, NPCs don't answer, relog fixes it". A new NPC click now disposes the stale conversation and flushes the delayed quest updates. The user's exact sequence (Sabitrama 2050 → Eurek 6000) was run on one character and accepted normally; the fix covers the state that matches the symptoms.
 - Shumi coin quest (103000900–909): every portal was tested by script (warp, stand on the portal, press Up). Forward exits work in all rooms (900→901→902, 903→904→905, 906→907→908→909). The intramap, cross and touch portals move the player as expected. The last rooms exit through the chest NPC. Asked the user which map was stuck.
 - Wall regression after the 1200 fix: walking and jumping across Ellinia, Perion, Kerning, Sleepywood and 101010100 left to right, no stuck spots.
+
+## 1202 (2026-11-24)
+- Face accessories follow the face's current expression (blink, hit, smile …). Each expression's frame-0 picture is kept, falling back to default, then to the stance frames. Checked: bubble gum still draws in the default expression.
+- Cash gear in other poses: the attack swing and lying down with the cash weapon, hat, glasses, overall and bubble gum all draw.
+- Item descriptions (520 English) and a clean String_ko rebuild move to the next bundles.
