@@ -175,6 +175,18 @@ def analyze(path):
         if int(p.get('tm', 0)) == mapid and p.get('tn') in pt_group and p['pn'] in pt_group:
             adj[pt_group[p['pn']]].add(pt_group[p['tn']])
 
+    # spring portals (pt 12/13) launch the player about 1000 px up
+    for p in m.portals:
+        if p.get('pt') in ('12', '13'):
+            x, y = int(p['x']), int(p['y'])
+            f, g = m.below(x, y - 12)
+            if f is None:
+                continue
+            src = find(('f', f['id']))
+            for (qx, qy, qg) in pts:
+                if abs(qx - x) <= 250 and y - 1200 <= qy <= y:
+                    adj[src].add(find(qg))
+
     seen = set(seeds)
     stack = list(seeds)
     while stack:
